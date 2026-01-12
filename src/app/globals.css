@@ -46,3 +46,47 @@
     text-wrap: balance;
   }
 }
+
+/* Print Styles */
+@media print {
+  /* Hide navigation and interactive elements */
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure images use object-contain for full display */
+  img {
+    object-fit: contain !important;
+  }
+
+  /* Optimize layout for printing */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Page break handling */
+  .page-break-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Ensure images fit on page */
+  .aspect-video {
+    max-height: 400px !important;
+  }
+
+  /* Keep recipe sections together */
+  h2, h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Optimize spacing for print */
+  .print-compact {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+}

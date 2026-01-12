@@ -11,7 +11,10 @@ Deno.serve(async (req) => {
   try {
     // Verify authentication manually
     const authHeader = req.headers.get("Authorization");
+    console.log("Auth header present:", authHeader ? "yes" : "no");
+    
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("Missing or invalid authorization header");
       return new Response(
         JSON.stringify({ error: "Missing or invalid authorization header" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -19,6 +22,7 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
+    console.log("Token length:", token.length);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -28,11 +32,16 @@ Deno.serve(async (req) => {
       }
     );
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Get user from the token that's already in the global headers
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    console.log("User:", user ? user.id : "null");
+    console.log("Auth error:", authError);
 
     if (authError || !user) {
+      console.error("Auth error:", authError);
       return new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
+        JSON.stringify({ error: "Invalid or expired token", details: authError?.message }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -228,17 +237,17 @@ function generateRecipeBookHTML(
 
         <div class="content">
           <div class="ingredients">
-            <h3>🥗 Ingredients</h3>
+            <h3>Ingredients</h3>
             <ul>${ingredients}</ul>
           </div>
 
           <div class="instructions">
-            <h3>📝 Instructions</h3>
+            <h3>Instructions</h3>
             <ol>${steps}</ol>
           </div>
         </div>
 
-        ${recipe.notes ? `<div class="notes"><h3>💭 Notes & Memories</h3><p>${recipe.notes}</p></div>` : ""}
+        ${recipe.notes ? `<div class="notes"><h3>Notes & Memories</h3><p>${recipe.notes}</p></div>` : ""}
       </div>
     `;
     })
@@ -298,19 +307,19 @@ function generateRecipeBookHTML(
 
     /* Recipe Pages */
     .recipe-page {
-      padding: 40px;
-      min-height: 100vh;
+      padding: 20px;
+      min-height: auto;
     }
 
     .recipe-images {
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
 
     .primary-image img {
       width: 100%;
-      max-height: 350px;
-      object-fit: cover;
-      border-radius: 16px;
+      max-height: 250px;
+      object-fit: contain;
+      border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
 
@@ -323,19 +332,19 @@ function generateRecipeBookHTML(
     .secondary-image {
       flex: 1;
       max-height: 150px;
-      object-fit: cover;
+      object-fit: contain;
       border-radius: 12px;
     }
 
     .recipe-header {
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
 
     .recipe-header h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 32px;
+      font-size: 28px;
       color: #3D3532;
-      margin: 8px 0;
+      margin: 6px 0;
     }
 
     .category {
@@ -360,23 +369,23 @@ function generateRecipeBookHTML(
 
     .meta {
       display: flex;
-      gap: 20px;
+      gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 24px;
-      padding: 16px;
+      margin-bottom: 16px;
+      padding: 12px;
       background: #FFEDE5;
-      border-radius: 12px;
+      border-radius: 8px;
     }
 
     .meta span {
       color: #6B5B54;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .content {
       display: grid;
       grid-template-columns: 1fr 2fr;
-      gap: 32px;
+      gap: 20px;
     }
 
     @media (max-width: 768px) {
@@ -387,16 +396,17 @@ function generateRecipeBookHTML(
 
     .ingredients {
       background: #FFFCFA;
-      padding: 20px;
-      border-radius: 12px;
+      padding: 16px;
+      border-radius: 10px;
       border: 1px solid #E8E2DC;
+      height: fit-content;
     }
 
     .ingredients h3, .instructions h3, .notes h3 {
       font-family: 'Playfair Display', serif;
-      font-size: 20px;
+      font-size: 18px;
       color: #3D3532;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .ingredients ul {
@@ -404,8 +414,18 @@ function generateRecipeBookHTML(
     }
 
     .ingredients li {
-      padding: 8px 0;
-      border-bottom: 1px solid #E8E2DC;
+      padding: 10px 0;
+      padding-left: 20px;
+      position: relative;
+      color: #6B5B54;
+    }
+
+    .ingredients li::before {
+      content: "●";
+      position: absolute;
+      left: 0;
+      color: #FFCBA4;
+      font-size: 12px;
     }
 
     .ingredients li:last-child {
@@ -423,13 +443,11 @@ function generateRecipeBookHTML(
     }
 
     .instructions li {
-      margin-bottom: 24px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid #E8E2DC;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
     }
 
     .instructions li:last-child {
-      border-bottom: none;
       margin-bottom: 0;
       padding-bottom: 0;
     }
@@ -442,6 +460,7 @@ function generateRecipeBookHTML(
 
     .step-text {
       flex: 1;
+      color: #6B5B54;
     }
 
     .step-number {
@@ -463,7 +482,7 @@ function generateRecipeBookHTML(
       width: 100%;
       max-width: 400px;
       max-height: 250px;
-      object-fit: cover;
+      object-fit: contain;
       border-radius: 12px;
       margin-top: 16px;
       margin-left: 52px;
@@ -481,10 +500,10 @@ function generateRecipeBookHTML(
     }
 
     .notes {
-      margin-top: 24px;
-      padding: 20px;
+      margin-top: 16px;
+      padding: 16px;
       background: #FFF5F2;
-      border-radius: 12px;
+      border-radius: 10px;
       border-left: 4px solid #FFCBA4;
     }
 
@@ -529,11 +548,132 @@ function generateRecipeBookHTML(
     }
 
     @media print {
+      /* Ensure white background */
       body {
-        background: white;
+        background: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
+
+      /* Preserve colors and backgrounds */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Page setup */
+      @page {
+        size: A4;
+        margin: 15mm;
+      }
+
+      /* Recipe page styling */
       .recipe-page {
-        padding: 20px;
+        padding: 0 !important;
+        margin-bottom: 20px;
+        page-break-after: always;
+        page-break-inside: avoid;
+      }
+
+      /* Preserve the two-column grid layout */
+      .content {
+        display: grid !important;
+        grid-template-columns: 1fr 2fr !important;
+        gap: 20px !important;
+        page-break-inside: avoid;
+      }
+
+      /* Ingredients styling */
+      .ingredients {
+        background: #FFFCFA !important;
+        padding: 16px !important;
+        border-radius: 10px !important;
+        border: 1px solid #E8E2DC !important;
+        page-break-inside: avoid;
+      }
+
+      .ingredients h3, .instructions h3 {
+        font-size: 18px !important;
+        color: #3D3532 !important;
+        margin-bottom: 12px !important;
+      }
+
+      .ingredients li {
+        color: #6B5B54 !important;
+        padding: 8px 0 !important;
+      }
+
+      .ingredients li::before {
+        color: #FFCBA4 !important;
+      }
+
+      /* Instructions styling */
+      .instructions {
+        page-break-inside: avoid;
+      }
+
+      .instructions li {
+        margin-bottom: 16px !important;
+        padding-bottom: 12px !important;
+      }
+
+      .step-text {
+        color: #6B5B54 !important;
+      }
+
+      .step-number {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 16px !important;
+        background: linear-gradient(135deg, #FFCBA4 0%, #FFB88A 100%) !important;
+        color: #3D3532 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Meta section */
+      .meta {
+        background: #FFEDE5 !important;
+        color: #6B5B54 !important;
+        padding: 12px !important;
+        margin-bottom: 16px !important;
+        page-break-inside: avoid;
+      }
+
+      .meta span {
+        font-size: 13px !important;
+      }
+
+      /* Category badge */
+      .category {
+        background: #FFEDE5 !important;
+        color: #CC7052 !important;
+      }
+
+      /* Images */
+      .primary-image img,
+      .secondary-image,
+      .step-image {
+        page-break-inside: avoid;
+        max-height: 300px !important;
+      }
+
+      /* Notes section */
+      .notes {
+        background: #FFF5F2 !important;
+        border-left-color: #FFCBA4 !important;
+        page-break-inside: avoid;
+      }
+
+      /* Cover and TOC */
+      .cover,
+      .toc {
+        page-break-after: always;
+      }
+
+      /* Hide page breaks for cover */
+      .cover.page-break {
+        page-break-before: auto;
       }
     }
   </style>

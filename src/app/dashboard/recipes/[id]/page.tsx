@@ -50,7 +50,7 @@ export default async function RecipeDetailPage({
       {/* Back Button */}
       <Link
         href="/dashboard"
-        className="inline-flex items-center text-warm-gray-500 hover:text-warm-gray-700 mb-6"
+        className="no-print inline-flex items-center text-warm-gray-500 hover:text-warm-gray-700 mb-6"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to recipes
@@ -73,7 +73,7 @@ export default async function RecipeDetailPage({
             <p className="text-peach-600 font-medium">From {recipe.source}</p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="no-print flex items-center gap-2">
           <RecipeActions recipeId={recipe.id} isFavorite={recipe.is_favorite} />
           <Button asChild variant="outline" className="border-peach-300 text-peach-700 hover:bg-peach-50">
             <Link href={`/dashboard/recipes/${recipe.id}/edit`}>
@@ -91,7 +91,7 @@ export default async function RecipeDetailPage({
             src={primaryImage.image_url}
             alt={recipe.title}
             fill
-            className="object-cover"
+            className="object-contain"
           />
         </div>
       )}
@@ -139,7 +139,7 @@ export default async function RecipeDetailPage({
 
       <div className="grid md:grid-cols-3 gap-8">
         {/* Ingredients */}
-        <Card className="md:col-span-1 border-warm-gray-100 h-fit">
+        <Card className="page-break-avoid md:col-span-1 border-warm-gray-100 h-fit">
           <CardContent className="p-6">
             <h2 className="font-display text-xl text-warm-gray-700 mb-4">
               Ingredients
@@ -172,7 +172,7 @@ export default async function RecipeDetailPage({
         </Card>
 
         {/* Instructions */}
-        <div className="md:col-span-2">
+        <div className="page-break-avoid md:col-span-2">
           <h2 className="font-display text-xl text-warm-gray-700 mb-4">
             Instructions
           </h2>
@@ -195,7 +195,7 @@ export default async function RecipeDetailPage({
                         src={step.image_url}
                         alt={`Step ${step.step_number}`}
                         fill
-                        className="object-cover"
+                        className="object-contain"
                       />
                     </div>
                   )}

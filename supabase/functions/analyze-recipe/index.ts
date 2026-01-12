@@ -53,11 +53,12 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error("Auth error:", authError);
       return new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
+        JSON.stringify({ error: "Invalid or expired token", details: authError?.message }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }

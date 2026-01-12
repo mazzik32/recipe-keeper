@@ -65,7 +65,24 @@ export default function RecipeBookPage() {
 
     try {
       const supabase = createClient();
+
+      // Use getUser() instead of getSession() to ensure fresh token validation
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("User error:", userError);
+        throw new Error("No active session. Please log in again.");
+      }
+
+      // Get fresh session after user validation
       const { data: { session } } = await supabase.auth.getSession();
+
+      console.log("Session:", session ? "exists" : "null");
+      console.log("Access token:", session?.access_token ? "exists" : "null");
+
+      if (!session?.access_token) {
+        throw new Error("No active session. Please log in again.");
+      }
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-pdf`,
@@ -73,7 +90,7 @@ export default function RecipeBookPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`,
+            "Authorization": `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
             recipeIds: Array.from(selectedRecipes),
@@ -86,7 +103,9 @@ export default function RecipeBookPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to generate PDF");
+        const errorData = await response.json().catch(() => null);
+        console.error("Error response:", errorData);
+        throw new Error(errorData?.error || errorData?.message || "Failed to generate PDF");
       }
 
       const result = await response.json();
@@ -215,11 +234,10 @@ export default function RecipeBookPage() {
                   {recipes.map((recipe) => (
                     <label
                       key={recipe.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                        selectedRecipes.has(recipe.id)
-                          ? "bg-peach-50 border border-peach-200"
-                          : "hover:bg-warm-gray-50 border border-transparent"
-                      }`}
+                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${selectedRecipes.has(recipe.id)
+                        ? "bg-peach-50 border border-peach-200"
+                        : "hover:bg-warm-gray-50 border border-transparent"
+                        }`}
                     >
                       <Checkbox
                         checked={selectedRecipes.has(recipe.id)}
