@@ -9,25 +9,32 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify authentication manually
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("Missing authorization header");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Missing or invalid authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const token = authHeader.replace("Bearer ", "");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       {
-        global: { headers: { Authorization: authHeader } },
+        global: { headers: { Authorization: `Bearer ${token}` } },
       }
     );
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
-    if (!user) {
-      throw new Error("Unauthorized");
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const { recipeIds, options } = await req.json();
@@ -126,10 +133,12 @@ interface Recipe {
     step_number: number;
     instruction: string;
     timer_minutes?: number;
+    image_url?: string;
   }>;
   images?: Array<{
     image_url: string;
     is_primary: boolean;
+    caption?: string;
   }>;
 }
 
@@ -167,19 +176,40 @@ function generateRecipeBookHTML(
           .map(
             (step) => `
         <li>
-          <span class="step-number">${step.step_number}</span>
-          <p>${step.instruction}</p>
-          ${step.timer_minutes ? `<span class="timer">⏱️ ${step.timer_minutes} min</span>` : ""}
+          <div class="step-content">
+            <span class="step-number">${step.step_number}</span>
+            <div class="step-text">
+              <p>${step.instruction}</p>
+              ${step.timer_minutes ? `<span class="timer">⏱️ ${step.timer_minutes} min</span>` : ""}
+            </div>
+          </div>
+          ${step.image_url ? `<img src="${step.image_url}" class="step-image" alt="Step ${step.step_number}">` : ""}
         </li>
       `
           )
           .join("") || "";
 
       const primaryImage = recipe.images?.find((img) => img.is_primary);
+      const secondaryImages = recipe.images?.filter((img) => !img.is_primary) || [];
 
       return `
       <div class="recipe-page ${index > 0 ? "page-break" : ""}">
-        ${primaryImage ? `<img src="${primaryImage.image_url}" class="recipe-image" alt="${recipe.title}">` : ""}
+        ${primaryImage || secondaryImages.length > 0 ? `
+          <div class="recipe-images">
+            ${primaryImage ? `
+              <div class="primary-image">
+                <img src="${primaryImage.image_url}" alt="${recipe.title}">
+              </div>
+            ` : ""}
+            ${secondaryImages.length > 0 ? `
+              <div class="secondary-images">
+                ${secondaryImages.map(img => `
+                  <img src="${img.image_url}" alt="${recipe.title}" class="secondary-image">
+                `).join("")}
+              </div>
+            ` : ""}
+          </div>
+        ` : ""}
         
         <div class="recipe-header">
           ${recipe.category ? `<span class="category">${recipe.category.icon} ${recipe.category.name}</span>` : ""}
@@ -190,25 +220,25 @@ function generateRecipeBookHTML(
         ${recipe.description ? `<p class="description">${recipe.description}</p>` : ""}
 
         <div class="meta">
-          ${recipe.prep_time_minutes ? `<span>Prep: ${recipe.prep_time_minutes} min</span>` : ""}
-          ${recipe.cook_time_minutes ? `<span>Cook: ${recipe.cook_time_minutes} min</span>` : ""}
-          ${recipe.servings ? `<span>Servings: ${recipe.servings}</span>` : ""}
-          ${recipe.difficulty ? `<span>Difficulty: ${recipe.difficulty}</span>` : ""}
+          ${recipe.prep_time_minutes ? `<span>🕐 Prep: ${recipe.prep_time_minutes} min</span>` : ""}
+          ${recipe.cook_time_minutes ? `<span>🍳 Cook: ${recipe.cook_time_minutes} min</span>` : ""}
+          ${recipe.servings ? `<span>👥 Serves: ${recipe.servings}</span>` : ""}
+          ${recipe.difficulty ? `<span class="difficulty-${recipe.difficulty}">📊 ${recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1)}</span>` : ""}
         </div>
 
         <div class="content">
           <div class="ingredients">
-            <h3>Ingredients</h3>
+            <h3>🥗 Ingredients</h3>
             <ul>${ingredients}</ul>
           </div>
 
           <div class="instructions">
-            <h3>Instructions</h3>
+            <h3>📝 Instructions</h3>
             <ol>${steps}</ol>
           </div>
         </div>
 
-        ${recipe.notes ? `<div class="notes"><h3>Notes</h3><p>${recipe.notes}</p></div>` : ""}
+        ${recipe.notes ? `<div class="notes"><h3>💭 Notes & Memories</h3><p>${recipe.notes}</p></div>` : ""}
       </div>
     `;
     })
@@ -272,12 +302,29 @@ function generateRecipeBookHTML(
       min-height: 100vh;
     }
 
-    .recipe-image {
+    .recipe-images {
+      margin-bottom: 24px;
+    }
+
+    .primary-image img {
       width: 100%;
-      max-height: 300px;
+      max-height: 350px;
       object-fit: cover;
       border-radius: 16px;
-      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .secondary-images {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .secondary-image {
+      flex: 1;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
     }
 
     .recipe-header {
@@ -376,30 +423,61 @@ function generateRecipeBookHTML(
     }
 
     .instructions li {
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #E8E2DC;
+    }
+
+    .instructions li:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .step-content {
       display: flex;
       gap: 16px;
-      margin-bottom: 16px;
       align-items: flex-start;
+    }
+
+    .step-text {
+      flex: 1;
     }
 
     .step-number {
       flex-shrink: 0;
-      width: 32px;
-      height: 32px;
-      background: #FFCBA4;
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #FFCBA4 0%, #FFB88A 100%);
       color: #3D3532;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(255, 203, 164, 0.4);
+    }
+
+    .step-image {
+      width: 100%;
+      max-width: 400px;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-top: 16px;
+      margin-left: 52px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
 
     .timer {
-      display: block;
+      display: inline-block;
+      background: #FFF5F2;
       color: #E5896B;
-      font-size: 14px;
-      margin-top: 4px;
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-top: 8px;
     }
 
     .notes {

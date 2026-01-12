@@ -1,7 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 interface RecipeExtractionResult {
   title: string;
@@ -23,13 +26,42 @@ interface RecipeExtractionResult {
   suggestedCategory?: string;
 }
 
+function extractOutputText(result: any): string | null {
+  // Responses API returns an `output` array with message objects and `content` items.
+  const message = result?.output?.find((o: any) => o?.type === "message" && o?.role === "assistant");
+  const textItem = message?.content?.find((c: any) => c?.type === "output_text" && typeof c?.text === "string");
+  return textItem?.text ?? null;
+}
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Missing or invalid authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     if (!OPENAI_API_KEY) {
       throw new Error("OPENAI_API_KEY is not configured");
     }
@@ -40,9 +72,10 @@ Deno.serve(async (req) => {
       throw new Error("Either imageUrl or base64Image is required");
     }
 
-    const imageContent = imageUrl
-      ? { type: "image_url", image_url: { url: imageUrl, detail: "high" } }
-      : { type: "image_url", image_url: { url: base64Image, detail: "high" } };
+    // Responses API image item format: { type: "input_image", image_url: "...", detail: "high" }
+    const imageItem = imageUrl
+      ? { type: "input_image", image_url: imageUrl, detail: "high" }
+      : { type: "input_image", image_url: base64Image, detail: "high" };
 
     const systemPrompt = `You are a recipe extraction assistant. Your task is to analyze images of recipes (handwritten, printed, or from cookbooks) and extract the recipe information into a structured JSON format.
 
@@ -64,42 +97,44 @@ Important guidelines:
 - Number steps sequentially starting from 1
 - Return ONLY valid JSON, no additional text`;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt,
-          },
+        // "gpt-5.2-chat-latest" = GPT-5.2 snapshot used in ChatGPT
+        model: "gpt-5.2-chat-latest",
+        instructions: systemPrompt,
+        input: [
           {
             role: "user",
             content: [
-              {
-                type: "text",
-                text: "Please extract the recipe from this image and return it as JSON:",
-              },
-              imageContent,
+              { type: "input_text", text: "Please extract the recipe from this image and return it as JSON:" },
+              imageItem,
             ],
           },
         ],
-        max_tokens: 4000,
-        response_format: { type: "json_object" },
+        // JSON mode in Responses API:
+        text: { format: { type: "json_object" } },
+        max_output_tokens: 4000,
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "OpenAI API error");
+      let msg = "OpenAI API error";
+      try {
+        const err = await response.json();
+        msg = err?.error?.message || err?.message || msg;
+      } catch {
+        // ignore parse errors
+      }
+      throw new Error(msg);
     }
 
     const result = await response.json();
-    const content = result.choices[0]?.message?.content;
+    const content = extractOutputText(result);
 
     if (!content) {
       throw new Error("No content returned from OpenAI");
@@ -108,13 +143,8 @@ Important guidelines:
     const extractedRecipe: RecipeExtractionResult = JSON.parse(content);
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        data: extractedRecipe,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ success: true, data: extractedRecipe }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     console.error("Error:", error);
@@ -126,10 +156,7 @@ Important guidelines:
           message: error instanceof Error ? error.message : "Unknown error",
         },
       }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });

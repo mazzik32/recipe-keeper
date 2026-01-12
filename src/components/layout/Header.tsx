@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, LogOut, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { MobileNav } from "@/components/layout/MobileNav";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,9 +51,23 @@ export function Header({ user }: HeaderProps) {
     : user.email?.[0].toUpperCase() || "U";
 
   return (
-    <header className="h-16 bg-warm-white border-b border-warm-gray-100 px-6 flex items-center justify-between">
+    <header className="h-16 bg-warm-white border-b border-warm-gray-100 px-4 md:px-6 flex items-center justify-between gap-4">
+      {/* Mobile Nav */}
+      <MobileNav />
+
+      {/* Mobile Logo */}
+      <Link
+        href="/dashboard"
+        className="flex items-center gap-2 md:hidden"
+      >
+        <span className="text-xl">🍳</span>
+        <span className="font-display text-lg text-warm-gray-700">
+          Recipe Keeper
+        </span>
+      </Link>
+
       {/* Search */}
-      <form onSubmit={handleSearch} className="flex-1 max-w-md">
+      <form onSubmit={handleSearch} className="hidden md:block flex-1 max-w-md">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray-400" />
           <Input

@@ -1,17 +1,39 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { RecipeCard } from "./RecipeCard";
+import { useRecipes } from "@/hooks/useRecipes";
 import type { RecipeWithRelations } from "@/types/database.types";
 
 interface RecipeGridProps {
   recipes: RecipeWithRelations[];
-  onToggleFavorite?: (id: string, isFavorite: boolean) => void;
 }
 
-export function RecipeGrid({ recipes, onToggleFavorite }: RecipeGridProps) {
+export function RecipeGrid({ recipes: initialRecipes }: RecipeGridProps) {
+  const router = useRouter();
+  const { toggleFavorite } = useRecipes();
+  const [recipes, setRecipes] = useState(initialRecipes);
+
   if (recipes.length === 0) {
     return null;
   }
+
+  const handleToggleFavorite = async (id: string, isFavorite: boolean) => {
+    // Optimistic update
+    setRecipes((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, is_favorite: isFavorite } : r))
+    );
+
+    const success = await toggleFavorite(id, isFavorite);
+    if (!success) {
+      // Revert on failure
+      setRecipes((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, is_favorite: !isFavorite } : r))
+      );
+    }
+    router.refresh();
+  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -19,7 +41,7 @@ export function RecipeGrid({ recipes, onToggleFavorite }: RecipeGridProps) {
         <RecipeCard
           key={recipe.id}
           recipe={recipe}
-          onToggleFavorite={onToggleFavorite}
+          onToggleFavorite={handleToggleFavorite}
         />
       ))}
     </div>

@@ -1,0 +1,7 @@
+name = "image-optimizer"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+account_id = "9897dff4b8c0981dff42b5dc2b97e04f"
+
+[options]
+# We can add bindings here if needed

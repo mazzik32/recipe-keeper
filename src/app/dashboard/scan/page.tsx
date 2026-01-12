@@ -56,13 +56,17 @@ export default function ScanRecipePage() {
     setError(null);
 
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      setError("You must be logged in.");
+    
+    // Get session first to ensure we have a valid token
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session) {
+      setError("Your session has expired. Please sign in again.");
       setStatus("error");
       return;
     }
+
+    const user = session.user;
 
     try {
       // Upload to Supabase Storage
@@ -88,7 +92,7 @@ export default function ScanRecipePage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            "Authorization": `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({ imageUrl: publicUrl }),
         }

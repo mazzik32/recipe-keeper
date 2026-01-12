@@ -7,16 +7,19 @@ import {
   BookOpen,
   Heart,
   Camera,
-  FileText,
   Settings,
   FolderOpen,
   Plus,
+  Tag,
+  Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "My Recipes", href: "/dashboard", icon: Home },
   { name: "Categories", href: "/dashboard/categories", icon: FolderOpen },
+  { name: "Tags", href: "/dashboard/tags", icon: Tag },
+  { name: "Collections", href: "/dashboard/collections", icon: Library },
   { name: "Favorites", href: "/dashboard/favorites", icon: Heart },
   { name: "Scan Recipe", href: "/dashboard/scan", icon: Camera },
   { name: "Recipe Book", href: "/dashboard/recipe-book", icon: BookOpen },
@@ -30,7 +33,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-warm-white border-r border-warm-gray-100 flex flex-col">
+    <aside className="hidden md:flex w-64 bg-warm-white border-r border-warm-gray-100 flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-warm-gray-100">
         <Link href="/dashboard" className="flex items-center gap-2">

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/recipes/ImageUpload";
 import {
   Select,
   SelectContent,
@@ -22,16 +23,49 @@ import { createClient } from "@/lib/supabase/client";
 import { recipeSchema, type RecipeFormData } from "@/lib/validations/recipe";
 import type { Category, RecipeWithRelations } from "@/types/database.types";
 
+interface ScannedData {
+  title: string;
+  description?: string | null;
+  servings?: number | null;
+  prep_time_minutes?: number | null;
+  cook_time_minutes?: number | null;
+  difficulty?: "easy" | "medium" | "hard";
+  category_id?: string | null;
+  source?: string | null;
+  source_type?: "family" | "cookbook" | "website" | "other";
+  notes?: string | null;
+  original_image_url?: string | null;
+  ingredients: Array<{
+    name: string;
+    quantity?: number | null;
+    unit?: string | null;
+    notes?: string | null;
+  }>;
+  steps: Array<{
+    instruction: string;
+    image_url?: string | null;
+    timer_minutes?: number | null;
+  }>;
+}
+
 interface RecipeFormProps {
   categories: Category[];
   recipe?: RecipeWithRelations;
+  scannedData?: ScannedData;
 }
 
-export function RecipeForm({ categories, recipe }: RecipeFormProps) {
+export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [primaryImage, setPrimaryImage] = useState<string | null>(
+    recipe?.images?.find((img) => img.is_primary)?.image_url || null
+  );
+  const [secondaryImage, setSecondaryImage] = useState<string | null>(
+    recipe?.images?.find((img) => !img.is_primary)?.image_url || null
+  );
 
+  // Determine default values based on priority: existing recipe > scanned data > empty
   const defaultValues: RecipeFormData = recipe
     ? {
         title: recipe.title,
@@ -59,6 +93,30 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
             image_url: s.image_url,
             timer_minutes: s.timer_minutes,
           })) || [],
+      }
+    : scannedData
+    ? {
+        title: scannedData.title,
+        description: scannedData.description || "",
+        servings: scannedData.servings || null,
+        prep_time_minutes: scannedData.prep_time_minutes || null,
+        cook_time_minutes: scannedData.cook_time_minutes || null,
+        difficulty: scannedData.difficulty || "medium",
+        category_id: scannedData.category_id || null,
+        source: scannedData.source || "",
+        source_type: scannedData.source_type || "family",
+        notes: scannedData.notes || "",
+        ingredients: scannedData.ingredients.map((i) => ({
+          name: i.name,
+          quantity: i.quantity || null,
+          unit: i.unit || "",
+          notes: i.notes || "",
+        })),
+        steps: scannedData.steps.map((s) => ({
+          instruction: s.instruction,
+          image_url: s.image_url || null,
+          timer_minutes: s.timer_minutes || null,
+        })),
       }
     : {
         title: "",
@@ -176,6 +234,27 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
 
         if (stepsError) throw stepsError;
 
+        // Update images
+        await supabase.from("recipe_images").delete().eq("recipe_id", recipe.id);
+        const imagesToInsert = [];
+        if (primaryImage) {
+          imagesToInsert.push({
+            recipe_id: recipe.id,
+            image_url: primaryImage,
+            is_primary: true,
+          });
+        }
+        if (secondaryImage) {
+          imagesToInsert.push({
+            recipe_id: recipe.id,
+            image_url: secondaryImage,
+            is_primary: false,
+          });
+        }
+        if (imagesToInsert.length > 0) {
+          await supabase.from("recipe_images").insert(imagesToInsert);
+        }
+
         router.push(`/dashboard/recipes/${recipe.id}`);
       } else {
         // Create new recipe
@@ -227,6 +306,26 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
         );
 
         if (stepsError) throw stepsError;
+
+        // Insert images
+        const imagesToInsert = [];
+        if (primaryImage) {
+          imagesToInsert.push({
+            recipe_id: newRecipe.id,
+            image_url: primaryImage,
+            is_primary: true,
+          });
+        }
+        if (secondaryImage) {
+          imagesToInsert.push({
+            recipe_id: newRecipe.id,
+            image_url: secondaryImage,
+            is_primary: false,
+          });
+        }
+        if (imagesToInsert.length > 0) {
+          await supabase.from("recipe_images").insert(imagesToInsert);
+        }
 
         router.push(`/dashboard/recipes/${newRecipe.id}`);
       }
@@ -454,19 +553,33 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-peach-200 text-warm-gray-700 font-bold flex items-center justify-center mt-1">
                 {index + 1}
               </div>
-              <div className="flex-1 space-y-2">
+              <div className="flex-1 space-y-3">
                 <Textarea
                   {...register(`steps.${index}.instruction`)}
                   placeholder="Describe this step..."
                   className="border-warm-gray-200 min-h-[80px]"
                 />
-                <div className="flex gap-2">
-                  <Input
-                    {...register(`steps.${index}.timer_minutes`)}
-                    placeholder="Timer (min)"
-                    type="number"
-                    className="w-32 border-warm-gray-200"
-                  />
+                <div className="flex gap-4 items-start">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-warm-gray-500">Timer</Label>
+                    <Input
+                      {...register(`steps.${index}.timer_minutes`)}
+                      placeholder="min"
+                      type="number"
+                      className="w-24 border-warm-gray-200"
+                    />
+                  </div>
+                  <div className="space-y-1 flex-1">
+                    <Label className="text-xs text-warm-gray-500">Step Photo (optional)</Label>
+                    <ImageUpload
+                      value={watch(`steps.${index}.image_url`)}
+                      onChange={(url) => setValue(`steps.${index}.image_url`, url)}
+                      bucket="step-images"
+                      folder={`step-${index}`}
+                      aspectRatio="video"
+                      className="max-w-xs"
+                    />
+                  </div>
                 </div>
               </div>
               <Button
@@ -502,6 +615,40 @@ export function RecipeForm({ categories, recipe }: RecipeFormProps) {
             placeholder="Add any personal notes or memories about this recipe..."
             className="border-warm-gray-200 min-h-[100px]"
           />
+        </CardContent>
+      </Card>
+
+      {/* Photos */}
+      <Card className="border-warm-gray-100">
+        <CardHeader>
+          <CardTitle className="font-display text-xl text-warm-gray-700">
+            Recipe Photos
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-warm-gray-500 mb-4">
+            Add photos of your finished dish (up to 2 images)
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Primary Photo</Label>
+              <ImageUpload
+                value={primaryImage}
+                onChange={setPrimaryImage}
+                bucket="recipe-images"
+                folder="primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Additional Photo (Optional)</Label>
+              <ImageUpload
+                value={secondaryImage}
+                onChange={setSecondaryImage}
+                bucket="recipe-images"
+                folder="secondary"
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 

@@ -5,13 +5,13 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { RecipeActions } from "@/components/recipes/RecipeActions";
 import {
   Clock,
   Users,
   ChefHat,
   Edit,
   ArrowLeft,
-  Heart,
 } from "lucide-react";
 import type { RecipeImage, RecipeStep, RecipeIngredient } from "@/types/database.types";
 
@@ -65,9 +65,6 @@ export default async function RecipeDetailPage({
                 {recipe.category.icon} {recipe.category.name}
               </Badge>
             )}
-            {recipe.is_favorite && (
-              <Heart className="w-5 h-5 fill-coral-400 text-coral-400" />
-            )}
           </div>
           <h1 className="font-display text-4xl text-warm-gray-700 mb-2">
             {recipe.title}
@@ -76,12 +73,15 @@ export default async function RecipeDetailPage({
             <p className="text-peach-600 font-medium">From {recipe.source}</p>
           )}
         </div>
-        <Button asChild variant="outline" className="border-peach-300 text-peach-700 hover:bg-peach-50">
-          <Link href={`/dashboard/recipes/${recipe.id}/edit`}>
-            <Edit className="w-4 h-4 mr-2" />
-            Edit
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <RecipeActions recipeId={recipe.id} isFavorite={recipe.is_favorite} />
+          <Button asChild variant="outline" className="border-peach-300 text-peach-700 hover:bg-peach-50">
+            <Link href={`/dashboard/recipes/${recipe.id}/edit`}>
+              <Edit className="w-4 h-4 mr-2" />
+              Edit
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Hero Image */}

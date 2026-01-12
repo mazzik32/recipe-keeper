@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, Dancing_Script } from "next/font/google";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 const inter = Inter({
@@ -34,6 +35,7 @@ export default function RootLayout({
         className={`${inter.variable} ${playfair.variable} ${dancing.variable} font-sans`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );

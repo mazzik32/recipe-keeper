@@ -91,9 +91,21 @@ export default function RecipeBookPage() {
 
       const result = await response.json();
 
-      // Download the PDF
-      if (result.data?.pdfUrl) {
-        window.open(result.data.pdfUrl, "_blank");
+      // Open HTML in new window for printing
+      if (result.data?.html) {
+        const printWindow = window.open("", "_blank");
+        if (printWindow) {
+          printWindow.document.write(result.data.html);
+          printWindow.document.close();
+          // Wait for content to load, then trigger print
+          printWindow.onload = () => {
+            setTimeout(() => {
+              printWindow.print();
+            }, 500);
+          };
+        } else {
+          alert("Please allow popups to generate the recipe book.");
+        }
       }
     } catch (error) {
       console.error("Error generating PDF:", error);

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { RecipeForm } from "@/components/recipes/RecipeForm";
+import { NewRecipeFormWrapper } from "./NewRecipeFormWrapper";
 
 export default async function NewRecipePage() {
   const supabase = await createClient();
@@ -30,7 +30,7 @@ export default async function NewRecipePage() {
         </p>
       </div>
 
-      <RecipeForm categories={categories || []} />
+      <NewRecipeFormWrapper categories={categories || []} />
     </div>
   );
 }
