@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { CollectionsManager } from "@/components/recipes/CollectionsManager";
+import { CollectionsPageContent } from "@/components/pages/CollectionsPageContent";
 
 export default async function CollectionsPage() {
   const supabase = await createClient();
@@ -8,7 +8,6 @@ export default async function CollectionsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch user's collections with recipe count
   const { data: collections } = await supabase
     .from("collections")
     .select(
@@ -20,7 +19,6 @@ export default async function CollectionsPage() {
     .eq("user_id", user?.id)
     .order("created_at", { ascending: false });
 
-  // Transform data to include count
   const collectionsWithCount =
     collections?.map((col) => ({
       ...col,
@@ -28,18 +26,5 @@ export default async function CollectionsPage() {
         (col.recipe_collections as { count: number }[])?.[0]?.count || 0,
     })) || [];
 
-  return (
-    <div>
-      <div className="mb-8">
-        <h1 className="font-display text-3xl text-warm-gray-700 mb-2">
-          Collections
-        </h1>
-        <p className="text-warm-gray-500">
-          Group your recipes into custom collections.
-        </p>
-      </div>
-
-      <CollectionsManager initialCollections={collectionsWithCount} />
-    </div>
-  );
+  return <CollectionsPageContent initialCollections={collectionsWithCount} />;
 }

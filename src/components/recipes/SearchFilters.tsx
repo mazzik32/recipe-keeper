@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Category } from "@/types/database.types";
 
 interface SearchFiltersProps {
@@ -26,6 +27,7 @@ interface SearchFiltersProps {
 export function SearchFilters({ categories, currentParams }: SearchFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
 
   const updateFilter = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -51,6 +53,15 @@ export function SearchFilters({ categories, currentParams }: SearchFiltersProps)
     return categories.find((c) => c.id === id)?.name || id;
   };
 
+  const getDifficultyLabel = (diff: string) => {
+    switch (diff) {
+      case "easy": return t.recipes.easy;
+      case "medium": return t.recipes.medium;
+      case "hard": return t.recipes.hard;
+      default: return diff;
+    }
+  };
+
   return (
     <div className="mb-6 space-y-4">
       {/* Filter dropdowns */}
@@ -63,10 +74,10 @@ export function SearchFilters({ categories, currentParams }: SearchFiltersProps)
           }
         >
           <SelectTrigger className="w-[160px] border-warm-gray-200">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t.nav.categories} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="">{t.search.allCategories}</SelectItem>
             {categories.map((cat) => (
               <SelectItem key={cat.id} value={cat.id}>
                 {cat.icon} {cat.name}
@@ -83,13 +94,13 @@ export function SearchFilters({ categories, currentParams }: SearchFiltersProps)
           }
         >
           <SelectTrigger className="w-[140px] border-warm-gray-200">
-            <SelectValue placeholder="Difficulty" />
+            <SelectValue placeholder={t.recipes.difficulty} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Levels</SelectItem>
-            <SelectItem value="easy">Easy</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="hard">Hard</SelectItem>
+            <SelectItem value="">{t.search.allLevels}</SelectItem>
+            <SelectItem value="easy">{t.recipes.easy}</SelectItem>
+            <SelectItem value="medium">{t.recipes.medium}</SelectItem>
+            <SelectItem value="hard">{t.recipes.hard}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -99,14 +110,14 @@ export function SearchFilters({ categories, currentParams }: SearchFiltersProps)
           onValueChange={(value) => updateFilter("sort", value || null)}
         >
           <SelectTrigger className="w-[160px] border-warm-gray-200">
-            <SelectValue placeholder="Sort by" />
+            <SelectValue placeholder={t.search.sortBy} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Newest First</SelectItem>
-            <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="title">Alphabetical</SelectItem>
-            <SelectItem value="prep_time">Prep Time</SelectItem>
-            <SelectItem value="cook_time">Cook Time</SelectItem>
+            <SelectItem value="">{t.search.newestFirst}</SelectItem>
+            <SelectItem value="oldest">{t.search.oldestFirst}</SelectItem>
+            <SelectItem value="title">{t.search.alphabetical}</SelectItem>
+            <SelectItem value="prep_time">{t.search.byPrepTime}</SelectItem>
+            <SelectItem value="cook_time">{t.search.byCookTime}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -117,7 +128,7 @@ export function SearchFilters({ categories, currentParams }: SearchFiltersProps)
             onClick={clearAllFilters}
             className="text-warm-gray-500 hover:text-warm-gray-700"
           >
-            Clear all
+            {t.search.clearAll}
           </Button>
         )}
       </div>
@@ -142,9 +153,9 @@ export function SearchFilters({ categories, currentParams }: SearchFiltersProps)
           {currentParams.difficulty && (
             <Badge
               variant="secondary"
-              className="bg-peach-100 text-peach-700 gap-1 capitalize"
+              className="bg-peach-100 text-peach-700 gap-1"
             >
-              {currentParams.difficulty}
+              {getDifficultyLabel(currentParams.difficulty)}
               <button
                 onClick={() => updateFilter("difficulty", null)}
                 className="hover:bg-peach-200 rounded-full p-0.5"

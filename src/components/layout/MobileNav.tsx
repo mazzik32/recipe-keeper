@@ -15,24 +15,35 @@ import {
   X,
   Tag,
   Library,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { localeNames, type Locale } from "@/lib/i18n";
+import type { LucideIcon } from "lucide-react";
 
-const navigation = [
-  { name: "My Recipes", href: "/dashboard", icon: Home },
-  { name: "Categories", href: "/dashboard/categories", icon: FolderOpen },
-  { name: "Tags", href: "/dashboard/tags", icon: Tag },
-  { name: "Collections", href: "/dashboard/collections", icon: Library },
-  { name: "Favorites", href: "/dashboard/favorites", icon: Heart },
-  { name: "Scan Recipe", href: "/dashboard/scan", icon: Camera },
-  { name: "Recipe Book", href: "/dashboard/recipe-book", icon: BookOpen },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+interface NavItem {
+  key: keyof typeof import("@/lib/i18n/translations/en").en.nav;
+  href: string;
+  icon: LucideIcon;
+}
+
+const navigation: NavItem[] = [
+  { key: "myRecipes", href: "/dashboard", icon: Home },
+  { key: "categories", href: "/dashboard/categories", icon: FolderOpen },
+  { key: "tags", href: "/dashboard/tags", icon: Tag },
+  { key: "collections", href: "/dashboard/collections", icon: Library },
+  { key: "favorites", href: "/dashboard/favorites", icon: Heart },
+  { key: "scanRecipe", href: "/dashboard/scan", icon: Camera },
+  { key: "recipeBook", href: "/dashboard/recipe-book", icon: BookOpen },
+  { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { locale, setLocale, t } = useLanguage();
 
   return (
     <>
@@ -70,7 +81,7 @@ export function MobileNav() {
           >
             <span className="text-2xl">🍳</span>
             <span className="font-display text-xl text-warm-gray-700">
-              Recipe Keeper
+              {t.common.appName}
             </span>
           </Link>
           <Button
@@ -91,7 +102,7 @@ export function MobileNav() {
             onClick={() => setIsOpen(false)}
           >
             <Plus className="w-5 h-5" />
-            <span>Add Recipe</span>
+            <span>{t.nav.addRecipe}</span>
           </Link>
 
           {navigation.map((item) => {
@@ -100,7 +111,7 @@ export function MobileNav() {
               (item.href !== "/dashboard" && pathname.startsWith(item.href));
             return (
               <Link
-                key={item.name}
+                key={item.key}
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-warm-gray-500 hover:bg-peach-50 hover:text-peach-600 transition-colors",
@@ -109,11 +120,37 @@ export function MobileNav() {
                 onClick={() => setIsOpen(false)}
               >
                 <item.icon className="w-5 h-5" />
-                <span>{item.name}</span>
+                <span>{t.nav[item.key]}</span>
               </Link>
             );
           })}
         </nav>
+
+        {/* Language Selector (Mobile) */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-warm-gray-100">
+          <div className="flex items-center gap-2 mb-2">
+            <Globe className="w-4 h-4 text-warm-gray-500" />
+            <span className="text-sm text-warm-gray-500">{t.settings.language}</span>
+          </div>
+          <div className="flex gap-2">
+            {(Object.keys(localeNames) as Locale[]).map((loc) => (
+              <Button
+                key={loc}
+                variant={locale === loc ? "default" : "outline"}
+                size="sm"
+                onClick={() => setLocale(loc)}
+                className={cn(
+                  "flex-1",
+                  locale === loc 
+                    ? "bg-peach-300 hover:bg-peach-400 text-warm-gray-700" 
+                    : "border-warm-gray-200"
+                )}
+              >
+                {loc === "en" ? "🇬🇧" : "🇩🇪"} {localeNames[loc]}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
     </>
   );

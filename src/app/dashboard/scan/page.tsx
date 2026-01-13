@@ -2,12 +2,21 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Camera, FileText, Loader2, Sparkles, ArrowRight } from "lucide-react";
+import Image from "next/image";
+import { Upload, Camera, FileText, Loader2, Sparkles, ArrowRight, X, Plus, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type ScanStatus = "idle" | "uploading" | "analyzing" | "complete" | "error";
+
+interface UploadedImage {
+  file: File;
+  preview: string;
+  url?: string;
+}
 
 interface ExtractedRecipe {
   title: string;
@@ -27,65 +36,110 @@ interface ExtractedRecipe {
     instruction: string;
   }>;
   suggestedCategory?: string;
+  detectedLanguage?: string;
+  wasTranslated?: boolean;
+}
+
+interface AnalysisResult {
+  data: ExtractedRecipe;
+  imagesProcessed: number;
+  targetLanguage: string;
+  detectedLanguage?: string;
+  detectedLanguageName?: string;
+  wasTranslated: boolean;
 }
 
 export default function ScanRecipePage() {
   const router = useRouter();
+  const { locale, t } = useLanguage();
   const [status, setStatus] = useState<ScanStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [extractedRecipe, setExtractedRecipe] = useState<ExtractedRecipe | null>(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [images, setImages] = useState<UploadedImage[]>([]);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
 
-  const handleFileUpload = useCallback(async (file: File) => {
-    if (!file) return;
-
-    // Validate file type
+  const addFiles = useCallback((files: FileList | File[]) => {
+    const fileArray = Array.from(files);
     const validTypes = ["image/jpeg", "image/png", "image/heic", "image/webp", "application/pdf"];
-    if (!validTypes.includes(file.type)) {
-      setError("Please upload a JPG, PNG, HEIC, WebP, or PDF file.");
-      return;
+    
+    const newImages: UploadedImage[] = [];
+    
+    for (const file of fileArray) {
+      if (!validTypes.includes(file.type)) {
+        setError(t.scan.invalidFileType);
+        continue;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setError(t.scan.fileTooLarge);
+        continue;
+      }
+      if (images.length + newImages.length >= 5) {
+        setError(t.scan.maxImagesReached);
+        break;
+      }
+      
+      newImages.push({
+        file,
+        preview: URL.createObjectURL(file),
+      });
     }
+    
+    if (newImages.length > 0) {
+      setImages(prev => [...prev, ...newImages]);
+      setError(null);
+    }
+  }, [images.length, t.scan]);
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError("File size must be less than 10MB.");
-      return;
-    }
+  const removeImage = useCallback((index: number) => {
+    setImages(prev => {
+      const newImages = [...prev];
+      URL.revokeObjectURL(newImages[index].preview);
+      newImages.splice(index, 1);
+      return newImages;
+    });
+  }, []);
+
+  const handleAnalyze = useCallback(async () => {
+    if (images.length === 0) return;
 
     setStatus("uploading");
     setError(null);
 
     const supabase = createClient();
     
-    // Get session first to ensure we have a valid token
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !session) {
-      setError("Your session has expired. Please sign in again.");
+      setError(t.auth.sessionExpired);
       setStatus("error");
       return;
     }
 
     const user = session.user;
+    const uploadedUrls: string[] = [];
 
     try {
-      // Upload to Supabase Storage
-      const fileName = `${user.id}/scans/${Date.now()}-${file.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("original-scans")
-        .upload(fileName, file);
+      // Upload all images to Supabase Storage
+      for (const image of images) {
+        const fileName = `${user.id}/scans/${Date.now()}-${image.file.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from("original-scans")
+          .upload(fileName, image.file);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from("original-scans")
-        .getPublicUrl(fileName);
+        const { data: { publicUrl } } = supabase.storage
+          .from("original-scans")
+          .getPublicUrl(fileName);
 
-      setUploadedImageUrl(publicUrl);
+        uploadedUrls.push(publicUrl);
+      }
+
+      setUploadedImageUrls(uploadedUrls);
       setStatus("analyzing");
 
-      // Call the AI analysis edge function
+      // Call the AI analysis edge function with multiple images and target language
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/analyze-recipe`,
         {
@@ -94,7 +148,10 @@ export default function ScanRecipePage() {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({ imageUrl: publicUrl }),
+          body: JSON.stringify({ 
+            imageUrls: uploadedUrls,
+            targetLanguage: locale, // Pass the current locale for translation
+          }),
         }
       );
 
@@ -103,114 +160,201 @@ export default function ScanRecipePage() {
         throw new Error(errorData.error?.message || "Failed to analyze recipe");
       }
 
-      const result = await response.json();
+      const result: { success: boolean } & AnalysisResult = await response.json();
       setExtractedRecipe(result.data);
+      setAnalysisResult(result);
       setStatus("complete");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to process image");
+      setError(err instanceof Error ? err.message : "Failed to process images");
       setStatus("error");
     }
-  }, []);
+  }, [images, locale, t.auth.sessionExpired]);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      const file = e.dataTransfer.files[0];
-      if (file) handleFileUpload(file);
+      addFiles(e.dataTransfer.files);
     },
-    [handleFileUpload]
+    [addFiles]
   );
 
   const handleProceed = async () => {
     if (!extractedRecipe) return;
 
-    // Store extracted data in sessionStorage and redirect to new recipe form
     sessionStorage.setItem("scannedRecipe", JSON.stringify({
       ...extractedRecipe,
-      originalImageUrl: uploadedImageUrl,
+      originalImageUrl: uploadedImageUrls[0],
+      originalImageUrls: uploadedImageUrls,
     }));
     router.push("/dashboard/recipes/new?from=scan");
+  };
+
+  const resetScan = () => {
+    images.forEach(img => URL.revokeObjectURL(img.preview));
+    setImages([]);
+    setUploadedImageUrls([]);
+    setExtractedRecipe(null);
+    setAnalysisResult(null);
+    setStatus("idle");
+    setError(null);
   };
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
         <h1 className="font-display text-3xl text-warm-gray-700 mb-2">
-          Scan Recipe
+          {t.scan.title}
         </h1>
         <p className="text-warm-gray-500">
-          Upload a photo of a recipe and let AI extract the details automatically.
+          {t.scan.description}
         </p>
       </div>
 
       {status === "idle" && (
-        <Card
-          className="border-2 border-dashed border-warm-gray-200 hover:border-peach-300 transition-colors"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleDrop}
-        >
-          <CardContent className="p-12">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-peach-100 flex items-center justify-center">
-                <Upload className="w-8 h-8 text-peach-500" />
+        <div className="space-y-6">
+          {/* Drop Zone */}
+          <Card
+            className="border-2 border-dashed border-warm-gray-200 hover:border-peach-300 transition-colors"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+          >
+            <CardContent className="p-8">
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-peach-100 flex items-center justify-center">
+                  <Upload className="w-7 h-7 text-peach-500" />
+                </div>
+                <h3 className="font-display text-lg text-warm-gray-700 mb-2">
+                  {images.length === 0 ? t.scan.uploadImages : t.scan.addMoreImages}
+                </h3>
+                <p className="text-warm-gray-400 text-sm mb-4">
+                  {t.scan.dragDrop} ({t.scan.maxImages})
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <label>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*,.pdf"
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files) addFiles(e.target.files);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      className="bg-peach-300 hover:bg-peach-400 text-warm-gray-700 cursor-pointer"
+                      asChild
+                    >
+                      <span>
+                        <Camera className="w-4 h-4 mr-2" />
+                        {t.scan.choosePhotos}
+                      </span>
+                    </Button>
+                  </label>
+                  <label>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        if (e.target.files) addFiles(e.target.files);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-warm-gray-300 cursor-pointer"
+                      asChild
+                    >
+                      <span>
+                        <FileText className="w-4 h-4 mr-2" />
+                        {t.scan.uploadPdf}
+                      </span>
+                    </Button>
+                  </label>
+                </div>
+                <p className="text-xs text-warm-gray-400 mt-4">
+                  {t.scan.supportedFormats}
+                </p>
               </div>
-              <h3 className="font-display text-xl text-warm-gray-700 mb-2">
-                Upload Recipe Image
-              </h3>
-              <p className="text-warm-gray-400 mb-6">
-                Drag and drop or click to upload a photo of your recipe
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <label>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*,.pdf"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleFileUpload(file);
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    className="bg-peach-300 hover:bg-peach-400 text-warm-gray-700 cursor-pointer"
-                    asChild
-                  >
-                    <span>
-                      <Camera className="w-4 h-4 mr-2" />
-                      Choose Photo
-                    </span>
-                  </Button>
-                </label>
-                <label>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept=".pdf"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleFileUpload(file);
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-warm-gray-300 cursor-pointer"
-                    asChild
-                  >
-                    <span>
-                      <FileText className="w-4 h-4 mr-2" />
-                      Upload PDF
-                    </span>
-                  </Button>
-                </label>
+            </CardContent>
+          </Card>
+
+          {/* Image Preview Grid */}
+          {images.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-warm-gray-700">
+                  {t.scan.selectedImages} ({images.length}/5)
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetScan}
+                  className="text-warm-gray-500"
+                >
+                  {t.scan.clearAll}
+                </Button>
               </div>
-              <p className="text-xs text-warm-gray-400 mt-4">
-                Supports JPG, PNG, HEIC, WebP, and PDF (max 10MB)
-              </p>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {images.map((image, index) => (
+                  <div
+                    key={index}
+                    className="relative aspect-[4/3] rounded-xl overflow-hidden border border-warm-gray-200 group"
+                  >
+                    <Image
+                      src={image.preview}
+                      alt={`${t.scan.page} ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                    <button
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-4 h-4 text-warm-gray-600" />
+                    </button>
+                    <div className="absolute bottom-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-medium text-warm-gray-700">
+                      {t.scan.page} {index + 1}
+                    </div>
+                  </div>
+                ))}
+                
+                {images.length < 5 && (
+                  <label className="aspect-[4/3] rounded-xl border-2 border-dashed border-warm-gray-200 hover:border-peach-300 flex items-center justify-center cursor-pointer transition-colors">
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*,.pdf"
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files) addFiles(e.target.files);
+                      }}
+                    />
+                    <div className="text-center">
+                      <Plus className="w-6 h-6 text-warm-gray-400 mx-auto mb-1" />
+                      <span className="text-xs text-warm-gray-400">{t.scan.addMore}</span>
+                    </div>
+                  </label>
+                )}
+              </div>
+
+              <Button
+                onClick={handleAnalyze}
+                className="w-full bg-peach-300 hover:bg-peach-400 text-warm-gray-700"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {t.scan.analyze} {images.length} {images.length === 1 ? "Image" : "Images"}
+              </Button>
             </div>
-          </CardContent>
-        </Card>
+          )}
+
+          {error && (
+            <p className="text-sm text-red-600 text-center">{error}</p>
+          )}
+        </div>
       )}
 
       {(status === "uploading" || status === "analyzing") && (
@@ -224,12 +368,12 @@ export default function ScanRecipePage() {
               )}
             </div>
             <h3 className="font-display text-xl text-warm-gray-700 mb-2">
-              {status === "uploading" ? "Uploading..." : "Analyzing Recipe..."}
+              {status === "uploading" ? t.scan.uploading : t.scan.analyzing}
             </h3>
             <p className="text-warm-gray-400">
               {status === "uploading"
-                ? "Uploading your image..."
-                : "AI is extracting recipe details. This may take a moment."}
+                ? `${images.length} ${images.length === 1 ? "image" : "images"} uploading...`
+                : t.scan.analyzingDesc}
             </p>
             <Loader2 className="w-6 h-6 animate-spin mx-auto mt-4 text-peach-500" />
           </CardContent>
@@ -242,10 +386,40 @@ export default function ScanRecipePage() {
             <CardContent className="p-6">
               <div className="flex items-center gap-3 text-green-700">
                 <Sparkles className="w-5 h-5" />
-                <span className="font-medium">Recipe extracted successfully!</span>
+                <span className="font-medium">
+                  {t.scan.extractionSuccess.replace("{count}", String(uploadedImageUrls.length))}
+                </span>
               </div>
             </CardContent>
           </Card>
+
+          {/* Translation indicator */}
+          {analysisResult?.wasTranslated && analysisResult.detectedLanguageName && (
+            <Card className="border-warm-gray-100 bg-blue-50 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 text-blue-700">
+                  <Languages className="w-5 h-5" />
+                  <span className="text-sm">
+                    {t.scan.translatedFrom.replace("{language}", analysisResult.detectedLanguageName)}
+                  </span>
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 ml-auto">
+                    {analysisResult.detectedLanguage?.toUpperCase()} → {locale.toUpperCase()}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Preview of uploaded images */}
+          {uploadedImageUrls.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {uploadedImageUrls.map((url, i) => (
+                <div key={i} className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border border-warm-gray-200">
+                  <Image src={url} alt={`${t.scan.page} ${i + 1}`} fill className="object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
 
           <Card className="border-warm-gray-100">
             <CardContent className="p-6">
@@ -259,7 +433,7 @@ export default function ScanRecipePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-medium text-warm-gray-700 mb-2">
-                    Ingredients ({extractedRecipe.ingredients.length})
+                    {t.recipes.ingredients} ({extractedRecipe.ingredients.length})
                   </h4>
                   <ul className="text-sm text-warm-gray-500 space-y-1">
                     {extractedRecipe.ingredients.slice(0, 5).map((ing, i) => (
@@ -269,14 +443,14 @@ export default function ScanRecipePage() {
                     ))}
                     {extractedRecipe.ingredients.length > 5 && (
                       <li className="text-warm-gray-400">
-                        ... and {extractedRecipe.ingredients.length - 5} more
+                        ... {locale === "de" ? "und" : "and"} {extractedRecipe.ingredients.length - 5} {locale === "de" ? "weitere" : "more"}
                       </li>
                     )}
                   </ul>
                 </div>
                 <div>
                   <h4 className="font-medium text-warm-gray-700 mb-2">
-                    Steps ({extractedRecipe.steps.length})
+                    {t.recipes.instructions} ({extractedRecipe.steps.length})
                   </h4>
                   <ul className="text-sm text-warm-gray-500 space-y-1">
                     {extractedRecipe.steps.slice(0, 3).map((step, i) => (
@@ -286,7 +460,7 @@ export default function ScanRecipePage() {
                     ))}
                     {extractedRecipe.steps.length > 3 && (
                       <li className="text-warm-gray-400">
-                        ... and {extractedRecipe.steps.length - 3} more steps
+                        ... {locale === "de" ? "und" : "and"} {extractedRecipe.steps.length - 3} {locale === "de" ? "weitere Schritte" : "more steps"}
                       </li>
                     )}
                   </ul>
@@ -298,20 +472,16 @@ export default function ScanRecipePage() {
           <div className="flex gap-4 justify-end">
             <Button
               variant="outline"
-              onClick={() => {
-                setStatus("idle");
-                setExtractedRecipe(null);
-                setUploadedImageUrl(null);
-              }}
+              onClick={resetScan}
               className="border-warm-gray-300"
             >
-              Scan Another
+              {t.scan.scanAnother}
             </Button>
             <Button
               onClick={handleProceed}
               className="bg-peach-300 hover:bg-peach-400 text-warm-gray-700"
             >
-              Review & Save
+              {t.scan.reviewSave}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
@@ -323,13 +493,10 @@ export default function ScanRecipePage() {
           <CardContent className="p-6 text-center">
             <p className="text-red-600 mb-4">{error}</p>
             <Button
-              onClick={() => {
-                setStatus("idle");
-                setError(null);
-              }}
+              onClick={resetScan}
               className="bg-peach-300 hover:bg-peach-400 text-warm-gray-700"
             >
-              Try Again
+              {t.common.tryAgain}
             </Button>
           </CardContent>
         </Card>

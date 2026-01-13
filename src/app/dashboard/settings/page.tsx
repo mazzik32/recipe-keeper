@@ -2,15 +2,26 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save, LogOut } from "lucide-react";
+import { Loader2, Save, LogOut, Globe, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { localeNames, type Locale } from "@/lib/i18n";
+import { type MeasurementSystem } from "@/lib/i18n/units";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { locale, setLocale, measurementSystem, setMeasurementSystem, t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -44,7 +55,7 @@ export default function SettingsPage() {
     if (error) {
       setMessage({ type: "error", text: error.message });
     } else {
-      setMessage({ type: "success", text: "Settings saved successfully!" });
+      setMessage({ type: "success", text: t.settings.changesSavedDesc });
     }
 
     setIsSaving(false);
@@ -68,8 +79,8 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
-        <h1 className="font-display text-3xl text-warm-gray-700 mb-2">Settings</h1>
-        <p className="text-warm-gray-500">Manage your account settings.</p>
+        <h1 className="font-display text-3xl text-warm-gray-700 mb-2">{t.settings.title}</h1>
+        <p className="text-warm-gray-500">{t.settings.profile}</p>
       </div>
 
       <div className="space-y-6">
@@ -77,9 +88,11 @@ export default function SettingsPage() {
         <Card className="border-warm-gray-100">
           <CardHeader>
             <CardTitle className="font-display text-xl text-warm-gray-700">
-              Profile
+              {t.settings.profile}
             </CardTitle>
-            <CardDescription>Update your personal information.</CardDescription>
+            <CardDescription>
+              {locale === "de" ? "Aktualisieren Sie Ihre persönlichen Informationen." : "Update your personal information."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {message && (
@@ -94,17 +107,17 @@ export default function SettingsPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="displayName">Display Name</Label>
+              <Label htmlFor="displayName">{t.settings.displayName}</Label>
               <Input
                 id="displayName"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your name"
+                placeholder={locale === "de" ? "Ihr Name" : "Your name"}
                 className="border-warm-gray-200"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.auth.email}</Label>
               <Input
                 id="email"
                 value={email}
@@ -112,7 +125,7 @@ export default function SettingsPage() {
                 className="border-warm-gray-200 bg-warm-gray-50"
               />
               <p className="text-xs text-warm-gray-400">
-                Email cannot be changed.
+                {locale === "de" ? "E-Mail kann nicht geändert werden." : "Email cannot be changed."}
               </p>
             </div>
             <Button
@@ -123,15 +136,71 @@ export default function SettingsPage() {
               {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
+                  {locale === "de" ? "Speichern..." : "Saving..."}
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Save Changes
+                  {t.settings.saveChanges}
                 </>
               )}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Language & Region */}
+        <Card className="border-warm-gray-100">
+          <CardHeader>
+            <CardTitle className="font-display text-xl text-warm-gray-700 flex items-center gap-2">
+              <Globe className="w-5 h-5" />
+              {t.settings.language}
+            </CardTitle>
+            <CardDescription>{t.settings.languageDesc}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t.settings.language}</Label>
+              <Select
+                value={locale}
+                onValueChange={(value) => setLocale(value as Locale)}
+              >
+                <SelectTrigger className="border-warm-gray-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(localeNames) as Locale[]).map((loc) => (
+                    <SelectItem key={loc} value={loc}>
+                      {loc === "en" ? "🇬🇧" : "🇩🇪"} {localeNames[loc]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Measurement System */}
+        <Card className="border-warm-gray-100">
+          <CardHeader>
+            <CardTitle className="font-display text-xl text-warm-gray-700 flex items-center gap-2">
+              <Ruler className="w-5 h-5" />
+              {t.settings.measurementSystem}
+            </CardTitle>
+            <CardDescription>{t.settings.measurementDesc}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Select
+              value={measurementSystem}
+              onValueChange={(value) => setMeasurementSystem(value as MeasurementSystem)}
+            >
+              <SelectTrigger className="border-warm-gray-200">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="metric">{t.settings.metric}</SelectItem>
+                <SelectItem value="imperial">{t.settings.imperial}</SelectItem>
+              </SelectContent>
+            </Select>
           </CardContent>
         </Card>
 
@@ -139,9 +208,11 @@ export default function SettingsPage() {
         <Card className="border-red-200">
           <CardHeader>
             <CardTitle className="font-display text-xl text-red-600">
-              Danger Zone
+              {locale === "de" ? "Gefahrenzone" : "Danger Zone"}
             </CardTitle>
-            <CardDescription>Irreversible actions.</CardDescription>
+            <CardDescription>
+              {locale === "de" ? "Unumkehrbare Aktionen." : "Irreversible actions."}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button
@@ -150,7 +221,7 @@ export default function SettingsPage() {
               className="border-red-300 text-red-600 hover:bg-red-50"
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              {t.auth.logout}
             </Button>
           </CardContent>
         </Card>

@@ -9,14 +9,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translateCategoryName } from "@/lib/i18n";
 import type { RecipeWithRelations } from "@/types/database.types";
 
 export default function RecipeBookPage() {
+  const { locale, t } = useLanguage();
   const [recipes, setRecipes] = useState<RecipeWithRelations[]>([]);
   const [selectedRecipes, setSelectedRecipes] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [bookTitle, setBookTitle] = useState("Family Recipes");
+  const [bookTitle, setBookTitle] = useState(
+    locale === "de" ? "Familienrezepte" : "Family Recipes"
+  );
   const [dedication, setDedication] = useState("");
 
   useEffect(() => {
@@ -65,23 +70,16 @@ export default function RecipeBookPage() {
 
     try {
       const supabase = createClient();
-
-      // Use getUser() instead of getSession() to ensure fresh token validation
       const { data: { user }, error: userError } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        console.error("User error:", userError);
-        throw new Error("No active session. Please log in again.");
+        throw new Error(t.auth.sessionExpired);
       }
 
-      // Get fresh session after user validation
       const { data: { session } } = await supabase.auth.getSession();
 
-      console.log("Session:", session ? "exists" : "null");
-      console.log("Access token:", session?.access_token ? "exists" : "null");
-
       if (!session?.access_token) {
-        throw new Error("No active session. Please log in again.");
+        throw new Error(t.auth.sessionExpired);
       }
 
       const response = await fetch(
@@ -97,6 +95,7 @@ export default function RecipeBookPage() {
             options: {
               title: bookTitle,
               dedication: dedication,
+              locale: locale,
             },
           }),
         }
@@ -104,31 +103,30 @@ export default function RecipeBookPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        console.error("Error response:", errorData);
-        throw new Error(errorData?.error || errorData?.message || "Failed to generate PDF");
+        throw new Error(errorData?.error || t.errors.generic);
       }
 
       const result = await response.json();
 
-      // Open HTML in new window for printing
       if (result.data?.html) {
         const printWindow = window.open("", "_blank");
         if (printWindow) {
           printWindow.document.write(result.data.html);
           printWindow.document.close();
-          // Wait for content to load, then trigger print
           printWindow.onload = () => {
             setTimeout(() => {
               printWindow.print();
             }, 500);
           };
         } else {
-          alert("Please allow popups to generate the recipe book.");
+          alert(locale === "de" 
+            ? "Bitte erlauben Sie Popups, um das Rezeptbuch zu erstellen." 
+            : "Please allow popups to generate the recipe book.");
         }
       }
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF. Please try again.");
+      alert(error instanceof Error ? error.message : t.errors.generic);
     } finally {
       setIsGenerating(false);
     }
@@ -146,10 +144,10 @@ export default function RecipeBookPage() {
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="font-display text-3xl text-warm-gray-700 mb-2">
-          Create Recipe Book
+          {t.recipeBook.title}
         </h1>
         <p className="text-warm-gray-500">
-          Generate a beautiful PDF recipe book to print or share.
+          {t.recipeBook.description}
         </p>
       </div>
 
@@ -159,27 +157,27 @@ export default function RecipeBookPage() {
           <Card className="border-warm-gray-100">
             <CardHeader>
               <CardTitle className="font-display text-lg text-warm-gray-700">
-                Book Settings
+                {locale === "de" ? "Bucheinstellungen" : "Book Settings"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Book Title</Label>
+                <Label htmlFor="title">{t.recipeBook.bookTitle}</Label>
                 <Input
                   id="title"
                   value={bookTitle}
                   onChange={(e) => setBookTitle(e.target.value)}
-                  placeholder="Family Recipes"
+                  placeholder={t.recipeBook.bookTitlePlaceholder}
                   className="border-warm-gray-200"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dedication">Dedication (optional)</Label>
+                <Label htmlFor="dedication">{t.recipeBook.dedication} ({t.common.optional})</Label>
                 <Textarea
                   id="dedication"
                   value={dedication}
                   onChange={(e) => setDedication(e.target.value)}
-                  placeholder="For my children, with love..."
+                  placeholder={t.recipeBook.dedicationPlaceholder}
                   className="border-warm-gray-200 min-h-[80px]"
                 />
               </div>
@@ -194,12 +192,12 @@ export default function RecipeBookPage() {
             {isGenerating ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating...
+                {t.recipeBook.generating}
               </>
             ) : (
               <>
                 <Download className="w-4 h-4 mr-2" />
-                Generate PDF ({selectedRecipes.size} recipes)
+                {t.recipeBook.generatePdf} ({selectedRecipes.size} {t.recipes.recipes.toLowerCase()})
               </>
             )}
           </Button>
@@ -210,7 +208,7 @@ export default function RecipeBookPage() {
           <Card className="border-warm-gray-100">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="font-display text-lg text-warm-gray-700">
-                Select Recipes
+                {t.recipeBook.selectRecipes}
               </CardTitle>
               <Button
                 variant="ghost"
@@ -219,15 +217,15 @@ export default function RecipeBookPage() {
                 className="text-peach-600"
               >
                 {selectedRecipes.size === recipes.length
-                  ? "Deselect All"
-                  : "Select All"}
+                  ? t.recipeBook.deselectAll
+                  : t.recipeBook.selectAll}
               </Button>
             </CardHeader>
             <CardContent>
               {recipes.length === 0 ? (
                 <div className="text-center py-8 text-warm-gray-400">
                   <BookOpen className="w-12 h-12 mx-auto mb-3 text-warm-gray-300" />
-                  <p>No recipes yet. Add some recipes first!</p>
+                  <p>{t.recipes.noRecipes}</p>
                 </div>
               ) : (
                 <div className="space-y-2 max-h-[400px] overflow-y-auto">
@@ -250,7 +248,7 @@ export default function RecipeBookPage() {
                         </p>
                         {recipe.category && (
                           <p className="text-sm text-warm-gray-400">
-                            {recipe.category.icon} {recipe.category.name}
+                            {recipe.category.icon} {translateCategoryName(recipe.category.name, t)}
                           </p>
                         )}
                       </div>

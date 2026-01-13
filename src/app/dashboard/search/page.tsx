@@ -1,7 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { RecipeGrid } from "@/components/recipes/RecipeGrid";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { SearchFilters } from "@/components/recipes/SearchFilters";
+import { SearchContent } from "@/components/pages/SearchContent";
 
 export default async function SearchPage({
   searchParams,
@@ -21,7 +19,6 @@ export default async function SearchPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch categories for filter dropdown
   const { data: categories } = await supabase
     .from("categories")
     .select("*")
@@ -42,24 +39,20 @@ export default async function SearchPage({
       .eq("user_id", user.id)
       .eq("is_archived", false);
 
-    // Apply search query
     if (query) {
       queryBuilder = queryBuilder.or(
         `title.ilike.%${query}%,description.ilike.%${query}%`
       );
     }
 
-    // Apply category filter
     if (category) {
       queryBuilder = queryBuilder.eq("category_id", category);
     }
 
-    // Apply difficulty filter
     if (difficulty) {
       queryBuilder = queryBuilder.eq("difficulty", difficulty);
     }
 
-    // Apply sorting
     switch (sort) {
       case "title":
         queryBuilder = queryBuilder.order("title", { ascending: true });
@@ -87,47 +80,11 @@ export default async function SearchPage({
     recipes = data;
   }
 
-  const hasFilters = query || category || difficulty || sort;
-
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="font-display text-3xl text-warm-gray-700 mb-2">
-          {query ? "Search Results" : "Browse Recipes"}
-        </h1>
-        {query ? (
-          <p className="text-warm-gray-500">
-            {recipes?.length || 0} results for &quot;{query}&quot;
-          </p>
-        ) : (
-          <p className="text-warm-gray-500">
-            Filter and sort your recipe collection.
-          </p>
-        )}
-      </div>
-
-      {/* Filters */}
-      <SearchFilters
-        categories={categories || []}
-        currentParams={params}
-      />
-
-      {/* Results */}
-      {recipes && recipes.length > 0 ? (
-        <RecipeGrid recipes={recipes} />
-      ) : hasFilters ? (
-        <EmptyState
-          icon="🔍"
-          title="No recipes found"
-          description="Try adjusting your filters or search term."
-        />
-      ) : (
-        <EmptyState
-          icon="🔍"
-          title="Start searching"
-          description="Use the search bar and filters to find recipes."
-        />
-      )}
-    </div>
+    <SearchContent
+      recipes={recipes}
+      categories={categories || []}
+      currentParams={params}
+    />
   );
 }

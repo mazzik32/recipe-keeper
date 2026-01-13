@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TagWithCount {
   id: string;
@@ -29,6 +30,7 @@ interface TagsManagerProps {
 }
 
 export function TagsManager({ initialTags }: TagsManagerProps) {
+  const { t } = useLanguage();
   const [tags, setTags] = useState<TagWithCount[]>(initialTags);
   const [newTagName, setNewTagName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -49,19 +51,18 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
 
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be logged in",
+        title: t.common.error,
+        description: t.auth.sessionExpired,
         variant: "destructive",
       });
       setIsCreating(false);
       return;
     }
 
-    // Check for duplicate
-    if (tags.some((t) => t.name.toLowerCase() === newTagName.toLowerCase())) {
+    if (tags.some((tag) => tag.name.toLowerCase() === newTagName.toLowerCase())) {
       toast({
-        title: "Tag exists",
-        description: "A tag with this name already exists",
+        title: t.common.error,
+        description: t.tags.tagExists,
         variant: "destructive",
       });
       setIsCreating(false);
@@ -76,16 +77,16 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to create tag",
+        title: t.common.error,
+        description: t.errors.saveFailed,
         variant: "destructive",
       });
     } else if (data) {
       setTags([...tags, { ...data, recipe_count: 0 }]);
       setNewTagName("");
       toast({
-        title: "Tag created",
-        description: `"${data.name}" has been created`,
+        title: t.tags.tagCreated,
+        description: t.tags.tagCreatedDesc.replace("{name}", data.name),
       });
     }
 
@@ -97,10 +98,8 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
 
     setIsDeleting(true);
 
-    // First delete recipe_tags associations
     await supabase.from("recipe_tags").delete().eq("tag_id", deleteTag.id);
 
-    // Then delete the tag
     const { error } = await supabase
       .from("tags")
       .delete()
@@ -108,15 +107,15 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete tag",
+        title: t.common.error,
+        description: t.errors.deleteFailed,
         variant: "destructive",
       });
     } else {
-      setTags(tags.filter((t) => t.id !== deleteTag.id));
+      setTags(tags.filter((tag) => tag.id !== deleteTag.id));
       toast({
-        title: "Tag deleted",
-        description: `"${deleteTag.name}" has been deleted`,
+        title: t.tags.tagDeleted,
+        description: t.tags.tagDeletedDesc.replace("{name}", deleteTag.name),
       });
     }
 
@@ -130,14 +129,13 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
         <CardHeader>
           <CardTitle className="font-display text-xl text-warm-gray-700 flex items-center gap-2">
             <Tag className="w-5 h-5" />
-            Your Tags ({tags.length})
+            {t.tags.yourTags} ({tags.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Create tag form */}
           <form onSubmit={handleCreateTag} className="flex gap-2">
             <Input
-              placeholder="New tag name..."
+              placeholder={t.tags.newTagName}
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               className="border-warm-gray-200 max-w-xs"
@@ -152,11 +150,10 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
               ) : (
                 <Plus className="w-4 h-4" />
               )}
-              Add Tag
+              {t.tags.addTag}
             </Button>
           </form>
 
-          {/* Tags list */}
           {tags.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
@@ -178,37 +175,35 @@ export function TagsManager({ initialTags }: TagsManagerProps) {
             </div>
           ) : (
             <p className="text-warm-gray-500 text-sm">
-              No tags yet. Create your first tag above.
+              {t.tags.noTags}
             </p>
           )}
         </CardContent>
       </Card>
 
-      {/* Delete confirmation dialog */}
       <Dialog open={!!deleteTag} onOpenChange={() => setDeleteTag(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Tag</DialogTitle>
+            <DialogTitle>{t.tags.deleteTag}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{deleteTag?.name}&quot;?
+              {t.tags.confirmDeleteTag.replace("{name}", deleteTag?.name || "")}
               {deleteTag && deleteTag.recipe_count > 0 && (
                 <span className="block mt-2 text-amber-600">
-                  This tag is used by {deleteTag.recipe_count} recipe
-                  {deleteTag.recipe_count !== 1 ? "s" : ""}.
+                  {t.tags.tagUsedBy.replace("{count}", String(deleteTag.recipe_count))}
                 </span>
               )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTag(null)}>
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteTag}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? t.common.loading : t.common.delete}
             </Button>
           </DialogFooter>
         </DialogContent>

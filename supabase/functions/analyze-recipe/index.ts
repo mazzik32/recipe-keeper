@@ -24,10 +24,39 @@ interface RecipeExtractionResult {
     instruction: string;
   }>;
   suggestedCategory?: string;
+  detectedLanguage?: string;
+  wasTranslated?: boolean;
 }
 
+type TargetLanguage = "en" | "de";
+
+const languageNames: Record<string, string> = {
+  en: "English",
+  de: "German",
+  fr: "French",
+  it: "Italian",
+  es: "Spanish",
+  pt: "Portuguese",
+  nl: "Dutch",
+  pl: "Polish",
+  ru: "Russian",
+  zh: "Chinese",
+  ja: "Japanese",
+  ko: "Korean",
+  ar: "Arabic",
+  tr: "Turkish",
+  vi: "Vietnamese",
+  th: "Thai",
+  el: "Greek",
+  cs: "Czech",
+  hu: "Hungarian",
+  sv: "Swedish",
+  da: "Danish",
+  no: "Norwegian",
+  fi: "Finnish",
+};
+
 function extractOutputText(result: any): string | null {
-  // Responses API returns an `output` array with message objects and `content` items.
   const message = result?.output?.find((o: any) => o?.type === "message" && o?.role === "assistant");
   const textItem = message?.content?.find((c: any) => c?.type === "output_text" && typeof c?.text === "string");
   return textItem?.text ?? null;
@@ -67,36 +96,93 @@ Deno.serve(async (req) => {
       throw new Error("OPENAI_API_KEY is not configured");
     }
 
-    const { imageUrl, base64Image } = await req.json();
-
-    if (!imageUrl && !base64Image) {
-      throw new Error("Either imageUrl or base64Image is required");
+    const body = await req.json();
+    
+    // Support both single imageUrl and multiple imageUrls
+    const { imageUrl, imageUrls, base64Image, targetLanguage = "en" } = body;
+    
+    // Validate target language
+    const validLanguages: TargetLanguage[] = ["en", "de"];
+    const lang: TargetLanguage = validLanguages.includes(targetLanguage) ? targetLanguage : "en";
+    
+    // Build array of image URLs
+    let urls: string[] = [];
+    if (imageUrls && Array.isArray(imageUrls)) {
+      urls = imageUrls;
+    } else if (imageUrl) {
+      urls = [imageUrl];
+    } else if (base64Image) {
+      urls = [base64Image];
     }
 
-    // Responses API image item format: { type: "input_image", image_url: "...", detail: "high" }
-    const imageItem = imageUrl
-      ? { type: "input_image", image_url: imageUrl, detail: "high" }
-      : { type: "input_image", image_url: base64Image, detail: "high" };
+    if (urls.length === 0) {
+      throw new Error("At least one image is required (imageUrl, imageUrls, or base64Image)");
+    }
 
-    const systemPrompt = `You are a recipe extraction assistant. Your task is to analyze images of recipes (handwritten, printed, or from cookbooks) and extract the recipe information into a structured JSON format.
+    // Limit to 5 images
+    if (urls.length > 5) {
+      urls = urls.slice(0, 5);
+    }
+
+    // Build image items for the API
+    const imageItems = urls.map((url) => ({
+      type: "input_image",
+      image_url: url,
+      detail: "high",
+    }));
+
+    const targetLangName = lang === "de" ? "German" : "English";
+    
+    // Unit standardization based on target language
+    const unitStandardization = lang === "de" 
+      ? `- Standardize units to metric: use "g" for grams, "kg" for kilograms, "ml" for milliliters, "L" for liters
+- For common cooking units: use "EL" for tablespoon, "TL" for teaspoon, "Tasse" for cup
+- Keep "Stück", "Prise", "Bund", "Zehe" for appropriate ingredients`
+      : `- Standardize units: use "tbsp" for tablespoon, "tsp" for teaspoon, "cup" for cups
+- For weight: prefer "oz" and "lb" for imperial, or "g" and "kg" for metric
+- For volume: prefer "fl oz", "cup", "pint" or "ml", "L"`;
+
+    const systemPrompt = `You are a recipe extraction and translation assistant. Your task is to analyze images of recipes (handwritten, printed, or from cookbooks) and extract the recipe information into a structured JSON format.
+
+IMPORTANT: The output MUST be in ${targetLangName}. If the recipe is in a different language, translate ALL text content (title, description, ingredients, steps, notes) to ${targetLangName}.
+
+${urls.length > 1 ? `You are receiving ${urls.length} images that together form a complete recipe. The recipe may span multiple pages or images. Combine all the information from all images into a single, complete recipe.` : ""}
 
 Extract the following information:
-- title: The recipe name
-- description: A brief description (if available)
+- title: The recipe name (translated to ${targetLangName})
+- description: A brief description (translated to ${targetLangName}, if available)
 - servings: Number of servings (if mentioned)
 - prepTimeMinutes: Preparation time in minutes (if mentioned)
 - cookTimeMinutes: Cooking time in minutes (if mentioned)
 - difficulty: One of "easy", "medium", or "hard" based on complexity
-- ingredients: Array of objects with name, quantity (as number), unit, and notes
-- steps: Array of objects with stepNumber and instruction
+- ingredients: Array of objects with name (translated), quantity (as number), unit (standardized), and notes (translated)
+- steps: Array of objects with stepNumber and instruction (translated to ${targetLangName})
 - suggestedCategory: One of "appetizers", "main-course", "side-dishes", "desserts", "beverages", "breakfast", "snacks", "soups-salads"
+- detectedLanguage: The ISO 639-1 language code of the original recipe (e.g., "en", "de", "it", "fr", "es")
+- wasTranslated: Boolean indicating if translation was performed
+
+Unit standardization for ${targetLangName}:
+${unitStandardization}
 
 Important guidelines:
-- Convert all quantities to numbers (e.g., "1/2" becomes 0.5)
-- Standardize units (e.g., "tablespoon" to "tbsp", "teaspoon" to "tsp")
+- Convert all quantities to numbers (e.g., "1/2" becomes 0.5, "1 1/2" becomes 1.5)
 - If text is handwritten and unclear, make reasonable interpretations
 - Number steps sequentially starting from 1
+- If information spans multiple images, merge them intelligently (don't duplicate ingredients or steps)
+- ALWAYS translate to ${targetLangName} if the source is in another language
+- Set wasTranslated to true if any translation was performed
 - Return ONLY valid JSON, no additional text`;
+
+    // Build content array with text prompt followed by all images
+    const contentItems: any[] = [
+      { 
+        type: "input_text", 
+        text: urls.length > 1 
+          ? `Please extract the recipe from these ${urls.length} images, translate everything to ${targetLangName} if needed, and return it as JSON:`
+          : `Please extract the recipe from this image, translate everything to ${targetLangName} if needed, and return it as JSON:`
+      },
+      ...imageItems,
+    ];
 
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -105,19 +191,14 @@ Important guidelines:
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        // "gpt-5.2-chat-latest" = GPT-5.2 snapshot used in ChatGPT
         model: "gpt-5.2-chat-latest",
         instructions: systemPrompt,
         input: [
           {
             role: "user",
-            content: [
-              { type: "input_text", text: "Please extract the recipe from this image and return it as JSON:" },
-              imageItem,
-            ],
+            content: contentItems,
           },
         ],
-        // JSON mode in Responses API:
         text: { format: { type: "json_object" } },
         max_output_tokens: 4000,
       }),
@@ -142,9 +223,22 @@ Important guidelines:
     }
 
     const extractedRecipe: RecipeExtractionResult = JSON.parse(content);
+    
+    // Add human-readable source language name
+    const detectedLangName = extractedRecipe.detectedLanguage 
+      ? languageNames[extractedRecipe.detectedLanguage] || extractedRecipe.detectedLanguage
+      : null;
 
     return new Response(
-      JSON.stringify({ success: true, data: extractedRecipe }),
+      JSON.stringify({ 
+        success: true, 
+        data: extractedRecipe,
+        imagesProcessed: urls.length,
+        targetLanguage: lang,
+        detectedLanguage: extractedRecipe.detectedLanguage,
+        detectedLanguageName: detectedLangName,
+        wasTranslated: extractedRecipe.wasTranslated || false,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {

@@ -21,6 +21,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { recipeSchema, type RecipeFormData } from "@/lib/validations/recipe";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Category, RecipeWithRelations } from "@/types/database.types";
 
 interface ScannedData {
@@ -56,6 +57,7 @@ interface RecipeFormProps {
 
 export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps) {
   const router = useRouter();
+  const { locale, t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [primaryImage, setPrimaryImage] = useState<string | null>(
@@ -65,7 +67,6 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
     recipe?.images?.find((img) => !img.is_primary)?.image_url || null
   );
 
-  // Determine default values based on priority: existing recipe > scanned data > empty
   const defaultValues: RecipeFormData = recipe
     ? {
         title: recipe.title,
@@ -174,14 +175,13 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("You must be logged in");
+      setError(t.auth.sessionExpired);
       setIsLoading(false);
       return;
     }
 
     try {
       if (recipe) {
-        // Update existing recipe
         const { error: recipeError } = await supabase
           .from("recipes")
           .update({
@@ -201,11 +201,9 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
         if (recipeError) throw recipeError;
 
-        // Delete old ingredients and steps, then insert new ones
         await supabase.from("recipe_ingredients").delete().eq("recipe_id", recipe.id);
         await supabase.from("recipe_steps").delete().eq("recipe_id", recipe.id);
 
-        // Insert new ingredients
         const { error: ingredientsError } = await supabase
           .from("recipe_ingredients")
           .insert(
@@ -221,7 +219,6 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
         if (ingredientsError) throw ingredientsError;
 
-        // Insert new steps
         const { error: stepsError } = await supabase.from("recipe_steps").insert(
           data.steps.map((step, index) => ({
             recipe_id: recipe.id,
@@ -234,7 +231,6 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
         if (stepsError) throw stepsError;
 
-        // Update images
         await supabase.from("recipe_images").delete().eq("recipe_id", recipe.id);
         const imagesToInsert = [];
         if (primaryImage) {
@@ -257,7 +253,6 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
         router.push(`/dashboard/recipes/${recipe.id}`);
       } else {
-        // Create new recipe
         const { data: newRecipe, error: recipeError } = await supabase
           .from("recipes")
           .insert({
@@ -278,7 +273,6 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
         if (recipeError) throw recipeError;
 
-        // Insert ingredients
         const { error: ingredientsError } = await supabase
           .from("recipe_ingredients")
           .insert(
@@ -294,7 +288,6 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
         if (ingredientsError) throw ingredientsError;
 
-        // Insert steps
         const { error: stepsError } = await supabase.from("recipe_steps").insert(
           data.steps.map((step, index) => ({
             recipe_id: newRecipe.id,
@@ -307,7 +300,6 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
         if (stepsError) throw stepsError;
 
-        // Insert images
         const imagesToInsert = [];
         if (primaryImage) {
           imagesToInsert.push({
@@ -332,7 +324,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save recipe");
+      setError(err instanceof Error ? err.message : t.errors.saveFailed);
       setIsLoading(false);
     }
   }
@@ -349,16 +341,16 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
       <Card className="border-warm-gray-100">
         <CardHeader>
           <CardTitle className="font-display text-xl text-warm-gray-700">
-            Basic Information
+            {locale === "de" ? "Grundinformationen" : "Basic Information"}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Recipe Title *</Label>
+            <Label htmlFor="title">{t.recipes.recipeTitle} *</Label>
             <Input
               id="title"
               {...register("title")}
-              placeholder="Mom's Apple Pie"
+              placeholder={t.recipes.titlePlaceholder}
               className="border-warm-gray-200"
             />
             {errors.title && (
@@ -367,18 +359,18 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t.recipes.description}</Label>
             <Textarea
               id="description"
               {...register("description")}
-              placeholder="A brief description of this recipe..."
+              placeholder={t.recipes.descriptionPlaceholder}
               className="border-warm-gray-200 min-h-[80px]"
             />
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="servings">Servings</Label>
+              <Label htmlFor="servings">{t.recipes.servings}</Label>
               <Input
                 id="servings"
                 type="number"
@@ -388,7 +380,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prep_time_minutes">Prep Time (min)</Label>
+              <Label htmlFor="prep_time_minutes">{t.recipes.prepTime} ({t.recipes.minutes})</Label>
               <Input
                 id="prep_time_minutes"
                 type="number"
@@ -398,7 +390,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cook_time_minutes">Cook Time (min)</Label>
+              <Label htmlFor="cook_time_minutes">{t.recipes.cookTime} ({t.recipes.minutes})</Label>
               <Input
                 id="cook_time_minutes"
                 type="number"
@@ -408,7 +400,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="difficulty">Difficulty</Label>
+              <Label htmlFor="difficulty">{t.recipes.difficulty}</Label>
               <Select
                 value={watch("difficulty")}
                 onValueChange={(value) =>
@@ -419,9 +411,9 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="easy">Easy</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="hard">Hard</SelectItem>
+                  <SelectItem value="easy">{t.recipes.easy}</SelectItem>
+                  <SelectItem value="medium">{t.recipes.medium}</SelectItem>
+                  <SelectItem value="hard">{t.recipes.hard}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -429,7 +421,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category_id">Category</Label>
+              <Label htmlFor="category_id">{t.recipes.category}</Label>
               <Select
                 value={watch("category_id") || ""}
                 onValueChange={(value) =>
@@ -437,7 +429,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
                 }
               >
                 <SelectTrigger className="border-warm-gray-200">
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={locale === "de" ? "Kategorie auswählen" : "Select a category"} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -449,11 +441,11 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="source">Source (e.g., Mom, Grandma)</Label>
+              <Label htmlFor="source">{t.recipes.source} ({t.recipes.sourceHelper})</Label>
               <Input
                 id="source"
                 {...register("source")}
-                placeholder="Mom's cookbook"
+                placeholder={t.recipes.sourcePlaceholder}
                 className="border-warm-gray-200"
               />
             </div>
@@ -465,7 +457,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
       <Card className="border-warm-gray-100">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="font-display text-xl text-warm-gray-700">
-            Ingredients
+            {t.recipes.ingredients}
           </CardTitle>
           <Button
             type="button"
@@ -477,7 +469,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
             className="border-peach-300 text-peach-700 hover:bg-peach-50"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Add
+            {t.common.add}
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -487,24 +479,24 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               <div className="flex-1 grid grid-cols-12 gap-2">
                 <Input
                   {...register(`ingredients.${index}.quantity`)}
-                  placeholder="Qty"
+                  placeholder={t.recipes.quantity}
                   type="number"
                   step="0.01"
                   className="col-span-2 border-warm-gray-200"
                 />
                 <Input
                   {...register(`ingredients.${index}.unit`)}
-                  placeholder="Unit"
+                  placeholder={t.recipes.unit}
                   className="col-span-2 border-warm-gray-200"
                 />
                 <Input
                   {...register(`ingredients.${index}.name`)}
-                  placeholder="Ingredient name *"
+                  placeholder={t.recipes.ingredientName + " *"}
                   className="col-span-5 border-warm-gray-200"
                 />
                 <Input
                   {...register(`ingredients.${index}.notes`)}
-                  placeholder="Notes"
+                  placeholder={t.recipes.ingredientNotes}
                   className="col-span-3 border-warm-gray-200"
                 />
               </div>
@@ -522,7 +514,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
           ))}
           {errors.ingredients && (
             <p className="text-sm text-red-500">
-              {errors.ingredients.message || "Please fix ingredient errors"}
+              {errors.ingredients.message || (locale === "de" ? "Bitte Zutatenfehler beheben" : "Please fix ingredient errors")}
             </p>
           )}
         </CardContent>
@@ -532,7 +524,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
       <Card className="border-warm-gray-100">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="font-display text-xl text-warm-gray-700">
-            Instructions
+            {t.recipes.instructions}
           </CardTitle>
           <Button
             type="button"
@@ -544,7 +536,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
             className="border-peach-300 text-peach-700 hover:bg-peach-50"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Add Step
+            {t.recipes.addStep}
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -556,21 +548,21 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               <div className="flex-1 space-y-3">
                 <Textarea
                   {...register(`steps.${index}.instruction`)}
-                  placeholder="Describe this step..."
+                  placeholder={t.recipes.stepPlaceholder}
                   className="border-warm-gray-200 min-h-[80px]"
                 />
                 <div className="flex gap-4 items-start">
                   <div className="space-y-1">
-                    <Label className="text-xs text-warm-gray-500">Timer</Label>
+                    <Label className="text-xs text-warm-gray-500">{t.recipes.timer}</Label>
                     <Input
                       {...register(`steps.${index}.timer_minutes`)}
-                      placeholder="min"
+                      placeholder={t.recipes.minutes}
                       type="number"
                       className="w-24 border-warm-gray-200"
                     />
                   </div>
                   <div className="space-y-1 flex-1">
-                    <Label className="text-xs text-warm-gray-500">Step Photo (optional)</Label>
+                    <Label className="text-xs text-warm-gray-500">{t.recipes.stepPhoto} ({t.common.optional})</Label>
                     <ImageUpload
                       value={watch(`steps.${index}.image_url`)}
                       onChange={(url) => setValue(`steps.${index}.image_url`, url)}
@@ -596,7 +588,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
           ))}
           {errors.steps && (
             <p className="text-sm text-red-500">
-              {errors.steps.message || "Please fix step errors"}
+              {errors.steps.message || (locale === "de" ? "Bitte Schrittfehler beheben" : "Please fix step errors")}
             </p>
           )}
         </CardContent>
@@ -606,13 +598,13 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
       <Card className="border-warm-gray-100">
         <CardHeader>
           <CardTitle className="font-display text-xl text-warm-gray-700">
-            Notes & Memories
+            {t.recipes.notes}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Textarea
             {...register("notes")}
-            placeholder="Add any personal notes or memories about this recipe..."
+            placeholder={t.recipes.notesPlaceholder}
             className="border-warm-gray-200 min-h-[100px]"
           />
         </CardContent>
@@ -622,16 +614,16 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
       <Card className="border-warm-gray-100">
         <CardHeader>
           <CardTitle className="font-display text-xl text-warm-gray-700">
-            Recipe Photos
+            {t.recipes.recipePhotos}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-warm-gray-500 mb-4">
-            Add photos of your finished dish (up to 2 images)
+            {t.recipes.photosDescription}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Primary Photo</Label>
+              <Label>{t.recipes.primaryPhoto}</Label>
               <ImageUpload
                 value={primaryImage}
                 onChange={setPrimaryImage}
@@ -640,7 +632,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label>Additional Photo (Optional)</Label>
+              <Label>{t.recipes.additionalPhoto} ({t.common.optional})</Label>
               <ImageUpload
                 value={secondaryImage}
                 onChange={setSecondaryImage}
@@ -660,7 +652,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
           onClick={() => router.back()}
           className="border-warm-gray-300"
         >
-          Cancel
+          {t.common.cancel}
         </Button>
         <Button
           type="submit"
@@ -668,7 +660,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
           className="bg-peach-300 hover:bg-peach-400 text-warm-gray-700"
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {recipe ? "Update Recipe" : "Save Recipe"}
+          {recipe ? t.recipes.updateRecipe : t.recipes.saveRecipe}
         </Button>
       </div>
     </form>

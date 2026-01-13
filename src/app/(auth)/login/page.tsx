@@ -13,9 +13,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,10 +53,10 @@ export default function LoginPage() {
     <Card className="w-full max-w-md border-warm-gray-200 shadow-sm">
       <CardHeader className="text-center">
         <CardTitle className="font-display text-2xl text-warm-gray-700">
-          Welcome back
+          {t.auth.welcomeBack}
         </CardTitle>
         <CardDescription className="text-warm-gray-500">
-          Sign in to your account to continue
+          {t.auth.signInDescription}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -66,7 +68,7 @@ export default function LoginPage() {
           )}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-warm-gray-600">
-              Email
+              {t.auth.email}
             </Label>
             <Input
               id="email"
@@ -82,13 +84,13 @@ export default function LoginPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password" className="text-warm-gray-600">
-                Password
+                {t.auth.password}
               </Label>
               <Link
                 href="/forgot-password"
                 className="text-sm text-peach-600 hover:underline"
               >
-                Forgot password?
+                {t.auth.forgotPassword}
               </Link>
             </div>
             <Input
@@ -110,12 +112,12 @@ export default function LoginPage() {
             className="w-full bg-peach-300 hover:bg-peach-400 text-warm-gray-700"
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign in
+            {t.auth.login}
           </Button>
           <p className="text-sm text-warm-gray-500 text-center">
-            Don&apos;t have an account?{" "}
+            {t.auth.noAccount}{" "}
             <Link href="/signup" className="text-peach-600 hover:underline">
-              Sign up
+              {t.auth.signup}
             </Link>
           </p>
         </CardFooter>

@@ -6,6 +6,8 @@ import { Clock, Users, Heart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translateCategoryName } from "@/lib/i18n";
 import type { RecipeWithRelations } from "@/types/database.types";
 
 interface RecipeCardProps {
@@ -14,6 +16,7 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, onToggleFavorite }: RecipeCardProps) {
+  const { locale, t } = useLanguage();
   const totalTime =
     (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
   const primaryImage = recipe.images?.find((img) => img.is_primary);
@@ -62,7 +65,7 @@ export function RecipeCard({ recipe, onToggleFavorite }: RecipeCardProps) {
               variant="secondary"
               className="absolute bottom-3 left-3 bg-white/90 backdrop-blur text-warm-gray-700"
             >
-              {recipe.category.icon} {recipe.category.name}
+              {recipe.category.icon} {translateCategoryName(recipe.category.name, t)}
             </Badge>
           )}
         </div>
@@ -98,7 +101,7 @@ export function RecipeCard({ recipe, onToggleFavorite }: RecipeCardProps) {
           {/* Source */}
           {recipe.source && (
             <p className="mt-3 text-xs text-peach-600 font-medium">
-              From {recipe.source}
+              {locale === "de" ? "Von" : "From"} {recipe.source}
             </p>
           )}
         </CardContent>

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const resetPasswordSchema = z
   .object({
@@ -28,6 +29,7 @@ type ResetPasswordData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -92,17 +94,16 @@ export default function ResetPasswordPage() {
       <Card className="w-full max-w-md border-warm-gray-100">
         <CardHeader className="text-center">
           <CardTitle className="font-display text-2xl text-warm-gray-700">
-            Invalid or Expired Link
+            {t.auth.invalidLink}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-warm-gray-500">
-            This password reset link is invalid or has expired. Please request a
-            new one.
+            {t.auth.invalidLinkDesc}
           </p>
           <Link href="/forgot-password">
             <Button className="bg-peach-300 hover:bg-peach-400 text-warm-gray-700">
-              Request New Link
+              {t.auth.requestNewLink}
             </Button>
           </Link>
         </CardContent>
@@ -118,13 +119,12 @@ export default function ResetPasswordPage() {
             <CheckCircle className="w-6 h-6 text-green-600" />
           </div>
           <CardTitle className="font-display text-2xl text-warm-gray-700">
-            Password Updated
+            {t.auth.passwordUpdated}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-warm-gray-500">
-            Your password has been successfully updated. Redirecting you to the
-            dashboard...
+            {t.auth.passwordUpdatedDesc}
           </p>
         </CardContent>
       </Card>
@@ -135,10 +135,10 @@ export default function ResetPasswordPage() {
     <Card className="w-full max-w-md border-warm-gray-100">
       <CardHeader>
         <CardTitle className="font-display text-2xl text-warm-gray-700">
-          Set New Password
+          {t.auth.setNewPassword}
         </CardTitle>
         <p className="text-warm-gray-500 text-sm">
-          Enter your new password below
+          {t.auth.enterNewPassword}
         </p>
       </CardHeader>
       <CardContent>
@@ -150,7 +150,7 @@ export default function ResetPasswordPage() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="password">New Password</Label>
+            <Label htmlFor="password">{t.auth.password}</Label>
             <Input
               id="password"
               type="password"
@@ -164,7 +164,7 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">{t.auth.confirmPassword}</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -185,7 +185,7 @@ export default function ResetPasswordPage() {
             className="w-full bg-peach-300 hover:bg-peach-400 text-warm-gray-700"
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Update Password
+            {t.auth.updatePassword}
           </Button>
         </form>
       </CardContent>

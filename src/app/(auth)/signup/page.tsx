@@ -13,9 +13,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { signupSchema, type SignupInput } from "@/lib/validations/auth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { locale, t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -56,10 +58,12 @@ export default function SignupPage() {
     <Card className="w-full max-w-md border-warm-gray-200 shadow-sm">
       <CardHeader className="text-center">
         <CardTitle className="font-display text-2xl text-warm-gray-700">
-          Create your account
+          {locale === "de" ? "Konto erstellen" : "Create your account"}
         </CardTitle>
         <CardDescription className="text-warm-gray-500">
-          Start preserving your family recipes today
+          {locale === "de" 
+            ? "Beginnen Sie noch heute, Ihre Familienrezepte zu bewahren" 
+            : "Start preserving your family recipes today"}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -71,12 +75,12 @@ export default function SignupPage() {
           )}
           <div className="space-y-2">
             <Label htmlFor="displayName" className="text-warm-gray-600">
-              Your name
+              {t.settings.displayName}
             </Label>
             <Input
               id="displayName"
               type="text"
-              placeholder="John Doe"
+              placeholder={locale === "de" ? "Max Mustermann" : "John Doe"}
               {...register("displayName")}
               className="border-warm-gray-200 focus:ring-peach-300"
             />
@@ -86,7 +90,7 @@ export default function SignupPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="email" className="text-warm-gray-600">
-              Email
+              {t.auth.email}
             </Label>
             <Input
               id="email"
@@ -101,7 +105,7 @@ export default function SignupPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password" className="text-warm-gray-600">
-              Password
+              {t.auth.password}
             </Label>
             <Input
               id="password"
@@ -122,12 +126,12 @@ export default function SignupPage() {
             className="w-full bg-peach-300 hover:bg-peach-400 text-warm-gray-700"
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create account
+            {locale === "de" ? "Konto erstellen" : "Create account"}
           </Button>
           <p className="text-sm text-warm-gray-500 text-center">
-            Already have an account?{" "}
+            {t.auth.hasAccount}{" "}
             <Link href="/login" className="text-peach-600 hover:underline">
-              Sign in
+              {t.auth.login}
             </Link>
           </p>
         </CardFooter>

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CollectionWithCount {
   id: string;
@@ -42,6 +43,7 @@ interface CollectionsManagerProps {
 export function CollectionsManager({
   initialCollections,
 }: CollectionsManagerProps) {
+  const { locale, t } = useLanguage();
   const [collections, setCollections] =
     useState<CollectionWithCount[]>(initialCollections);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -66,8 +68,8 @@ export function CollectionsManager({
 
     if (!user) {
       toast({
-        title: "Error",
-        description: "You must be logged in",
+        title: t.common.error,
+        description: t.auth.sessionExpired,
         variant: "destructive",
       });
       setIsCreating(false);
@@ -86,8 +88,8 @@ export function CollectionsManager({
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to create collection",
+        title: t.common.error,
+        description: t.errors.saveFailed,
         variant: "destructive",
       });
     } else if (data) {
@@ -96,8 +98,8 @@ export function CollectionsManager({
       setNewDescription("");
       setIsCreateOpen(false);
       toast({
-        title: "Collection created",
-        description: `"${data.name}" has been created`,
+        title: t.collections.collectionCreated,
+        description: t.collections.collectionCreatedDesc.replace("{name}", data.name),
       });
     }
 
@@ -109,13 +111,11 @@ export function CollectionsManager({
 
     setIsDeleting(true);
 
-    // First delete recipe_collections associations
     await supabase
       .from("recipe_collections")
       .delete()
       .eq("collection_id", deleteCollection.id);
 
-    // Then delete the collection
     const { error } = await supabase
       .from("collections")
       .delete()
@@ -123,15 +123,15 @@ export function CollectionsManager({
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete collection",
+        title: t.common.error,
+        description: t.errors.deleteFailed,
         variant: "destructive",
       });
     } else {
       setCollections(collections.filter((c) => c.id !== deleteCollection.id));
       toast({
-        title: "Collection deleted",
-        description: `"${deleteCollection.name}" has been deleted`,
+        title: t.collections.collectionDeleted,
+        description: t.collections.collectionDeletedDesc.replace("{name}", deleteCollection.name),
       });
     }
 
@@ -141,39 +141,38 @@ export function CollectionsManager({
 
   return (
     <>
-      {/* Create button */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogTrigger asChild>
           <Button className="bg-peach-300 hover:bg-peach-400 text-warm-gray-700 mb-6">
             <Plus className="w-4 h-4 mr-2" />
-            New Collection
+            {t.collections.newCollection}
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Collection</DialogTitle>
+            <DialogTitle>{t.collections.createCollection}</DialogTitle>
             <DialogDescription>
-              Create a new collection to organize your recipes.
+              {t.collections.createDescription}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t.collections.name}</Label>
               <Input
                 id="name"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g., Holiday Favorites"
+                placeholder={t.collections.namePlaceholder}
                 className="border-warm-gray-200"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">{t.collections.collectionDescription} ({t.common.optional})</Label>
               <Textarea
                 id="description"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
-                placeholder="A brief description of this collection..."
+                placeholder={t.collections.collectionDescPlaceholder}
                 className="border-warm-gray-200"
               />
             </div>
@@ -183,7 +182,7 @@ export function CollectionsManager({
                 variant="outline"
                 onClick={() => setIsCreateOpen(false)}
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button
                 type="submit"
@@ -191,14 +190,13 @@ export function CollectionsManager({
                 className="bg-peach-300 hover:bg-peach-400 text-warm-gray-700"
               >
                 {isCreating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Create
+                {locale === "de" ? "Erstellen" : "Create"}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Collections grid */}
       {collections.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {collections.map((collection) => (
@@ -229,7 +227,7 @@ export function CollectionsManager({
                         className="text-red-600 focus:text-red-600"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
+                        {t.common.delete}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -240,8 +238,8 @@ export function CollectionsManager({
                   </p>
                 )}
                 <p className="text-sm text-peach-600">
-                  {collection.recipe_count} recipe
-                  {collection.recipe_count !== 1 ? "s" : ""}
+                  {collection.recipe_count} {locale === "de" ? "Rezept" : "recipe"}
+                  {collection.recipe_count !== 1 ? (locale === "de" ? "e" : "s") : ""}
                 </p>
               </CardContent>
             </Card>
@@ -252,45 +250,41 @@ export function CollectionsManager({
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Library className="w-12 h-12 text-warm-gray-300 mb-4" />
             <h3 className="font-display text-lg text-warm-gray-700 mb-2">
-              No collections yet
+              {t.collections.noCollections}
             </h3>
             <p className="text-warm-gray-500 text-sm mb-4">
-              Create your first collection to organize your recipes.
+              {t.collections.noCollectionsDesc}
             </p>
           </CardContent>
         </Card>
       )}
 
-      {/* Delete confirmation dialog */}
       <Dialog
         open={!!deleteCollection}
         onOpenChange={() => setDeleteCollection(null)}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Collection</DialogTitle>
+            <DialogTitle>{t.collections.deleteCollection}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{deleteCollection?.name}
-              &quot;?
+              {t.collections.confirmDeleteCollection.replace("{name}", deleteCollection?.name || "")}
               {deleteCollection && deleteCollection.recipe_count > 0 && (
                 <span className="block mt-2">
-                  The {deleteCollection.recipe_count} recipe
-                  {deleteCollection.recipe_count !== 1 ? "s" : ""} in this
-                  collection will not be deleted.
+                  {t.collections.recipesNotDeleted.replace("{count}", String(deleteCollection.recipe_count))}
                 </span>
               )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteCollection(null)}>
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? t.common.loading : t.common.delete}
             </Button>
           </DialogFooter>
         </DialogContent>

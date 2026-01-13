@@ -6,6 +6,7 @@ import { RecipeForm } from "@/components/recipes/RecipeForm";
 import type { Category } from "@/types/database.types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ScannedRecipeData {
   title: string;
@@ -34,6 +35,7 @@ interface NewRecipeFormWrapperProps {
 
 export function NewRecipeFormWrapper({ categories }: NewRecipeFormWrapperProps) {
   const searchParams = useSearchParams();
+  const { locale } = useLanguage();
   const fromScan = searchParams.get("from") === "scan";
   const [scannedData, setScannedData] = useState<ScannedRecipeData | null>(null);
   const [isLoading, setIsLoading] = useState(fromScan);
@@ -45,7 +47,6 @@ export function NewRecipeFormWrapper({ categories }: NewRecipeFormWrapperProps) 
         if (stored) {
           const parsed = JSON.parse(stored) as ScannedRecipeData;
           setScannedData(parsed);
-          // Clear the session storage after reading
           sessionStorage.removeItem("scannedRecipe");
         }
       } catch (e) {
@@ -58,12 +59,13 @@ export function NewRecipeFormWrapper({ categories }: NewRecipeFormWrapperProps) 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-warm-gray-400">Loading scanned recipe...</div>
+        <div className="animate-pulse text-warm-gray-400">
+          {locale === "de" ? "Gescanntes Rezept wird geladen..." : "Loading scanned recipe..."}
+        </div>
       </div>
     );
   }
 
-  // Find the category ID based on the suggested category slug
   const findCategoryId = (suggestedCategory?: string): string | null => {
     if (!suggestedCategory) return null;
     const category = categories.find(
@@ -72,7 +74,6 @@ export function NewRecipeFormWrapper({ categories }: NewRecipeFormWrapperProps) 
     return category?.id || null;
   };
 
-  // Transform scanned data to form-compatible format
   const initialData = scannedData
     ? {
         title: scannedData.title,
@@ -108,7 +109,9 @@ export function NewRecipeFormWrapper({ categories }: NewRecipeFormWrapperProps) 
             <div className="flex items-center gap-3 text-peach-700">
               <Sparkles className="w-5 h-5" />
               <span className="font-medium">
-                Recipe imported from scan! Review and edit the details below.
+                {locale === "de" 
+                  ? "Rezept aus Scan importiert! Überprüfen und bearbeiten Sie die Details unten."
+                  : "Recipe imported from scan! Review and edit the details below."}
               </span>
             </div>
           </CardContent>

@@ -2,19 +2,53 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
+// Translations for PDF generation
+const translations = {
+  en: {
+    tableOfContents: "Table of Contents",
+    recipeCollection: "A Collection of {count} Family Recipes",
+    ingredients: "Ingredients",
+    instructions: "Instructions",
+    notes: "Notes & Memories",
+    from: "From",
+    prep: "Prep",
+    cook: "Cook",
+    serves: "Serves",
+    difficulty: {
+      easy: "Easy",
+      medium: "Medium",
+      hard: "Hard",
+    },
+  },
+  de: {
+    tableOfContents: "Inhaltsverzeichnis",
+    recipeCollection: "Eine Sammlung von {count} Familienrezepten",
+    ingredients: "Zutaten",
+    instructions: "Zubereitung",
+    notes: "Notizen & Erinnerungen",
+    from: "Von",
+    prep: "Vorbereitung",
+    cook: "Kochen",
+    serves: "Portionen",
+    difficulty: {
+      easy: "Einfach",
+      medium: "Mittel",
+      hard: "Schwer",
+    },
+  },
+};
+
+type Locale = "en" | "de";
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    // Verify authentication manually
     const authHeader = req.headers.get("Authorization");
-    console.log("Auth header present:", authHeader ? "yes" : "no");
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("Missing or invalid authorization header");
       return new Response(
         JSON.stringify({ error: "Missing or invalid authorization header" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -22,7 +56,6 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    console.log("Token length:", token.length);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -32,14 +65,9 @@ Deno.serve(async (req) => {
       }
     );
 
-    // Get user from the token that's already in the global headers
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    console.log("User:", user ? user.id : "null");
-    console.log("Auth error:", authError);
-
     if (authError || !user) {
-      console.error("Auth error:", authError);
       return new Response(
         JSON.stringify({ error: "Invalid or expired token", details: authError?.message }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -52,7 +80,6 @@ Deno.serve(async (req) => {
       throw new Error("No recipes selected");
     }
 
-    // Fetch recipes with all related data
     const { data: recipes, error } = await supabase
       .from("recipes")
       .select(
@@ -74,19 +101,7 @@ Deno.serve(async (req) => {
       throw new Error("No recipes found");
     }
 
-    // Generate HTML for PDF
     const html = generateRecipeBookHTML(recipes, options);
-
-    // For now, we'll return the HTML content
-    // In a production setup, you would use a service like Puppeteer, wkhtmltopdf, or a PDF API
-    // to convert the HTML to PDF
-
-    // Option 1: Return HTML that can be printed as PDF by the browser
-    // Option 2: Use an external PDF generation service
-    // Option 3: Use Deno's PDF libraries (limited options)
-
-    // For this implementation, we'll return the HTML and let the client handle PDF conversion
-    // The client can use window.print() or a library like html2pdf.js
 
     return new Response(
       JSON.stringify({
@@ -94,8 +109,7 @@ Deno.serve(async (req) => {
         data: {
           html: html,
           recipeCount: recipes.length,
-          message:
-            "HTML generated successfully. Use browser print function to save as PDF.",
+          message: "HTML generated successfully.",
         },
       }),
       {
@@ -154,13 +168,17 @@ interface Recipe {
 interface PdfOptions {
   title?: string;
   dedication?: string;
+  locale?: Locale;
 }
 
 function generateRecipeBookHTML(
   recipes: Recipe[],
   options: PdfOptions
 ): string {
-  const title = options?.title || "Family Recipes";
+  const locale: Locale = options?.locale === "de" ? "de" : "en";
+  const t = translations[locale];
+  
+  const title = options?.title || (locale === "de" ? "Familienrezepte" : "Family Recipes");
   const dedication = options?.dedication || "";
 
   const recipesHTML = recipes
@@ -192,7 +210,7 @@ function generateRecipeBookHTML(
               ${step.timer_minutes ? `<span class="timer">⏱️ ${step.timer_minutes} min</span>` : ""}
             </div>
           </div>
-          ${step.image_url ? `<img src="${step.image_url}" class="step-image" alt="Step ${step.step_number}">` : ""}
+          ${step.image_url ? `<img src="${step.image_url}" class="step-image" alt="${locale === "de" ? "Schritt" : "Step"} ${step.step_number}">` : ""}
         </li>
       `
           )
@@ -200,6 +218,10 @@ function generateRecipeBookHTML(
 
       const primaryImage = recipe.images?.find((img) => img.is_primary);
       const secondaryImages = recipe.images?.filter((img) => !img.is_primary) || [];
+      
+      const difficultyText = recipe.difficulty 
+        ? t.difficulty[recipe.difficulty as keyof typeof t.difficulty] || recipe.difficulty
+        : "";
 
       return `
       <div class="recipe-page ${index > 0 ? "page-break" : ""}">
@@ -223,39 +245,41 @@ function generateRecipeBookHTML(
         <div class="recipe-header">
           ${recipe.category ? `<span class="category">${recipe.category.icon} ${recipe.category.name}</span>` : ""}
           <h2>${recipe.title}</h2>
-          ${recipe.source ? `<p class="source">From ${recipe.source}</p>` : ""}
+          ${recipe.source ? `<p class="source">${t.from} ${recipe.source}</p>` : ""}
         </div>
 
         ${recipe.description ? `<p class="description">${recipe.description}</p>` : ""}
 
         <div class="meta">
-          ${recipe.prep_time_minutes ? `<span>🕐 Prep: ${recipe.prep_time_minutes} min</span>` : ""}
-          ${recipe.cook_time_minutes ? `<span>🍳 Cook: ${recipe.cook_time_minutes} min</span>` : ""}
-          ${recipe.servings ? `<span>👥 Serves: ${recipe.servings}</span>` : ""}
-          ${recipe.difficulty ? `<span class="difficulty-${recipe.difficulty}">📊 ${recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1)}</span>` : ""}
+          ${recipe.prep_time_minutes ? `<span>🕐 ${t.prep}: ${recipe.prep_time_minutes} min</span>` : ""}
+          ${recipe.cook_time_minutes ? `<span>🍳 ${t.cook}: ${recipe.cook_time_minutes} min</span>` : ""}
+          ${recipe.servings ? `<span>👥 ${t.serves}: ${recipe.servings}</span>` : ""}
+          ${difficultyText ? `<span class="difficulty-${recipe.difficulty}">📊 ${difficultyText}</span>` : ""}
         </div>
 
         <div class="content">
           <div class="ingredients">
-            <h3>Ingredients</h3>
+            <h3>🥗 ${t.ingredients}</h3>
             <ul>${ingredients}</ul>
           </div>
 
           <div class="instructions">
-            <h3>Instructions</h3>
+            <h3>📝 ${t.instructions}</h3>
             <ol>${steps}</ol>
           </div>
         </div>
 
-        ${recipe.notes ? `<div class="notes"><h3>Notes & Memories</h3><p>${recipe.notes}</p></div>` : ""}
+        ${recipe.notes ? `<div class="notes"><h3>💭 ${t.notes}</h3><p>${recipe.notes}</p></div>` : ""}
       </div>
     `;
     })
     .join("");
 
+  const collectionText = t.recipeCollection.replace("{count}", String(recipes.length));
+
   return `
 <!DOCTYPE html>
-<html>
+<html lang="${locale}">
 <head>
   <meta charset="UTF-8">
   <title>${title}</title>
@@ -307,19 +331,19 @@ function generateRecipeBookHTML(
 
     /* Recipe Pages */
     .recipe-page {
-      padding: 20px;
-      min-height: auto;
+      padding: 40px;
+      min-height: 100vh;
     }
 
     .recipe-images {
-      margin-bottom: 16px;
+      margin-bottom: 24px;
     }
 
     .primary-image img {
       width: 100%;
-      max-height: 250px;
-      object-fit: contain;
-      border-radius: 12px;
+      max-height: 350px;
+      object-fit: cover;
+      border-radius: 16px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
 
@@ -332,19 +356,19 @@ function generateRecipeBookHTML(
     .secondary-image {
       flex: 1;
       max-height: 150px;
-      object-fit: contain;
+      object-fit: cover;
       border-radius: 12px;
     }
 
     .recipe-header {
-      margin-bottom: 12px;
+      margin-bottom: 20px;
     }
 
     .recipe-header h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 28px;
+      font-size: 32px;
       color: #3D3532;
-      margin: 6px 0;
+      margin: 8px 0;
     }
 
     .category {
@@ -369,44 +393,47 @@ function generateRecipeBookHTML(
 
     .meta {
       display: flex;
-      gap: 16px;
+      gap: 20px;
       flex-wrap: wrap;
-      margin-bottom: 16px;
-      padding: 12px;
+      margin-bottom: 24px;
+      padding: 16px;
       background: #FFEDE5;
-      border-radius: 8px;
+      border-radius: 12px;
     }
 
     .meta span {
       color: #6B5B54;
-      font-size: 13px;
+      font-size: 14px;
     }
 
     .content {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 20px;
-    }
-
-    @media (max-width: 768px) {
-      .content {
-        grid-template-columns: 1fr;
-      }
+      display: table;
+      width: 100%;
+      table-layout: fixed;
     }
 
     .ingredients {
+      display: table-cell;
+      width: 35%;
+      vertical-align: top;
       background: #FFFCFA;
-      padding: 16px;
-      border-radius: 10px;
+      padding: 20px;
+      border-radius: 12px;
       border: 1px solid #E8E2DC;
-      height: fit-content;
+    }
+
+    .instructions {
+      display: table-cell;
+      width: 65%;
+      vertical-align: top;
+      padding-left: 32px;
     }
 
     .ingredients h3, .instructions h3, .notes h3 {
       font-family: 'Playfair Display', serif;
-      font-size: 18px;
+      font-size: 20px;
       color: #3D3532;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     .ingredients ul {
@@ -414,18 +441,8 @@ function generateRecipeBookHTML(
     }
 
     .ingredients li {
-      padding: 10px 0;
-      padding-left: 20px;
-      position: relative;
-      color: #6B5B54;
-    }
-
-    .ingredients li::before {
-      content: "●";
-      position: absolute;
-      left: 0;
-      color: #FFCBA4;
-      font-size: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #E8E2DC;
     }
 
     .ingredients li:last-child {
@@ -443,11 +460,13 @@ function generateRecipeBookHTML(
     }
 
     .instructions li {
-      margin-bottom: 16px;
-      padding-bottom: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #E8E2DC;
     }
 
     .instructions li:last-child {
+      border-bottom: none;
       margin-bottom: 0;
       padding-bottom: 0;
     }
@@ -460,7 +479,6 @@ function generateRecipeBookHTML(
 
     .step-text {
       flex: 1;
-      color: #6B5B54;
     }
 
     .step-number {
@@ -482,7 +500,7 @@ function generateRecipeBookHTML(
       width: 100%;
       max-width: 400px;
       max-height: 250px;
-      object-fit: contain;
+      object-fit: cover;
       border-radius: 12px;
       margin-top: 16px;
       margin-left: 52px;
@@ -500,10 +518,10 @@ function generateRecipeBookHTML(
     }
 
     .notes {
-      margin-top: 16px;
-      padding: 16px;
+      margin-top: 24px;
+      padding: 20px;
       background: #FFF5F2;
-      border-radius: 10px;
+      border-radius: 12px;
       border-left: 4px solid #FFCBA4;
     }
 
@@ -548,133 +566,30 @@ function generateRecipeBookHTML(
     }
 
     @media print {
-      /* Ensure white background */
       body {
-        background: white !important;
+        background: white;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
-
-      /* Preserve colors and backgrounds */
-      * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-
-      /* Page setup */
-      @page {
-        size: A4;
-        margin: 15mm;
-      }
-
-      /* Recipe page styling */
       .recipe-page {
-        padding: 0 !important;
-        margin-bottom: 20px;
-        page-break-after: always;
-        page-break-inside: avoid;
+        padding: 20px;
       }
-
-      /* Preserve the two-column grid layout */
       .content {
-        display: grid !important;
-        grid-template-columns: 1fr 2fr !important;
-        gap: 20px !important;
-        page-break-inside: avoid;
+        display: table !important;
+        width: 100% !important;
       }
-
-      /* Ingredients styling */
       .ingredients {
-        background: #FFFCFA !important;
-        padding: 16px !important;
-        border-radius: 10px !important;
-        border: 1px solid #E8E2DC !important;
-        page-break-inside: avoid;
+        display: table-cell !important;
+        width: 35% !important;
       }
-
-      .ingredients h3, .instructions h3 {
-        font-size: 18px !important;
-        color: #3D3532 !important;
-        margin-bottom: 12px !important;
-      }
-
-      .ingredients li {
-        color: #6B5B54 !important;
-        padding: 8px 0 !important;
-      }
-
-      .ingredients li::before {
-        color: #FFCBA4 !important;
-      }
-
-      /* Instructions styling */
       .instructions {
-        page-break-inside: avoid;
+        display: table-cell !important;
+        width: 65% !important;
       }
+    }
 
-      .instructions li {
-        margin-bottom: 16px !important;
-        padding-bottom: 12px !important;
-      }
-
-      .step-text {
-        color: #6B5B54 !important;
-      }
-
-      .step-number {
-        width: 36px !important;
-        height: 36px !important;
-        font-size: 16px !important;
-        background: linear-gradient(135deg, #FFCBA4 0%, #FFB88A 100%) !important;
-        color: #3D3532 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-
-      /* Meta section */
-      .meta {
-        background: #FFEDE5 !important;
-        color: #6B5B54 !important;
-        padding: 12px !important;
-        margin-bottom: 16px !important;
-        page-break-inside: avoid;
-      }
-
-      .meta span {
-        font-size: 13px !important;
-      }
-
-      /* Category badge */
-      .category {
-        background: #FFEDE5 !important;
-        color: #CC7052 !important;
-      }
-
-      /* Images */
-      .primary-image img,
-      .secondary-image,
-      .step-image {
-        page-break-inside: avoid;
-        max-height: 300px !important;
-      }
-
-      /* Notes section */
-      .notes {
-        background: #FFF5F2 !important;
-        border-left-color: #FFCBA4 !important;
-        page-break-inside: avoid;
-      }
-
-      /* Cover and TOC */
-      .cover,
-      .toc {
-        page-break-after: always;
-      }
-
-      /* Hide page breaks for cover */
-      .cover.page-break {
-        page-break-before: auto;
-      }
+    @page {
+      margin: 0.5in;
     }
   </style>
 </head>
@@ -682,13 +597,13 @@ function generateRecipeBookHTML(
   <!-- Cover Page -->
   <div class="cover">
     <h1>${title}</h1>
-    <p>A Collection of ${recipes.length} Family Recipes</p>
+    <p>${collectionText}</p>
     ${dedication ? `<p class="dedication">"${dedication}"</p>` : ""}
   </div>
 
   <!-- Table of Contents -->
   <div class="toc page-break">
-    <h2>Table of Contents</h2>
+    <h2>${t.tableOfContents}</h2>
     <ul>
       ${recipes.map((r, i) => `<li><span>${r.title}</span><span>${i + 1}</span></li>`).join("")}
     </ul>

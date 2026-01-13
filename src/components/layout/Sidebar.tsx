@@ -14,23 +14,32 @@ import {
   Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import type { LucideIcon } from "lucide-react";
 
-const navigation = [
-  { name: "My Recipes", href: "/dashboard", icon: Home },
-  { name: "Categories", href: "/dashboard/categories", icon: FolderOpen },
-  { name: "Tags", href: "/dashboard/tags", icon: Tag },
-  { name: "Collections", href: "/dashboard/collections", icon: Library },
-  { name: "Favorites", href: "/dashboard/favorites", icon: Heart },
-  { name: "Scan Recipe", href: "/dashboard/scan", icon: Camera },
-  { name: "Recipe Book", href: "/dashboard/recipe-book", icon: BookOpen },
+interface NavItem {
+  key: keyof typeof import("@/lib/i18n/translations/en").en.nav;
+  href: string;
+  icon: LucideIcon;
+}
+
+const navigation: NavItem[] = [
+  { key: "myRecipes", href: "/dashboard", icon: Home },
+  { key: "categories", href: "/dashboard/categories", icon: FolderOpen },
+  { key: "tags", href: "/dashboard/tags", icon: Tag },
+  { key: "collections", href: "/dashboard/collections", icon: Library },
+  { key: "favorites", href: "/dashboard/favorites", icon: Heart },
+  { key: "scanRecipe", href: "/dashboard/scan", icon: Camera },
+  { key: "recipeBook", href: "/dashboard/recipe-book", icon: BookOpen },
 ];
 
-const secondaryNavigation = [
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+const secondaryNavigation: NavItem[] = [
+  { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
     <aside className="hidden md:flex w-64 bg-warm-white border-r border-warm-gray-100 flex-col">
@@ -39,7 +48,7 @@ export function Sidebar() {
         <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-2xl">🍳</span>
           <span className="font-display text-xl text-warm-gray-700">
-            Recipe Keeper
+            {t.common.appName}
           </span>
         </Link>
       </div>
@@ -52,7 +61,7 @@ export function Sidebar() {
           className="flex items-center gap-3 px-4 py-3 rounded-xl bg-peach-300 hover:bg-peach-400 text-warm-gray-700 font-medium transition-colors mb-4"
         >
           <Plus className="w-5 h-5" />
-          <span>Add Recipe</span>
+          <span>{t.nav.addRecipe}</span>
         </Link>
 
         {navigation.map((item) => {
@@ -61,7 +70,7 @@ export function Sidebar() {
             (item.href !== "/dashboard" && pathname.startsWith(item.href));
           return (
             <Link
-              key={item.name}
+              key={item.key}
               href={item.href}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl text-warm-gray-500 hover:bg-peach-50 hover:text-peach-600 transition-colors",
@@ -69,7 +78,7 @@ export function Sidebar() {
               )}
             >
               <item.icon className="w-5 h-5" />
-              <span>{item.name}</span>
+              <span>{t.nav[item.key]}</span>
             </Link>
           );
         })}
@@ -81,7 +90,7 @@ export function Sidebar() {
           const isActive = pathname === item.href;
           return (
             <Link
-              key={item.name}
+              key={item.key}
               href={item.href}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl text-warm-gray-500 hover:bg-peach-50 hover:text-peach-600 transition-colors",
@@ -89,7 +98,7 @@ export function Sidebar() {
               )}
             >
               <item.icon className="w-5 h-5" />
-              <span>{item.name}</span>
+              <span>{t.nav[item.key]}</span>
             </Link>
           );
         })}
