@@ -109,6 +109,7 @@ ${unitStandardization}
 Important guidelines:
 - Convert all quantities to numbers (e.g., "1/2" becomes 0.5, "1 1/2" becomes 1.5)
 - Number steps sequentially starting from 1
+- When extracting ingredients and instructions, PRESERVE the original sentence structure and wording as much as possible, unless translation is required. Do not over-simplify or rewrite instructions if they are already clear.
 - ALWAYS translate to ${targetLangName} if the source is in another language
 - Set wasTranslated to true if any translation was performed
 - Return ONLY valid JSON, no additional text`;
