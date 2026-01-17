@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { ImageCropper } from "@/components/shared/ImageCropper";
 
 interface ImageUploadProps {
   value?: string | null;
@@ -104,6 +105,39 @@ export function ImageUpload({
   /* Drag and Drop Handlers */
   const [isDragging, setIsDragging] = useState(false);
 
+  /* Cropping State */
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+
+  // When a file is selected (via input or drop), set it for cropping instead of immediate upload
+  const onFileSelect = useCallback((file: File) => {
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a JPG, PNG, or WebP image",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Image must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCropFile(file);
+    // Create object URL for preview
+    const objectUrl = URL.createObjectURL(file);
+    setCropImageSrc(objectUrl);
+  }, [toast]);
+
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -120,64 +154,105 @@ export function ImageUpload({
       setIsDragging(false);
       const file = e.dataTransfer.files?.[0];
       if (file) {
-        handleUpload(file);
+        onFileSelect(file);
       }
     },
-    [handleUpload]
+    [onFileSelect]
   );
 
+  const handleCropConfirm = async (croppedBlob: Blob) => {
+    if (!cropFile) return;
+
+    // Create a new File from the blob
+    const croppedFile = new File([croppedBlob], cropFile.name, {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
+
+    handleUpload(croppedFile);
+    closeCropper();
+  };
+
+  const handleSkipCrop = () => {
+    if (cropFile) {
+      handleUpload(cropFile);
+    }
+    closeCropper();
+  };
+
+  const closeCropper = () => {
+    if (cropImageSrc) {
+      URL.revokeObjectURL(cropImageSrc);
+    }
+    setCropFile(null);
+    setCropImageSrc(null);
+  };
+
   return (
-    <div
-      className={cn(
-        "relative border-2 border-dashed rounded-xl overflow-hidden transition-colors",
-        isDragging ? "border-peach-400 bg-peach-50" : "border-warm-gray-200",
-        aspectRatio === "video" ? "aspect-video" : "aspect-square",
-        className
+    <>
+      <div
+        className={cn(
+          "relative border-2 border-dashed rounded-xl overflow-hidden transition-colors",
+          isDragging ? "border-peach-400 bg-peach-50" : "border-warm-gray-200",
+          aspectRatio === "video" ? "aspect-video" : "aspect-square",
+          className
+        )}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+      >
+        {value ? (
+          <>
+            <Image src={value} alt="Uploaded image" fill className="object-cover" />
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="absolute top-2 right-2 h-8 w-8"
+              onClick={handleRemove}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </>
+        ) : (
+          <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-warm-gray-50 transition-colors">
+            <input
+              type="file"
+              className="hidden"
+              accept="image/jpeg,image/png,image/webp,image/heic"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onFileSelect(file);
+              }}
+              disabled={isUploading}
+            />
+            {isUploading ? (
+              <Loader2 className="w-8 h-8 text-warm-gray-400 animate-spin" />
+            ) : (
+              <>
+                <Upload className={cn("w-8 h-8 mb-2", isDragging ? "text-peach-500" : "text-warm-gray-400")} />
+                <span className={cn("text-sm transition-colors", isDragging ? "text-peach-600 font-medium" : "text-warm-gray-500")}>
+                  {isDragging ? "Drop image here" : "Click or drag to upload"}
+                </span>
+                <span className="text-xs text-warm-gray-400 mt-1">
+                  JPG, PNG, WebP (max 5MB)
+                </span>
+              </>
+            )}
+          </label>
+        )}
+      </div>
+
+      {cropImageSrc && (
+        <ImageCropper
+          imageSrc={cropImageSrc}
+          isOpen={!!cropImageSrc}
+          onClose={closeCropper}
+          onConfirm={handleCropConfirm}
+          onSkip={handleSkipCrop}
+          aspectRatio={aspectRatio === "video" ? 16 / 9 : 1}
+        />
       )}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
-    >
-      {value ? (
-        <>
-          <Image src={value} alt="Uploaded image" fill className="object-cover" />
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon"
-            className="absolute top-2 right-2 h-8 w-8"
-            onClick={handleRemove}
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </>
-      ) : (
-        <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-warm-gray-50 transition-colors">
-          <input
-            type="file"
-            className="hidden"
-            accept="image/jpeg,image/png,image/webp,image/heic"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleUpload(file);
-            }}
-            disabled={isUploading}
-          />
-          {isUploading ? (
-            <Loader2 className="w-8 h-8 text-warm-gray-400 animate-spin" />
-          ) : (
-            <>
-              <Upload className={cn("w-8 h-8 mb-2", isDragging ? "text-peach-500" : "text-warm-gray-400")} />
-              <span className={cn("text-sm transition-colors", isDragging ? "text-peach-600 font-medium" : "text-warm-gray-500")}>
-                {isDragging ? "Drop image here" : "Click or drag to upload"}
-              </span>
-              <span className="text-xs text-warm-gray-400 mt-1">
-                JPG, PNG, WebP (max 5MB)
-              </span>
-            </>
-          )}
-        </label>
-      )}
-    </div>
+    </>
   );
 }
