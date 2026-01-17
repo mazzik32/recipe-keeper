@@ -238,6 +238,9 @@ export const en = {
     collectionCreatedDesc: "\"{name}\" has been created",
     collectionDeleted: "Collection deleted",
     collectionDeletedDesc: "\"{name}\" has been deleted",
+    removeRecipe: "Remove Recipe",
+    confirmRemoveRecipe: "Are you sure you want to remove this recipe from the collection?",
+    recipeRemoved: "Recipe removed from collection",
   },
   
   favorites: {

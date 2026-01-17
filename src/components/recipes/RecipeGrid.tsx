@@ -8,9 +8,10 @@ import type { RecipeWithRelations } from "@/types/database.types";
 
 interface RecipeGridProps {
   recipes: RecipeWithRelations[];
+  renderAction?: (recipe: RecipeWithRelations) => React.ReactNode;
 }
 
-export function RecipeGrid({ recipes: initialRecipes }: RecipeGridProps) {
+export function RecipeGrid({ recipes: initialRecipes, renderAction }: RecipeGridProps) {
   const router = useRouter();
   const { toggleFavorite } = useRecipes();
   const [recipes, setRecipes] = useState(initialRecipes);
@@ -42,6 +43,7 @@ export function RecipeGrid({ recipes: initialRecipes }: RecipeGridProps) {
           key={recipe.id}
           recipe={recipe}
           onToggleFavorite={handleToggleFavorite}
+          action={renderAction?.(recipe)}
         />
       ))}
     </div>

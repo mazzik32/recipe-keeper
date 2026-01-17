@@ -13,9 +13,10 @@ import type { RecipeWithRelations } from "@/types/database.types";
 interface RecipeCardProps {
   recipe: RecipeWithRelations;
   onToggleFavorite?: (id: string, isFavorite: boolean) => void;
+  action?: React.ReactNode;
 }
 
-export function RecipeCard({ recipe, onToggleFavorite }: RecipeCardProps) {
+export function RecipeCard({ recipe, onToggleFavorite, action }: RecipeCardProps) {
   const { locale, t } = useLanguage();
   const totalTime =
     (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
@@ -39,7 +40,6 @@ export function RecipeCard({ recipe, onToggleFavorite }: RecipeCardProps) {
             </div>
           )}
 
-          {/* Favorite Button */}
           {onToggleFavorite && (
             <button
               onClick={(e) => {
@@ -58,6 +58,14 @@ export function RecipeCard({ recipe, onToggleFavorite }: RecipeCardProps) {
               />
             </button>
           )}
+
+          {/* Custom Action */}
+          {action && (
+            <div className="absolute top-3 left-3 z-10" onClick={(e) => e.preventDefault()}>
+              {action}
+            </div>
+          )}
+
 
           {/* Category Badge */}
           {recipe.category && (

@@ -97,7 +97,7 @@ export const de: Translations = {
     category: "Kategorie",
     source: "Quelle",
     sourcePlaceholder: "Mamis Kochbuch",
-    sourceHelper: "z.B. Mami, Omi",
+    sourceHelper: "z.B. Mami, Oma",
     notes: "Notizen & Erinnerungen",
     notesPlaceholder: "Fügen Sie persönliche Notizen oder Erinnerungen zu diesem Rezept hinzu...",
     
@@ -240,6 +240,9 @@ export const de: Translations = {
     collectionCreatedDesc: "\"{name}\" wurde erstellt",
     collectionDeleted: "Sammlung gelöscht",
     collectionDeletedDesc: "\"{name}\" wurde gelöscht",
+    removeRecipe: "Rezept entfernen",
+    confirmRemoveRecipe: "Sind Sie sicher, dass Sie dieses Rezept aus der Sammlung entfernen möchten?",
+    recipeRemoved: "Rezept aus Sammlung entfernt",
   },
   
   favorites: {

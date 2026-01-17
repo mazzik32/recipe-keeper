@@ -5,6 +5,7 @@ import { ArrowLeft, Library } from "lucide-react";
 import { RecipeGrid } from "@/components/recipes/RecipeGrid";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { RemoveFromCollectionButton } from "@/components/collections/RemoveFromCollectionButton";
 import type { RecipeWithRelations } from "@/types/database.types";
 
 interface Collection {
@@ -50,7 +51,15 @@ export function CollectionDetailContent({ collection, recipes }: CollectionDetai
 
       {/* Recipes */}
       {recipes && recipes.length > 0 ? (
-        <RecipeGrid recipes={recipes} />
+        <RecipeGrid
+          recipes={recipes}
+          renderAction={(recipe) => (
+            <RemoveFromCollectionButton
+              collectionId={collection.id}
+              recipeId={recipe.id}
+            />
+          )}
+        />
       ) : (
         <EmptyState
           title={t.collections.noRecipesInCollection}

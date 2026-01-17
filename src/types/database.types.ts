@@ -227,6 +227,43 @@ export type Database = {
           tag_id?: string;
         };
       };
+      collections: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          created_at?: string;
+        };
+      };
+      recipe_collections: {
+        Row: {
+          recipe_id: string;
+          collection_id: string;
+        };
+        Insert: {
+          recipe_id: string;
+          collection_id: string;
+        };
+        Update: {
+          recipe_id?: string;
+          collection_id?: string;
+        };
+      };
     };
   };
 };
