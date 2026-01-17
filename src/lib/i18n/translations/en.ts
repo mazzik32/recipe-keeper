@@ -173,6 +173,9 @@ export const en = {
     invalidFileType: "Please upload JPG, PNG, HEIC, WebP, or PDF files only.",
     fileTooLarge: "Each file must be less than 10MB.",
     maxImagesReached: "Maximum 5 images allowed.",
+    imageMode: "Image",
+    webMode: "Web URL",
+    textMode: "Paste Text",
   },
   
   categories: {

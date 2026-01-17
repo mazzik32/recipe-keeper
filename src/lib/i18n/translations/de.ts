@@ -175,6 +175,9 @@ export const de: Translations = {
     invalidFileType: "Bitte laden Sie nur JPG, PNG, HEIC, WebP oder PDF-Dateien hoch.",
     fileTooLarge: "Jede Datei muss kleiner als 10MB sein.",
     maxImagesReached: "Maximal 5 Bilder erlaubt.",
+    imageMode: "Bild",
+    webMode: "Web-URL",
+    textMode: "Text einfügen",
   },
   
   categories: {
