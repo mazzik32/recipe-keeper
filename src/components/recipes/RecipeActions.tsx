@@ -22,6 +22,7 @@ import {
 import { useRecipes } from "@/hooks/useRecipes";
 import { useCollections, type Collection } from "@/hooks/useCollections";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface RecipeActionsProps {
   recipeId: string;
@@ -29,6 +30,7 @@ interface RecipeActionsProps {
 }
 
 export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const { toggleFavorite, deleteRecipe, duplicateRecipe } = useRecipes();
   const { getCollections, addToCollection } = useCollections();
@@ -116,11 +118,11 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setShowCollectionDialog(true)}>
               <ListPlus className="w-4 h-4 mr-2" />
-              Add to Collection
+              {t.recipes.addToCollection}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDuplicate}>
               <Copy className="w-4 h-4 mr-2" />
-              Duplicate Recipe
+              {t.recipes.duplicateRecipe}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -128,7 +130,7 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
               className="text-red-600 focus:text-red-600"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Delete Recipe
+              {t.recipes.deleteRecipe}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -138,10 +140,9 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Recipe</DialogTitle>
+            <DialogTitle>{t.recipes.deleteRecipe}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this recipe? This action cannot be
-              undone.
+              {t.recipes.confirmDelete}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -149,14 +150,14 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
               variant="outline"
               onClick={() => setShowDeleteDialog(false)}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? t.common.loading : t.common.delete}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -166,19 +167,19 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
       <Dialog open={showCollectionDialog} onOpenChange={setShowCollectionDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add to Collection</DialogTitle>
+            <DialogTitle>{t.recipes.addToCollection}</DialogTitle>
             <DialogDescription>
-              Choose a collection to add this recipe to.
+              {t.collections.createDescription}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             {isLoadingCollections ? (
               <div className="flex justify-center p-4">
-                <div className="animate-pulse text-warm-gray-400">Loading collections...</div>
+                <div className="animate-pulse text-warm-gray-400">{t.common.loading}</div>
               </div>
             ) : collections.length === 0 ? (
               <p className="text-center text-warm-gray-500 py-4">
-                No collections found. Create a collection first.
+                {t.collections.noCollectionsDesc}
               </p>
             ) : (
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
@@ -201,7 +202,7 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
               variant="outline"
               onClick={() => setShowCollectionDialog(false)}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
           </DialogFooter>
         </DialogContent>

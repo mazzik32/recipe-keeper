@@ -143,6 +143,7 @@ export const de: Translations = {
     updateRecipe: "Rezept aktualisieren",
     addToFavorites: "Zu Favoriten hinzufügen",
     removeFromFavorites: "Aus Favoriten entfernen",
+    addToCollection: "Zur Sammlung hinzufügen",
     addedToFavorites: "Zu Favoriten hinzugefügt",
     removedFromFavorites: "Aus Favoriten entfernt",
     backToRecipes: "Zurück zu Rezepten",

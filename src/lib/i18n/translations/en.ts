@@ -141,6 +141,7 @@ export const en = {
     updateRecipe: "Update Recipe",
     addToFavorites: "Add to favorites",
     removeFromFavorites: "Remove from favorites",
+    addToCollection: "Add to Collection",
     addedToFavorites: "Added to favorites",
     removedFromFavorites: "Removed from favorites",
     backToRecipes: "Back to recipes",
