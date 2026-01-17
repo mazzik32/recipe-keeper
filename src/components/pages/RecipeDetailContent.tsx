@@ -1,5 +1,5 @@
-"use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translateCategoryName } from "@/lib/i18n";
-import type { RecipeWithRelations, RecipeImage, RecipeStep, RecipeIngredient } from "@/types/database.types";
+import { createClient } from "@/lib/supabase/client";
+import type { RecipeWithRelations, RecipeImage, RecipeStep, RecipeIngredient, Tag } from "@/types/database.types";
 
 interface RecipeDetailContentProps {
   recipe: RecipeWithRelations;
@@ -37,6 +38,22 @@ export function RecipeDetailContent({ recipe }: RecipeDetailContentProps) {
     }
   };
 
+  const [tags, setTags] = useState<Tag[]>([]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("recipe_tags")
+      .select("tags(*)")
+      .eq("recipe_id", recipe.id)
+      .then(({ data }) => {
+        if (data) {
+          // @ts-ignore - Supabase types are a bit tricky with joins
+          setTags(data.map(item => item.tags).flat());
+        }
+      });
+  }, [recipe.id]);
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back Button */}
@@ -57,6 +74,11 @@ export function RecipeDetailContent({ recipe }: RecipeDetailContentProps) {
                 {recipe.category.icon} {translateCategoryName(recipe.category.name, t)}
               </Badge>
             )}
+            {tags.map(tag => (
+              <Badge key={tag.id} variant="secondary" className="bg-peach-100 text-peach-700">
+                {tag.name}
+              </Badge>
+            ))}
           </div>
           <h1 className="font-display text-4xl text-warm-gray-700 mb-2">
             {recipe.title}

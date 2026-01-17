@@ -196,6 +196,37 @@ export type Database = {
           created_at?: string;
         };
       };
+      tags: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+        };
+      };
+      recipe_tags: {
+        Row: {
+          recipe_id: string;
+          tag_id: string;
+        };
+        Insert: {
+          recipe_id: string;
+          tag_id: string;
+        };
+        Update: {
+          recipe_id?: string;
+          tag_id?: string;
+        };
+      };
     };
   };
 };
@@ -209,6 +240,7 @@ export type RecipeStep = Database["public"]["Tables"]["recipe_steps"]["Row"];
 export type RecipeImage = Database["public"]["Tables"]["recipe_images"]["Row"];
 export type Category = Database["public"]["Tables"]["categories"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+export type Tag = Database["public"]["Tables"]["tags"]["Row"];
 
 export type RecipeWithRelations = Recipe & {
   category?: Category | null;

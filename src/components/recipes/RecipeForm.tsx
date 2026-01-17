@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/recipes/ImageUpload";
+import { RecipeTagsInput } from "@/components/recipes/RecipeTagsInput";
 import {
   Select,
   SelectContent,
@@ -67,6 +68,22 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
   const [secondaryImage, setSecondaryImage] = useState<string | null>(
     recipe?.images?.find((img) => !img.is_primary)?.image_url || null
   );
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const supabase = createClient();
+
+  // Load initial tags for existing recipe
+  useState(() => {
+    if (recipe) {
+      // We need to fetch tags for this recipe because they might not be in the recipe object if not joined
+      supabase
+        .from("recipe_tags")
+        .select("tag_id")
+        .eq("recipe_id", recipe.id)
+        .then(({ data }) => {
+          if (data) setSelectedTags(data.map(rt => rt.tag_id));
+        });
+    }
+  });
 
   const defaultValues: RecipeFormData = recipe
     ? {
@@ -256,6 +273,18 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
           await supabase.from("recipe_images").insert(imagesToInsert);
         }
 
+        // Handle Tags
+        await supabase.from("recipe_tags").delete().eq("recipe_id", recipe.id);
+        if (selectedTags.length > 0) {
+          const { error: tagsError } = await supabase.from("recipe_tags").insert(
+            selectedTags.map(tagId => ({
+              recipe_id: recipe.id,
+              tag_id: tagId
+            }))
+          );
+          if (tagsError) throw tagsError;
+        }
+
         router.push(`/dashboard/recipes/${recipe.id}`);
       } else {
         const { data: newRecipe, error: recipeError } = await supabase
@@ -323,6 +352,17 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
         }
         if (imagesToInsert.length > 0) {
           await supabase.from("recipe_images").insert(imagesToInsert);
+        }
+
+        // Handle Tags
+        if (selectedTags.length > 0) {
+          const { error: tagsError } = await supabase.from("recipe_tags").insert(
+            selectedTags.map(tagId => ({
+              recipe_id: newRecipe.id,
+              tag_id: tagId
+            }))
+          );
+          if (tagsError) throw tagsError;
         }
 
         router.push(`/dashboard/recipes/${newRecipe.id}`);

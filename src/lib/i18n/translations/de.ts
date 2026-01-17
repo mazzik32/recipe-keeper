@@ -90,9 +90,9 @@ export const de: Translations = {
     descriptionPlaceholder: "Eine kurze Beschreibung dieses Rezepts...",
     servings: "Portionen",
     prepTime: "Vorbereitungszeit",
-    activePrepTime: "Aktive Arbeitszeit",
+    activePrepTime: "Zubereitung, aktiv", // Was: "Aktive Arbeitszeit"
     cookTime: "Kochzeit",
-    totalTime: "Gesamtzeit",
+    totalTime: "Zubereitung, total", // Was: "Gesamtzeit"
     difficulty: "Schwierigkeit",
     category: "Kategorie",
     source: "Quelle",
