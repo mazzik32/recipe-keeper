@@ -5,8 +5,11 @@ import { ArrowLeft, Library } from "lucide-react";
 import { RecipeGrid } from "@/components/recipes/RecipeGrid";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { RemoveFromCollectionButton } from "@/components/collections/RemoveFromCollectionButton";
+import { RecipeActionsMenu } from "@/components/recipes/RecipeActionsMenu";
 import type { RecipeWithRelations } from "@/types/database.types";
+import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface Collection {
   id: string;
@@ -21,6 +24,39 @@ interface CollectionDetailContentProps {
 
 export function CollectionDetailContent({ collection, recipes }: CollectionDetailContentProps) {
   const { locale, t } = useLanguage();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleRemoveFromCollection = async (recipeId: string) => {
+    if (!confirm(t.collections.confirmRemoveRecipe)) {
+      return;
+    }
+
+    const supabase = createClient();
+    try {
+      const { error } = await supabase
+        .from("recipe_collections")
+        .delete()
+        .eq("collection_id", collection.id)
+        .eq("recipe_id", recipeId);
+
+      if (error) throw error;
+
+      toast({
+        title: t.common.success,
+        description: t.collections.recipeRemoved || "Recipe removed from collection",
+      });
+
+      router.refresh();
+    } catch (error) {
+      console.error("Error removing recipe from collection:", error);
+      toast({
+        title: t.common.error,
+        description: t.errors.deleteFailed,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div>
@@ -54,9 +90,9 @@ export function CollectionDetailContent({ collection, recipes }: CollectionDetai
         <RecipeGrid
           recipes={recipes}
           renderAction={(recipe) => (
-            <RemoveFromCollectionButton
-              collectionId={collection.id}
+            <RecipeActionsMenu
               recipeId={recipe.id}
+              onRemoveFromCollection={() => handleRemoveFromCollection(recipe.id)}
             />
           )}
         />

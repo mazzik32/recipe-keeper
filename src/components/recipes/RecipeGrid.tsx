@@ -47,7 +47,7 @@ export function RecipeGrid({ recipes: initialRecipes, renderAction }: RecipeGrid
           key={recipe.id}
           recipe={recipe}
           onToggleFavorite={handleToggleFavorite}
-          action={renderAction?.(recipe)}
+          actions={renderAction?.(recipe)}
         />
       ))}
     </div>

@@ -5,6 +5,7 @@ import { RecipeGrid } from "@/components/recipes/RecipeGrid";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { TagFilter } from "@/components/dashboard/TagFilter";
+import { RecipeActionsMenu } from "@/components/recipes/RecipeActionsMenu";
 import type { RecipeWithRelations, Tag } from "@/types/database.types";
 
 interface DashboardContentProps {
@@ -63,7 +64,10 @@ export function DashboardContent({ recipes: initialRecipes, allTags }: Dashboard
       />
 
       {filteredRecipes && filteredRecipes.length > 0 ? (
-        <RecipeGrid recipes={filteredRecipes} />
+        <RecipeGrid
+          recipes={filteredRecipes}
+          renderAction={(recipe) => <RecipeActionsMenu recipeId={recipe.id} />}
+        />
       ) : (
         <EmptyState
           icon="📖"

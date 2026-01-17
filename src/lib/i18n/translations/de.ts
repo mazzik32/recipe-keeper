@@ -240,6 +240,7 @@ export const de: Translations = {
     collectionCreatedDesc: "\"{name}\" wurde erstellt",
     collectionDeleted: "Sammlung gelöscht",
     collectionDeletedDesc: "\"{name}\" wurde gelöscht",
+    removeFromCollection: "Aus Sammlung entfernen",
     removeRecipe: "Rezept entfernen",
     confirmRemoveRecipe: "Sind Sie sicher, dass Sie dieses Rezept aus der Sammlung entfernen möchten?",
     recipeRemoved: "Rezept aus Sammlung entfernt",

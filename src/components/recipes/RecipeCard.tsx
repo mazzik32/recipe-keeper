@@ -13,10 +13,10 @@ import type { RecipeWithRelations } from "@/types/database.types";
 interface RecipeCardProps {
   recipe: RecipeWithRelations;
   onToggleFavorite?: (id: string, isFavorite: boolean) => void;
-  action?: React.ReactNode;
+  actions?: React.ReactNode;
 }
 
-export function RecipeCard({ recipe, onToggleFavorite, action }: RecipeCardProps) {
+export function RecipeCard({ recipe, onToggleFavorite, actions }: RecipeCardProps) {
   const { locale, t } = useLanguage();
   const totalTime =
     (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
@@ -40,13 +40,27 @@ export function RecipeCard({ recipe, onToggleFavorite, action }: RecipeCardProps
             </div>
           )}
 
+          {/* Custom Actions Menu - Pushed to top right, favorite moves to left */}
+          {actions && (
+            <div className="absolute top-3 right-3 z-10" onClick={(e) => e.preventDefault()}>
+              {actions}
+            </div>
+          )}
+
+          {/* Favorite Button - If actions exist, move closer or to the left?
+              Let's put Favorite on the left if actions exist, or just left of actions?
+              Actually, let's put Favorite top-left if Actions are top-right.
+          */}
           {onToggleFavorite && (
             <button
               onClick={(e) => {
                 e.preventDefault();
                 onToggleFavorite(recipe.id, !recipe.is_favorite);
               }}
-              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+              className={cn(
+                "absolute w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors",
+                actions ? "top-3 left-3" : "top-3 right-3"
+              )}
             >
               <Heart
                 className={cn(
@@ -57,13 +71,6 @@ export function RecipeCard({ recipe, onToggleFavorite, action }: RecipeCardProps
                 )}
               />
             </button>
-          )}
-
-          {/* Custom Action */}
-          {action && (
-            <div className="absolute top-3 left-3 z-10" onClick={(e) => e.preventDefault()}>
-              {action}
-            </div>
           )}
 
 
