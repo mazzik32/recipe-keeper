@@ -506,6 +506,11 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label>{t.nav.tags}</Label>
+            <RecipeTagsInput value={selectedTags} onChange={setSelectedTags} />
+          </div>
         </CardContent>
       </Card>
 
