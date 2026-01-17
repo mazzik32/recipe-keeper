@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { RecipeCard } from "./RecipeCard";
 import { useRecipes } from "@/hooks/useRecipes";
@@ -15,6 +15,10 @@ export function RecipeGrid({ recipes: initialRecipes, renderAction }: RecipeGrid
   const router = useRouter();
   const { toggleFavorite } = useRecipes();
   const [recipes, setRecipes] = useState(initialRecipes);
+
+  useEffect(() => {
+    setRecipes(initialRecipes);
+  }, [initialRecipes]);
 
   if (recipes.length === 0) {
     return null;
