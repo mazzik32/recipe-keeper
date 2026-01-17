@@ -284,4 +284,5 @@ export type RecipeWithRelations = Recipe & {
   ingredients?: RecipeIngredient[];
   steps?: RecipeStep[];
   images?: RecipeImage[];
+  tags?: Tag[];
 };
