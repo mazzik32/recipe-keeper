@@ -13,8 +13,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCroppedImg } from "@/lib/canvasUtils";
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCw } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ImageCropperProps {
@@ -32,11 +33,13 @@ export function ImageCropper({
     onClose,
     onConfirm,
     onSkip,
-    aspectRatio = 16 / 9,
+    aspectRatio: initialAspectRatio = 16 / 9,
 }: ImageCropperProps) {
     const { t } = useLanguage();
     const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
+    const [aspect, setAspect] = useState(initialAspectRatio);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -48,7 +51,7 @@ export function ImageCropper({
         if (!croppedAreaPixels) return;
         setIsProcessing(true);
         try {
-            const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
+            const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
             if (croppedImage) {
                 onConfirm(croppedImage);
             }
@@ -61,11 +64,11 @@ export function ImageCropper({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-[600px] h-[90vh] sm:h-[600px] flex flex-col p-0 gap-0 overflow-hidden">
+            <DialogContent className="sm:max-w-[600px] h-[90vh] sm:h-[700px] flex flex-col p-0 gap-0 overflow-hidden">
                 <DialogHeader className="p-6 pb-2">
                     <DialogTitle>Edit Image</DialogTitle>
                     <DialogDescription>
-                        Crop and adjust your image.
+                        Crop, rotate, and adjust your image.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -74,27 +77,57 @@ export function ImageCropper({
                         image={imageSrc}
                         crop={crop}
                         zoom={zoom}
-                        aspect={aspectRatio}
+                        rotation={rotation}
+                        aspect={aspect}
                         onCropChange={setCrop}
                         onCropComplete={onCropComplete}
                         onZoomChange={setZoom}
+                        onRotationChange={setRotation}
                     />
                 </div>
 
                 <div className="p-6 pt-4 space-y-4 bg-background">
-                    <div className="flex items-center gap-4">
-                        <span className="text-sm font-medium w-12 text-center">Zoom</span>
-                        <Slider
-                            value={[zoom]}
-                            min={1}
-                            max={3}
-                            step={0.1}
-                            onValueChange={(value) => setZoom(value[0])}
-                            className="flex-1"
-                        />
+                    {/* Aspect Ratio Tabs */}
+                    <div className="flex justify-center">
+                        <Tabs defaultValue={String(initialAspectRatio)} onValueChange={(v) => setAspect(Number(v))}>
+                            <TabsList>
+                                <TabsTrigger value={String(16 / 9)}>16:9</TabsTrigger>
+                                <TabsTrigger value={String(4 / 3)}>4:3</TabsTrigger>
+                                <TabsTrigger value={String(1)}>1:1</TabsTrigger>
+                                <TabsTrigger value={String(3 / 4)}>3:4</TabsTrigger>
+                                <TabsTrigger value={String(9 / 16)}>9:16</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
                     </div>
 
-                    <DialogFooter className="gap-2 sm:gap-0">
+                    {/* Controls */}
+                    <div className="grid gap-4">
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm font-medium w-16">Zoom</span>
+                            <Slider
+                                value={[zoom]}
+                                min={1}
+                                max={3}
+                                step={0.1}
+                                onValueChange={(value) => setZoom(value[0])}
+                                className="flex-1"
+                            />
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <RotateCw className="w-4 h-4 text-warm-gray-500" />
+                            <span className="text-sm font-medium w-12">Rotate</span>
+                            <Slider
+                                value={[rotation]}
+                                min={0}
+                                max={360}
+                                step={1}
+                                onValueChange={(value) => setRotation(value[0])}
+                                className="flex-1"
+                            />
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0 pt-2">
                         <Button variant="ghost" onClick={onClose} disabled={isProcessing}>
                             Cancel
                         </Button>
