@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Copy, Trash2, MoreHorizontal } from "lucide-react";
+import { Heart, Copy, Trash2, MoreHorizontal, ListPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRecipes } from "@/hooks/useRecipes";
+import { useCollections, type Collection } from "@/hooks/useCollections";
 import { cn } from "@/lib/utils";
 
 interface RecipeActionsProps {
@@ -30,9 +31,28 @@ interface RecipeActionsProps {
 export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
   const router = useRouter();
   const { toggleFavorite, deleteRecipe, duplicateRecipe } = useRecipes();
+  const { getCollections, addToCollection } = useCollections();
+
   const [favorite, setFavorite] = useState(isFavorite);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Collections state
+  const [showCollectionDialog, setShowCollectionDialog] = useState(false);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [isLoadingCollections, setIsLoadingCollections] = useState(false);
+
+  useEffect(() => {
+    if (showCollectionDialog) {
+      const fetchCollections = async () => {
+        setIsLoadingCollections(true);
+        const data = await getCollections();
+        setCollections(data);
+        setIsLoadingCollections(false);
+      };
+      fetchCollections();
+    }
+  }, [showCollectionDialog]);
 
   const handleToggleFavorite = async () => {
     const newValue = !favorite;
@@ -48,6 +68,11 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
     if (newId) {
       router.push(`/dashboard/recipes/${newId}`);
     }
+  };
+
+  const handleAddToCollection = async (collectionId: string) => {
+    await addToCollection(recipeId, collectionId);
+    setShowCollectionDialog(false);
   };
 
   const handleDelete = async () => {
@@ -89,6 +114,10 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setShowCollectionDialog(true)}>
+              <ListPlus className="w-4 h-4 mr-2" />
+              Add to Collection
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleDuplicate}>
               <Copy className="w-4 h-4 mr-2" />
               Duplicate Recipe
@@ -105,6 +134,7 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
         </DropdownMenu>
       </div>
 
+      {/* Delete Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
@@ -127,6 +157,51 @@ export function RecipeActions({ recipeId, isFavorite }: RecipeActionsProps) {
               disabled={isDeleting}
             >
               {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add to Collection Dialog */}
+      <Dialog open={showCollectionDialog} onOpenChange={setShowCollectionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add to Collection</DialogTitle>
+            <DialogDescription>
+              Choose a collection to add this recipe to.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {isLoadingCollections ? (
+              <div className="flex justify-center p-4">
+                <div className="animate-pulse text-warm-gray-400">Loading collections...</div>
+              </div>
+            ) : collections.length === 0 ? (
+              <p className="text-center text-warm-gray-500 py-4">
+                No collections found. Create a collection first.
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                {collections.map((collection) => (
+                  <Button
+                    key={collection.id}
+                    variant="ghost"
+                    className="w-full justify-start text-left font-normal"
+                    onClick={() => handleAddToCollection(collection.id)}
+                  >
+                    <ListPlus className="w-4 h-4 mr-2 text-peach-500" />
+                    <span className="truncate">{collection.name}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowCollectionDialog(false)}
+            >
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>

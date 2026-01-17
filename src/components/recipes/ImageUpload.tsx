@@ -101,13 +101,42 @@ export function ImageUpload({
     onChange(null);
   };
 
+  /* Drag and Drop Handlers */
+  const [isDragging, setIsDragging] = useState(false);
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const onDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file) {
+        handleUpload(file);
+      }
+    },
+    [handleUpload]
+  );
+
   return (
     <div
       className={cn(
-        "relative border-2 border-dashed border-warm-gray-200 rounded-xl overflow-hidden",
+        "relative border-2 border-dashed rounded-xl overflow-hidden transition-colors",
+        isDragging ? "border-peach-400 bg-peach-50" : "border-warm-gray-200",
         aspectRatio === "video" ? "aspect-video" : "aspect-square",
         className
       )}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
     >
       {value ? (
         <>
@@ -127,7 +156,7 @@ export function ImageUpload({
           <input
             type="file"
             className="hidden"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp,image/heic"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) handleUpload(file);
@@ -138,9 +167,9 @@ export function ImageUpload({
             <Loader2 className="w-8 h-8 text-warm-gray-400 animate-spin" />
           ) : (
             <>
-              <Upload className="w-8 h-8 text-warm-gray-400 mb-2" />
-              <span className="text-sm text-warm-gray-500">
-                Click to upload image
+              <Upload className={cn("w-8 h-8 mb-2", isDragging ? "text-peach-500" : "text-warm-gray-400")} />
+              <span className={cn("text-sm transition-colors", isDragging ? "text-peach-600 font-medium" : "text-warm-gray-500")}>
+                {isDragging ? "Drop image here" : "Click or drag to upload"}
               </span>
               <span className="text-xs text-warm-gray-400 mt-1">
                 JPG, PNG, WebP (max 5MB)
