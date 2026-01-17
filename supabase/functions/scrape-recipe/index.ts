@@ -74,7 +74,10 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return new Response(
-        JSON.stringify({ error: "Missing or invalid authorization header" }),
+        JSON.stringify({ 
+          success: false,
+          error: { message: "Missing or invalid authorization header" } 
+        }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -84,11 +87,14 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: "Invalid or expired token", details: authError?.message }),
+        JSON.stringify({ 
+          success: false,
+          error: { message: "Invalid or expired token", details: authError?.message } 
+        }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }

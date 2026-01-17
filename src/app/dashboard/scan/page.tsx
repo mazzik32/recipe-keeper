@@ -176,8 +176,18 @@ export default function ScanRecipePage() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Failed to analyze recipe");
+        let errorMessage = "Failed to analyze recipe";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error?.message || errorData.message || errorMessage;
+          if (errorData.error?.details) {
+            errorMessage += ` (${errorData.error.details})`;
+          }
+        } catch (e) {
+          const text = await response.text();
+          errorMessage = `Server Error (${response.status}): ${text.slice(0, 100)}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result: { success: boolean } & AnalysisResult = await response.json();
@@ -217,8 +227,18 @@ export default function ScanRecipePage() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Failed to scrape recipe");
+        let errorMessage = "Failed to scrape recipe";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error?.message || errorData.message || errorMessage;
+          if (errorData.error?.details) {
+            errorMessage += ` (${errorData.error.details})`;
+          }
+        } catch (e) {
+          const text = await response.text();
+          errorMessage = `Server Error (${response.status}): ${text.slice(0, 100)}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result: { success: boolean } & AnalysisResult = await response.json();
@@ -258,8 +278,18 @@ export default function ScanRecipePage() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Failed to parse text");
+        let errorMessage = "Failed to parse text";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error?.message || errorData.message || errorMessage;
+          if (errorData.error?.details) {
+            errorMessage += ` (${errorData.error.details})`;
+          }
+        } catch (e) {
+          const text = await response.text();
+          errorMessage = `Server Error (${response.status}): ${text.slice(0, 100)}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result: { success: boolean } & AnalysisResult = await response.json();
