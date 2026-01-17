@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { localeNames, type Locale } from "@/lib/i18n";
+import { AddRecipeButton } from "@/components/layout/AddRecipeButton";
 import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
@@ -35,7 +36,6 @@ const navigation: NavItem[] = [
   { key: "tags", href: "/dashboard/tags", icon: Tag },
   { key: "collections", href: "/dashboard/collections", icon: Library },
   { key: "favorites", href: "/dashboard/favorites", icon: Heart },
-  { key: "scanRecipe", href: "/dashboard/scan", icon: Camera },
   { key: "recipeBook", href: "/dashboard/recipe-book", icon: BookOpen },
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
@@ -96,14 +96,7 @@ export function MobileNav() {
         {/* Navigation */}
         <nav className="p-4 space-y-1">
           {/* Add Recipe Button */}
-          <Link
-            href="/dashboard/recipes/new"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-peach-300 hover:bg-peach-400 text-warm-gray-700 font-medium transition-colors mb-4"
-            onClick={() => setIsOpen(false)}
-          >
-            <Plus className="w-5 h-5" />
-            <span>{t.nav.addRecipe}</span>
-          </Link>
+          <AddRecipeButton onSelect={() => setIsOpen(false)} />
 
           {navigation.map((item) => {
             const isActive =
@@ -141,8 +134,8 @@ export function MobileNav() {
                 onClick={() => setLocale(loc)}
                 className={cn(
                   "flex-1",
-                  locale === loc 
-                    ? "bg-peach-300 hover:bg-peach-400 text-warm-gray-700" 
+                  locale === loc
+                    ? "bg-peach-300 hover:bg-peach-400 text-warm-gray-700"
                     : "border-warm-gray-200"
                 )}
               >
