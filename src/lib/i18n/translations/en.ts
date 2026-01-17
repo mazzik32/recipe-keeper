@@ -83,7 +83,7 @@ export const en = {
     
     // Form fields
     recipeTitle: "Recipe Title",
-    titlePlaceholder: "Mom's Apple Pie",
+    titlePlaceholder: "Mum's Apple Pie",
     description: "Description",
     descriptionPlaceholder: "A brief description of this recipe...",
     servings: "Servings",
@@ -94,8 +94,8 @@ export const en = {
     difficulty: "Difficulty",
     category: "Category",
     source: "Source",
-    sourcePlaceholder: "Mom's cookbook",
-    sourceHelper: "e.g., Mom, Grandma",
+    sourcePlaceholder: "Mum's cookbook",
+    sourceHelper: "e.g., Mum, Grandma",
     notes: "Notes & Memories",
     notesPlaceholder: "Add any personal notes or memories about this recipe...",
     

@@ -85,7 +85,7 @@ export const de: Translations = {
     
     // Form fields
     recipeTitle: "Rezeptname",
-    titlePlaceholder: "Mamas Apfelkuchen",
+    titlePlaceholder: "Mamis Apfelkuchen",
     description: "Beschreibung",
     descriptionPlaceholder: "Eine kurze Beschreibung dieses Rezepts...",
     servings: "Portionen",
@@ -96,8 +96,8 @@ export const de: Translations = {
     difficulty: "Schwierigkeit",
     category: "Kategorie",
     source: "Quelle",
-    sourcePlaceholder: "Mamas Kochbuch",
-    sourceHelper: "z.B. Mama, Oma",
+    sourcePlaceholder: "Mamis Kochbuch",
+    sourceHelper: "z.B. Mami, Omi",
     notes: "Notizen & Erinnerungen",
     notesPlaceholder: "Fügen Sie persönliche Notizen oder Erinnerungen zu diesem Rezept hinzu...",
     
