@@ -26,6 +26,7 @@ export const recipeSchema = z.object({
   servings: optionalNumber,
   prep_time_minutes: optionalNumber,
   cook_time_minutes: optionalNumber,
+  total_time_minutes: optionalNumber,
   difficulty: z.enum(["easy", "medium", "hard"]).default("medium"),
   category_id: z.string().optional().nullable(),
   source: z.string().optional().nullable(),

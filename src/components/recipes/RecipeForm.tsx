@@ -30,6 +30,7 @@ interface ScannedData {
   servings?: number | null;
   prep_time_minutes?: number | null;
   cook_time_minutes?: number | null;
+  total_time_minutes?: number | null;
   difficulty?: "easy" | "medium" | "hard";
   category_id?: string | null;
   source?: string | null;
@@ -69,39 +70,41 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
   const defaultValues: RecipeFormData = recipe
     ? {
-        title: recipe.title,
-        description: recipe.description,
-        servings: recipe.servings,
-        prep_time_minutes: recipe.prep_time_minutes,
-        cook_time_minutes: recipe.cook_time_minutes,
-        difficulty: recipe.difficulty,
-        category_id: recipe.category_id,
-        source: recipe.source,
-        source_type: recipe.source_type,
-        notes: recipe.notes,
-        ingredients:
-          recipe.ingredients?.map((i) => ({
-            id: i.id,
-            name: i.name,
-            quantity: i.quantity,
-            unit: i.unit,
-            notes: i.notes,
-          })) || [],
-        steps:
-          recipe.steps?.map((s) => ({
-            id: s.id,
-            instruction: s.instruction,
-            image_url: s.image_url,
-            timer_minutes: s.timer_minutes,
-          })) || [],
-      }
+      title: recipe.title,
+      description: recipe.description,
+      servings: recipe.servings,
+      prep_time_minutes: recipe.prep_time_minutes,
+      cook_time_minutes: recipe.cook_time_minutes,
+      total_time_minutes: recipe.total_time_minutes,
+      difficulty: recipe.difficulty,
+      category_id: recipe.category_id,
+      source: recipe.source,
+      source_type: recipe.source_type,
+      notes: recipe.notes,
+      ingredients:
+        recipe.ingredients?.map((i) => ({
+          id: i.id,
+          name: i.name,
+          quantity: i.quantity,
+          unit: i.unit,
+          notes: i.notes,
+        })) || [],
+      steps:
+        recipe.steps?.map((s) => ({
+          id: s.id,
+          instruction: s.instruction,
+          image_url: s.image_url,
+          timer_minutes: s.timer_minutes,
+        })) || [],
+    }
     : scannedData
-    ? {
+      ? {
         title: scannedData.title,
         description: scannedData.description || "",
         servings: scannedData.servings || null,
         prep_time_minutes: scannedData.prep_time_minutes || null,
         cook_time_minutes: scannedData.cook_time_minutes || null,
+        total_time_minutes: scannedData.total_time_minutes || null,
         difficulty: scannedData.difficulty || "medium",
         category_id: scannedData.category_id || null,
         source: scannedData.source || "",
@@ -119,12 +122,13 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
           timer_minutes: s.timer_minutes || null,
         })),
       }
-    : {
+      : {
         title: "",
         description: "",
         servings: null,
         prep_time_minutes: null,
         cook_time_minutes: null,
+        total_time_minutes: null,
         difficulty: "medium",
         category_id: null,
         source: "",
@@ -190,6 +194,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
             servings: data.servings,
             prep_time_minutes: data.prep_time_minutes,
             cook_time_minutes: data.cook_time_minutes,
+            total_time_minutes: data.total_time_minutes,
             difficulty: data.difficulty,
             category_id: data.category_id,
             source: data.source,
@@ -262,6 +267,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
             servings: data.servings,
             prep_time_minutes: data.prep_time_minutes,
             cook_time_minutes: data.cook_time_minutes,
+            total_time_minutes: data.total_time_minutes,
             difficulty: data.difficulty,
             category_id: data.category_id,
             source: data.source,
@@ -380,7 +386,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prep_time_minutes">{t.recipes.prepTime} ({t.recipes.minutes})</Label>
+              <Label htmlFor="prep_time_minutes">{t.recipes.activePrepTime} ({t.recipes.minutes})</Label>
               <Input
                 id="prep_time_minutes"
                 type="number"
@@ -396,6 +402,16 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
                 type="number"
                 {...register("cook_time_minutes")}
                 placeholder="30"
+                className="border-warm-gray-200"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="total_time_minutes">{t.recipes.totalTime} ({t.recipes.minutes})</Label>
+              <Input
+                id="total_time_minutes"
+                type="number"
+                {...register("total_time_minutes")}
+                placeholder="45"
                 className="border-warm-gray-200"
               />
             </div>

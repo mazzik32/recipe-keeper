@@ -94,7 +94,7 @@ export function RecipeDetailContent({ recipe }: RecipeDetailContentProps) {
           <div className="flex items-center gap-2 text-warm-gray-600">
             <Clock className="w-5 h-5 text-peach-500" />
             <span>
-              <strong>{t.recipes.prep}:</strong> {recipe.prep_time_minutes} {t.recipes.minutes}
+              <strong>{t.recipes.activePrepTime}:</strong> {recipe.prep_time_minutes} {t.recipes.minutes}
             </span>
           </div>
         )}
@@ -103,6 +103,14 @@ export function RecipeDetailContent({ recipe }: RecipeDetailContentProps) {
             <Clock className="w-5 h-5 text-peach-500" />
             <span>
               <strong>{t.recipes.cook}:</strong> {recipe.cook_time_minutes} {t.recipes.minutes}
+            </span>
+          </div>
+        )}
+        {recipe.total_time_minutes && (
+          <div className="flex items-center gap-2 text-warm-gray-600">
+            <Clock className="w-5 h-5 text-peach-500" />
+            <span>
+              <strong>{t.recipes.total}:</strong> {recipe.total_time_minutes} {t.recipes.minutes}
             </span>
           </div>
         )}

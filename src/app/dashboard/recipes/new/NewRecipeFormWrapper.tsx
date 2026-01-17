@@ -14,6 +14,7 @@ interface ScannedRecipeData {
   servings?: number;
   prepTimeMinutes?: number;
   cookTimeMinutes?: number;
+  totalTimeMinutes?: number;
   difficulty?: "easy" | "medium" | "hard";
   ingredients: Array<{
     name: string;
@@ -76,29 +77,30 @@ export function NewRecipeFormWrapper({ categories }: NewRecipeFormWrapperProps) 
 
   const initialData = scannedData
     ? {
-        title: scannedData.title,
-        description: scannedData.description || null,
-        servings: scannedData.servings || null,
-        prep_time_minutes: scannedData.prepTimeMinutes || null,
-        cook_time_minutes: scannedData.cookTimeMinutes || null,
-        difficulty: scannedData.difficulty || "medium",
-        category_id: findCategoryId(scannedData.suggestedCategory),
-        source: null,
-        source_type: "family" as const,
-        notes: null,
-        original_image_url: scannedData.originalImageUrl || null,
-        ingredients: scannedData.ingredients.map((ing) => ({
-          name: ing.name,
-          quantity: ing.quantity || null,
-          unit: ing.unit || null,
-          notes: ing.notes || null,
-        })),
-        steps: scannedData.steps.map((step) => ({
-          instruction: step.instruction,
-          image_url: null,
-          timer_minutes: null,
-        })),
-      }
+      title: scannedData.title,
+      description: scannedData.description || null,
+      servings: scannedData.servings || null,
+      prep_time_minutes: scannedData.prepTimeMinutes || null,
+      cook_time_minutes: scannedData.cookTimeMinutes || null,
+      total_time_minutes: scannedData.totalTimeMinutes || null,
+      difficulty: scannedData.difficulty || "medium",
+      category_id: findCategoryId(scannedData.suggestedCategory),
+      source: null,
+      source_type: "family" as const,
+      notes: null,
+      original_image_url: scannedData.originalImageUrl || null,
+      ingredients: scannedData.ingredients.map((ing) => ({
+        name: ing.name,
+        quantity: ing.quantity || null,
+        unit: ing.unit || null,
+        notes: ing.notes || null,
+      })),
+      steps: scannedData.steps.map((step) => ({
+        instruction: step.instruction,
+        image_url: null,
+        timer_minutes: null,
+      })),
+    }
     : undefined;
 
   return (
@@ -109,7 +111,7 @@ export function NewRecipeFormWrapper({ categories }: NewRecipeFormWrapperProps) 
             <div className="flex items-center gap-3 text-peach-700">
               <Sparkles className="w-5 h-5" />
               <span className="font-medium">
-                {locale === "de" 
+                {locale === "de"
                   ? "Rezept aus Scan importiert! Überprüfen und bearbeiten Sie die Details unten."
                   : "Recipe imported from scan! Review and edit the details below."}
               </span>

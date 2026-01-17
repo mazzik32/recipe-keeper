@@ -64,6 +64,7 @@ export type Database = {
           servings: number | null;
           prep_time_minutes: number | null;
           cook_time_minutes: number | null;
+          total_time_minutes: number | null;
           difficulty: "easy" | "medium" | "hard";
           category_id: string | null;
           source: string | null;

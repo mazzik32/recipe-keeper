@@ -12,6 +12,7 @@ interface RecipeExtractionResult {
   servings?: number;
   prepTimeMinutes?: number;
   cookTimeMinutes?: number;
+  totalTimeMinutes?: number;
   difficulty?: "easy" | "medium" | "hard";
   ingredients: Array<{
     name: string;
@@ -152,8 +153,9 @@ Extract the following information:
 - title: The recipe name (translated to ${targetLangName})
 - description: A brief description (translated to ${targetLangName}, if available)
 - servings: Number of servings (if mentioned)
-- prepTimeMinutes: Preparation time in minutes (if mentioned)
+- prepTimeMinutes: Active preparation time in minutes (doing something actively)
 - cookTimeMinutes: Cooking time in minutes (if mentioned)
+- totalTimeMinutes: Total time in minutes (including resting, rising, baking, etc.)
 - difficulty: One of "easy", "medium", or "hard" based on complexity
 - ingredients: Array of objects with name (translated), quantity (as number), unit (standardized), and notes (translated)
 - steps: Array of objects with stepNumber and instruction (translated to ${targetLangName})
