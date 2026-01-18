@@ -1,0 +1,275 @@
+{
+  "data": {
+    "branding": {
+      "colorScheme": "light",
+      "fonts": [
+        {
+          "family": "Arial",
+          "role": "body"
+        },
+        {
+          "family": "Helvetica Neue",
+          "role": "body"
+        },
+        {
+          "family": "Helvetica",
+          "role": "body"
+        },
+        {
+          "family": "SF Pro Text",
+          "role": "body"
+        },
+        {
+          "family": "SF Pro Display",
+          "role": "heading"
+        }
+      ],
+      "colors": {
+        "primary": "#0071E3",
+        "accent": "#0066CC",
+        "background": "#F6F6F8",
+        "textPrimary": "#1D1D1F",
+        "link": "#0066CC"
+      },
+      "typography": {
+        "fontFamilies": {
+          "primary": "Arial",
+          "heading": "SF Pro Display"
+        },
+        "fontStacks": {
+          "heading": [
+            "SF Pro Display",
+            "SF Pro Icons",
+            "Helvetica Neue",
+            "Helvetica",
+            "Arial",
+            "sans-serif"
+          ],
+          "body": [
+            "SF Pro Text",
+            "SF Pro Icons",
+            "Helvetica Neue",
+            "Helvetica",
+            "Arial",
+            "sans-serif"
+          ],
+          "paragraph": [
+            "SF Pro Text",
+            "SF Pro Icons",
+            "Helvetica Neue",
+            "Helvetica",
+            "Arial",
+            "sans-serif"
+          ]
+        },
+        "fontSizes": {
+          "h1": "80px",
+          "h2": "12px",
+          "body": "14px"
+        }
+      },
+      "spacing": {
+        "baseUnit": 4,
+        "borderRadius": "1px"
+      },
+      "components": {
+        "input": {
+          "background": "transparent",
+          "textColor": "#333336",
+          "borderColor": null,
+          "borderRadius": "0px",
+          "borderRadiusCorners": {
+            "topLeft": "0px",
+            "topRight": "0px",
+            "bottomRight": "0px",
+            "bottomLeft": "0px"
+          },
+          "shadow": "none"
+        },
+        "buttonPrimary": {
+          "background": "#0071E3",
+          "textColor": "#FFFFFF",
+          "borderRadius": "980px",
+          "borderRadiusCorners": {
+            "topLeft": "980px",
+            "topRight": "980px",
+            "bottomRight": "980px",
+            "bottomLeft": "980px"
+          },
+          "shadow": "none"
+        },
+        "buttonSecondary": {
+          "background": "#1D1D1F",
+          "textColor": "#FFFFFF",
+          "borderRadius": "980px",
+          "borderRadiusCorners": {
+            "topLeft": "980px",
+            "topRight": "980px",
+            "bottomRight": "980px",
+            "bottomLeft": "980px"
+          },
+          "shadow": "none"
+        }
+      },
+      "images": {
+        "logo": "data:image/svg+xml;utf8,%3Csvg%20height%3D%2244%22%20viewBox%3D%220%200%2014%2044%22%20width%3D%2214%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20style%3D%22fill%3A%20rgba(0%2C%200%2C%200%2C%200.8)%20!important%3B%22%3E%3Cpath%20d%3D%22m13.0729%2017.6825a3.61%203.61%200%200%200%20-1.7248%203.0365%203.5132%203.5132%200%200%200%202.1379%203.2223%208.394%208.394%200%200%201%20-1.0948%202.2618c-.6816.9812-1.3943%201.9623-2.4787%201.9623s-1.3633-.63-2.613-.63c-1.2187%200-1.6525.6507-2.644.6507s-1.6834-.9089-2.4787-2.0243a9.7842%209.7842%200%200%201%20-1.6628-5.2776c0-3.0984%202.014-4.7405%203.9969-4.7405%201.0535%200%201.9314.6919%202.5924.6919.63%200%201.6112-.7333%202.8092-.7333a3.7579%203.7579%200%200%201%203.1604%201.5802zm-3.7284-2.8918a3.5615%203.5615%200%200%200%20.8469-2.22%201.5353%201.5353%200%200%200%20-.031-.32%203.5686%203.5686%200%200%200%20-2.3445%201.2084%203.4629%203.4629%200%200%200%20-.8779%202.1585%201.419%201.419%200%200%200%20.031.2892%201.19%201.19%200%200%200%20.2169.0207%203.0935%203.0935%200%200%200%202.1586-1.1368z%22%20style%3D%22fill%3A%20rgba(0%2C%200%2C%200%2C%200.8)%20!important%3B%22%2F%3E%3C%2Fsvg%3E",
+        "favicon": null,
+        "ogImage": "https://www.apple.com/v/iphone/home/ch/images/meta/iphone__cud4q04omsuq_og.png?202512081421"
+      },
+      "__framework_hints": [],
+      "__llm_logo_reasoning": {
+        "selectedIndex": 0,
+        "reasoning": "Strong indicators: variant bonus (+8), header logo linking to homepage, header location, visible, highest logo on page, SVG format. Score: 108 (clear winner by 28 points)",
+        "confidence": 0.9
+      },
+      "__llm_button_reasoning": {
+        "primary": {
+          "index": 1,
+          "text": "Learn more",
+          "reasoning": "Button #1 ('Learn more') has a vibrant blue background (#0071E3), which is the brand color and indicates it as the primary call-to-action. It also has action-oriented text, making it the clear choice for the primary button."
+        },
+        "secondary": {
+          "index": 0,
+          "text": "Watch the film",
+          "reasoning": "Button #0 ('Watch the film') has a dark background (#1D1D1F) which is distinctly different from the primary button's vibrant blue. It serves as a secondary action, fitting the criteria for a less prominent button."
+        },
+        "confidence": 0.95
+      },
+      "confidence": {
+        "buttons": 0.95,
+        "colors": 0.9,
+        "overall": 0.925
+      }
+    },
+    "metadata": {
+      "ogDescription": "Designed for Apple Intelligence. Discover iPhone 17 Pro, iPhone Air, and iPhone 17, along with iPhone 16 and iPhone 16e.",
+      "analytics-s-bucket-0": "applestoreww",
+      "viewport": "width=device-width, initial-scale=1, viewport-fit=cover",
+      "al:ios:url": "https://www.apple.com/us/xc/iphone?cid=AOS_ASA",
+      "title": "iPhone - Apple",
+      "og:url": "https://www.apple.com/iphone/",
+      "ac:tradein-alias": [
+        "tradein-iphone13=slug:model_iphone_13",
+        "tradein-iphone16promax=slug:model_iphone_16_pro_max",
+        "tradein-galaxys24ultra=slug:model_galaxy_s24_ultra"
+      ],
+      "analytics-s-bucket-2": "applestoreww",
+      "language": "en-US",
+      "ogTitle": "iPhone",
+      "twitter:card": "summary_large_image",
+      "og:type": "website",
+      "ogImage": "https://www.apple.com/v/iphone/home/ch/images/meta/iphone__cud4q04omsuq_og.png?202512081421",
+      "og:description": "Designed for Apple Intelligence. Discover iPhone 17 Pro, iPhone Air, and iPhone 17, along with iPhone 16 and iPhone 16e.",
+      "analytics-track": "iphone - index/tab",
+      "og:image": "https://www.apple.com/v/iphone/home/ch/images/meta/iphone__cud4q04omsuq_og.png?202512081421",
+      "analytics-s-bucket-1": "applestoreww",
+      "position": "1",
+      "og:site_name": "Apple",
+      "Description": "Designed for Apple Intelligence. Discover iPhone 17 Pro, iPhone Air, and iPhone 17, along with iPhone 16 and iPhone 16e.",
+      "ogSiteName": "Apple",
+      "og:locale": "en_US",
+      "twitter:site": "@Apple",
+      "globalnav-store-key": "SFX9YPYY9PPXCU9KH",
+      "analytics-s-channel": "iphone",
+      "og:title": "iPhone",
+      "ogLocale": "en_US",
+      "ogUrl": "https://www.apple.com/iphone/",
+      "al:ios:app_store_id": "375380948",
+      "al:ios:app_name": "Apple Store",
+      "ac:pricing-alias": [
+        "iphone-17-pro=IPHONE17PRO",
+        "iphone-air=IPHONEAIR",
+        "iphone-17=IPHONE17",
+        "iphone-16=IPHONE16",
+        "iphone-16e=IPHONE16E_MAIN"
+      ],
+      "scrapeId": "019b281d-ba58-76a9-83f3-3f9dee9e91fb",
+      "sourceURL": "https://www.apple.com/iphone/",
+      "url": "https://www.apple.com/iphone/",
+      "statusCode": 200,
+      "contentType": "text/html; charset=utf-8",
+      "timezone": "America/New_York",
+      "proxyUsed": "basic",
+      "indexId": "c236efec-2f42-4915-bebd-a5af2e923380",
+      "creditsUsed": 1,
+      "concurrencyLimited": false
+    }
+  },
+  "scrape_id": "019b281d-ba58-76a9-83f3-3f9dee9e91fb",
+  "id": "MfhMEyXW44boqamvKJweC",
+  "startedAt": "2025-12-16T17:03:15.215Z",
+  "endedAt": "2025-12-16T17:03:23.831Z",
+  "endpoint": "scrape",
+  "formState": {
+    "extractSetupCompleted": false,
+    "urls": [],
+    "extractSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "company_mission": {
+          "type": "string"
+        },
+        "supports_sso": {
+          "type": "boolean"
+        },
+        "is_open_source": {
+          "type": "boolean"
+        },
+        "is_in_yc": {
+          "type": "boolean"
+        }
+      }
+    },
+    "extractPrompt": "Extract the company details, following the schema.",
+    "enableWebSearch": false,
+    "options": {
+      "onlyMainContent": false,
+      "parsePDF": true,
+      "stealthMode": false,
+      "excludeTags": [],
+      "includeTags": [],
+      "waitFor": "",
+      "timeout": "",
+      "maxAge": "2 days",
+      "ignoreSitemap": false,
+      "crawlEntireDomain": false,
+      "sitemap": "include",
+      "limit": "10",
+      "maxDepth": "",
+      "excludePaths": [],
+      "includePaths": [],
+      "includeSubdomains": false,
+      "search": "",
+      "scrapeContentFromSearchResults": true,
+      "timeBasedSearch": "",
+      "location": "",
+      "prompt": ""
+    },
+    "formats": [
+      "branding"
+    ],
+    "sources": [
+      "web"
+    ],
+    "categories": [],
+    "jsonSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "company_name": {
+          "type": "string"
+        },
+        "company_description": {
+          "type": "string"
+        }
+      }
+    },
+    "jsonPrompt": "",
+    "agent": {},
+    "url": "www.apple.com/iphone/",
+    "endpoint": "scrape"
+  },
+  "status": "success",
+  "version": "A9iw8DSY7D_z1WB_KOWwn"
+}

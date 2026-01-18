@@ -51,3 +51,6 @@ supabase/.temp
 # Logs
 logs
 *.log
+
+# Legacy/Examples
+landingpage_example/

@@ -34,7 +34,8 @@ const config: Config = {
   				'800': '#663024',
   				'900': '#331915'
   			},
-  			cream: '#FFF8F0',
+  			cream: '#FDF8F3',
+  			'cream-dark': '#F9F3EC',
   			'warm-white': '#FFFCFA',
   			'warm-gray': {
   				'50': '#FAF8F6',
@@ -108,7 +109,16 @@ const config: Config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+      keyframes: {
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(30px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        fadeInUp: 'fadeInUp 1s ease forwards',
+      },
   	}
   },
   plugins: [require("tailwindcss-animate")],

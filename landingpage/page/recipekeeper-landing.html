@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RecipeKeeper – Your Family Recipes. Safe Forever.</title>
+  <meta name="description"
+    content="Scan, save, and share the recipes you love – before they get lost. Digitalize handwritten recipes from Mom, Grandma, and generations past.">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <style>
+    :root {
+      /* RecipeKeeper Brand Colors */
+      --cream: #FDF8F3;
+      --cream-dark: #F9F3EC;
+      --peach-50: #FFF5F0;
+      --peach-100: #FFE8DD;
+      --peach-200: #FFCDB2;
+      --peach-300: #F8A888;
+      --peach-400: #E8956F;
+      --peach-500: #D97F56;
+      --peach-600: #C66A3D;
+      --warm-gray-100: #E8E4E0;
+      --warm-gray-200: #D4CEC8;
+      --warm-gray-300: #B5ADA5;
+      --warm-gray-400: #8C8279;
+      --warm-gray-500: #6B6159;
+      --warm-gray-600: #5D534D;
+      --warm-gray-700: #3D3632;
+      --white: #FFFFFF;
+
+      /* Typography */
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-script: 'Dancing Script', cursive;
+
+      /* Spacing */
+      --section-padding: clamp(80px, 12vw, 160px);
+      --container-max: 1200px;
+      --container-padding: clamp(20px, 5vw, 40px);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--warm-gray-600);
+      background: var(--cream);
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .container {
+      max-width: var(--container-max);
+      margin: 0 auto;
+      padding: 0 var(--container-padding);
+    }
+
+    /* Typography */
+    h1,
+    h2,
+    h3 {
+      font-family: var(--font-display);
+      color: var(--warm-gray-700);
+      font-weight: 500;
+      line-height: 1.15;
+    }
+
+    h1 {
+      font-size: clamp(42px, 8vw, 80px);
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: clamp(32px, 5vw, 56px);
+      letter-spacing: -0.01em;
+    }
+
+    h3 {
+      font-size: clamp(22px, 3vw, 28px);
+    }
+
+    p {
+      font-size: clamp(16px, 2vw, 20px);
+    }
+
+    .text-script {
+      font-family: var(--font-script);
+    }
+
+    .text-peach {
+      color: var(--peach-500);
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 17px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border-radius: 980px;
+      padding: 18px 36px;
+    }
+
+    .btn-primary {
+      background: var(--peach-300);
+      color: var(--warm-gray-700);
+      box-shadow: 0 4px 24px rgba(248, 168, 136, 0.35);
+    }
+
+    .btn-primary:hover {
+      background: var(--peach-400);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(248, 168, 136, 0.45);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--peach-600);
+      border: 2px solid var(--peach-300);
+    }
+
+    .btn-secondary:hover {
+      background: var(--peach-50);
+      border-color: var(--peach-400);
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      background: rgba(253, 248, 243, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(93, 83, 77, 0.08);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      font-size: 28px;
+    }
+
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--warm-gray-700);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 0 var(--section-padding);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 80%;
+      height: 150%;
+      background: radial-gradient(ellipse at center, var(--peach-100) 0%, transparent 70%);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeInUp 1s ease forwards;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(18px, 2.5vw, 24px);
+      color: var(--warm-gray-500);
+      margin-bottom: 48px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      opacity: 0;
+      animation: fadeInUp 1s ease 0.2s forwards;
+    }
+
+    .hero-cta {
+      opacity: 0;
+      animation: fadeInUp 1s ease 0.4s forwards;
+    }
+
+    .hero-visual {
+      margin-top: 64px;
+      opacity: 0;
+      animation: fadeInUp 1s ease 0.6s forwards;
+    }
+
+    .hero-image {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(61, 54, 50, 0.18);
+    }
+
+    .hero-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Problem Section */
+    .problem {
+      padding: var(--section-padding) 0;
+      background: var(--cream-dark);
+    }
+
+    .problem-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .problem h2 {
+      margin-bottom: 40px;
+    }
+
+    .problem-text {
+      font-size: clamp(18px, 2.2vw, 22px);
+      line-height: 1.8;
+    }
+
+    .problem-text p {
+      margin-bottom: 24px;
+    }
+
+    .problem-text p:last-child {
+      font-family: var(--font-display);
+      font-size: clamp(22px, 3vw, 32px);
+      color: var(--warm-gray-700);
+      font-style: italic;
+    }
+
+    /* Solution Section */
+    .solution {
+      padding: var(--section-padding) 0;
+    }
+
+    .solution-content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .solution h2 {
+      margin-bottom: 48px;
+    }
+
+    .solution-intro {
+      font-size: clamp(18px, 2vw, 20px);
+      margin-bottom: 40px;
+      color: var(--warm-gray-500);
+    }
+
+    .solution-steps {
+      display: grid;
+      gap: 32px;
+    }
+
+    .solution-step {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      padding: 32px;
+      background: var(--white);
+      border-radius: 24px;
+      box-shadow: 0 4px 24px rgba(61, 54, 50, 0.06);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .solution-step:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(61, 54, 50, 0.1);
+    }
+
+    .solution-step-icon {
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      background: var(--peach-100);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .solution-step h3 {
+      margin-bottom: 8px;
+    }
+
+    .solution-step p {
+      color: var(--warm-gray-500);
+    }
+
+    .solution-closing {
+      margin-top: 48px;
+      font-size: clamp(18px, 2vw, 20px);
+      color: var(--warm-gray-500);
+    }
+
+    /* Features Section */
+    .features {
+      padding: var(--section-padding) 0;
+      background: var(--white);
+    }
+
+    .features h2 {
+      margin-bottom: 64px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 40px;
+    }
+
+    .feature {
+      padding: 40px;
+      background: var(--cream);
+      border-radius: 28px;
+      transition: transform 0.3s ease;
+    }
+
+    .feature:hover {
+      transform: translateY(-6px);
+    }
+
+    .feature-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--peach-100);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 24px;
+    }
+
+    .feature h3 {
+      margin-bottom: 12px;
+    }
+
+    .feature p {
+      color: var(--warm-gray-500);
+      font-size: 17px;
+    }
+
+    /* Emotional Section */
+    .emotional {
+      padding: var(--section-padding) 0;
+      background: linear-gradient(180deg, var(--cream) 0%, var(--peach-50) 100%);
+    }
+
+    .emotional-content {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .emotional-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .emotional-text-wrapper h2 {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .emotional-text {
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.8;
+      color: var(--warm-gray-600);
+      text-align: left;
+    }
+
+    .emotional-text p:first-child {
+      margin-bottom: 20px;
+    }
+
+    .emotional-image {
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(61, 54, 50, 0.15);
+    }
+
+    .emotional-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .emotional-inner {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .emotional-text-wrapper h2,
+      .emotional-text {
+        text-align: center;
+      }
+
+      .emotional-image {
+        max-width: 400px;
+        margin: 0 auto;
+      }
+    }
+
+    /* How It Works Section */
+    .how-it-works {
+      padding: var(--section-padding) 0;
+      background: var(--warm-gray-700);
+      color: var(--white);
+      overflow: hidden;
+    }
+
+    .how-it-works h2 {
+      color: var(--white);
+      margin-bottom: 64px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+
+    .step {
+      text-align: center;
+    }
+
+    .step-phone {
+      width: 100%;
+      max-width: 280px;
+      margin: 0 auto 24px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      transition: transform 0.4s ease;
+    }
+
+    .step-phone:hover {
+      transform: scale(1.03) translateY(-8px);
+    }
+
+    .step-phone img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+      object-position: center 15%;
+    }
+
+    .step-number {
+      font-family: var(--font-display);
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--peach-300);
+      line-height: 1;
+      margin-bottom: 12px;
+      opacity: 0.9;
+    }
+
+    .step h3 {
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      color: var(--warm-gray-300);
+      font-size: 16px;
+    }
+
+    .how-it-works .closing {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3vw, 32px);
+      color: var(--peach-200);
+      font-style: italic;
+    }
+
+    @media (max-width: 900px) {
+      .steps {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+
+      .step-phone {
+        max-width: 240px;
+      }
+    }
+
+    /* Social Proof Section */
+    .social-proof {
+      padding: var(--section-padding) 0;
+      background: var(--cream);
+    }
+
+    .social-proof h2 {
+      margin-bottom: 64px;
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+    }
+
+    .testimonial {
+      background: var(--white);
+      padding: 40px;
+      border-radius: 28px;
+      box-shadow: 0 4px 24px rgba(61, 54, 50, 0.06);
+      position: relative;
+    }
+
+    .testimonial::before {
+      content: '"';
+      font-family: var(--font-display);
+      font-size: 120px;
+      color: var(--peach-200);
+      position: absolute;
+      top: 10px;
+      left: 24px;
+      line-height: 1;
+      opacity: 0.5;
+    }
+
+    .testimonial p {
+      position: relative;
+      z-index: 1;
+      font-size: 18px;
+      font-style: italic;
+      color: var(--warm-gray-600);
+      line-height: 1.7;
+    }
+
+    /* Final CTA Section */
+    .final-cta {
+      padding: var(--section-padding) 0;
+      background: linear-gradient(180deg, var(--peach-100) 0%, var(--peach-200) 100%);
+    }
+
+    .final-cta-content {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .final-cta h2 {
+      margin-bottom: 24px;
+    }
+
+    .final-cta-text {
+      font-size: clamp(18px, 2vw, 22px);
+      color: var(--warm-gray-600);
+      margin-bottom: 40px;
+    }
+
+    .final-cta .btn-primary {
+      background: var(--warm-gray-700);
+      color: var(--white);
+      padding: 22px 48px;
+      font-size: 19px;
+    }
+
+    .final-cta .btn-primary:hover {
+      background: var(--warm-gray-600);
+      box-shadow: 0 12px 40px rgba(61, 54, 50, 0.25);
+    }
+
+    .trust-badge {
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--warm-gray-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .trust-badge svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--peach-600);
+    }
+
+    /* Footer */
+    .footer {
+      padding: 48px 0;
+      background: var(--cream-dark);
+      border-top: 1px solid var(--warm-gray-100);
+    }
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .footer-tagline {
+      font-family: var(--font-script);
+      font-size: 20px;
+      color: var(--peach-600);
+    }
+
+    .footer-copyright {
+      font-size: 14px;
+      color: var(--warm-gray-400);
+    }
+
+    /* Sticky Mobile CTA */
+    .sticky-cta {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      background: rgba(253, 248, 243, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--warm-gray-100);
+      z-index: 99;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .sticky-cta.visible {
+      transform: translateY(0);
+    }
+
+    .sticky-cta .btn {
+      width: 100%;
+      padding: 16px 32px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero-image {
+        border-radius: 16px;
+      }
+
+      .solution-step {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .sticky-cta {
+        display: block;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        gap: 40px;
+      }
+
+      .testimonials {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-image {
+        border-radius: 12px;
+        box-shadow: 0 16px 48px rgba(61, 54, 50, 0.15);
+      }
+
+      .feature {
+        padding: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="#" class="logo">
+        <span class="logo-icon">🍳</span>
+        <span class="logo-text">RecipeKeeper</span>
+      </a>
+      <a href="#start" class="btn btn-primary">Start Saving Recipes</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content text-center">
+        <h1>Your Family Recipes.<br><span class="text-peach">Safe Forever.</span></h1>
+        <p class="hero-subtitle">Scan, save, and share the recipes you love – before they get lost.</p>
+        <div class="hero-cta">
+          <a href="#start" class="btn btn-primary">Start Saving Recipes</a>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-image">
+            <img src="assets/hero-image.jpeg"
+              alt="RecipeKeeper app showing a digitized Apple Pie recipe next to the original handwritten recipe card"
+              loading="eager">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+  <section class="problem">
+    <div class="container">
+      <div class="problem-content text-center fade-in">
+        <h2>Recipes Get Lost.<br>Memories Fade.</h2>
+        <div class="problem-text">
+          <p>Your mom's handwritten notes. Grandma's secret cake. That one dish your aunt makes at every holiday.</p>
+          <p>These recipes live on sticky notes. In old notebooks. In someone's head.</p>
+          <p>One day, they might be gone.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solution Section -->
+  <section class="solution">
+    <div class="container">
+      <div class="solution-content text-center fade-in">
+        <h2>Turn Any Recipe Into<br>a Digital Treasure</h2>
+        <p class="solution-intro">RecipeKeeper makes it easy:</p>
+        <div class="solution-steps">
+          <div class="solution-step">
+            <div class="solution-step-icon">📸</div>
+            <div>
+              <h3>Snap a photo</h3>
+              <p>Of a handwritten card, a cookbook page, or a printout</p>
+            </div>
+          </div>
+          <div class="solution-step">
+            <div class="solution-step-icon">📄</div>
+            <div>
+              <h3>Upload a PDF</h3>
+              <p>From an email or saved file</p>
+            </div>
+          </div>
+          <div class="solution-step">
+            <div class="solution-step-icon">✨</div>
+            <div>
+              <h3>Let AI do the work</h3>
+              <p>We read and organize the recipe for you</p>
+            </div>
+          </div>
+        </div>
+        <p class="solution-closing">No more typing. No more searching. Just scan and save.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <div class="container">
+      <h2 class="text-center fade-in">Everything You Need to<br>Keep Your Recipes Safe</h2>
+      <div class="features-grid">
+        <div class="feature fade-in">
+          <div class="feature-icon">🔍</div>
+          <h3>Smart Scanning</h3>
+          <p>Take a picture. Our AI reads the recipe and saves it. Works with photos, PDFs, and even messy handwriting.
+          </p>
+        </div>
+        <div class="feature fade-in">
+          <div class="feature-icon">📷</div>
+          <h3>Add Your Own Photos</h3>
+          <p>Upload pictures of each cooking step. Add a photo of the finished dish. Make your recipes come alive.</p>
+        </div>
+        <div class="feature fade-in">
+          <div class="feature-icon">📂</div>
+          <h3>Organized by Category</h3>
+          <p>Appetizers. Main dishes. Desserts. Soups. Snacks. Find any recipe in seconds.</p>
+        </div>
+        <div class="feature fade-in">
+          <div class="feature-icon">💝</div>
+          <h3>Remember Where It Came From</h3>
+          <p>Tag each recipe with its source. Mom. Grandma. A friend. Never forget where the recipe started.</p>
+        </div>
+        <div class="feature fade-in">
+          <div class="feature-icon">📚</div>
+          <h3>Build Collections</h3>
+          <p>Group your favorites. Create a "Mom's Recipes" collection. Or "Holiday Baking." Or "Quick Weeknight
+            Dinners."</p>
+        </div>
+        <div class="feature fade-in">
+          <div class="feature-icon">📖</div>
+          <h3>Create a Recipe Book</h3>
+          <p>Turn your collection into a beautiful PDF. Print it. Share it. Pass it on.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Emotional Section -->
+  <section class="emotional">
+    <div class="container">
+      <div class="emotional-content fade-in">
+        <div class="emotional-inner">
+          <div class="emotional-image">
+            <img src="assets/generational.jpeg"
+              alt="Hands passing down a treasured handwritten recipe card between generations" loading="lazy">
+          </div>
+          <div class="emotional-text-wrapper">
+            <h2>Keep Mom's Recipes Alive</h2>
+            <div class="emotional-text">
+              <p>Some recipes are more than food. They are memories. They are love. They are home.</p>
+              <p>RecipeKeeper helps you save them – so you can cook them, share them, and pass them on to the next
+                generation.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works">
+    <div class="container text-center">
+      <h2 class="fade-in">3 Steps to Save a Recipe</h2>
+      <div class="steps">
+        <div class="step fade-in">
+          <div class="step-phone">
+            <img src="assets/step-1-scan.jpeg" alt="RecipeKeeper scan interface showing recipe upload" loading="lazy">
+          </div>
+          <div class="step-number">1</div>
+          <h3>Scan</h3>
+          <p>Take a photo or upload a file</p>
+        </div>
+        <div class="step fade-in">
+          <div class="step-phone">
+            <img src="assets/step-2-review.jpeg" alt="AI extracting recipe details automatically" loading="lazy">
+          </div>
+          <div class="step-number">2</div>
+          <h3>Review</h3>
+          <p>Check the details our AI found</p>
+        </div>
+        <div class="step fade-in">
+          <div class="step-phone">
+            <img src="assets/step-3-save.jpeg" alt="Saved recipe detail page in RecipeKeeper" loading="lazy">
+          </div>
+          <div class="step-number">3</div>
+          <h3>Save</h3>
+          <p>Your recipe is stored forever</p>
+        </div>
+      </div>
+      <p class="closing fade-in">That's it. Simple.</p>
+    </div>
+  </section>
+
+  <!-- Social Proof Section -->
+  <section class="social-proof">
+    <div class="container">
+      <h2 class="text-center fade-in">Families Trust RecipeKeeper</h2>
+      <div class="testimonials">
+        <div class="testimonial fade-in">
+          <p>I finally saved all of my mom's recipes. Now my kids can cook them too.</p>
+        </div>
+        <div class="testimonial fade-in">
+          <p>No more digging through boxes. Everything is in one place.</p>
+        </div>
+        <div class="testimonial fade-in">
+          <p>The scanning works so well – even on my grandma's old cards.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA Section -->
+  <section class="final-cta" id="start">
+    <div class="container">
+      <div class="final-cta-content text-center fade-in">
+        <h2>Don't Let Another Recipe Get Lost</h2>
+        <p class="final-cta-text">Start saving today. It's free to try.</p>
+        <a href="https://recipekeeper.org/signup" class="btn btn-primary">Get Started at RecipeKeeper.org</a>
+        <div class="trust-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+              d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+          </svg>
+          No credit card required
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-tagline">RecipeKeeper – Because some recipes are worth keeping forever.</p>
+        <div class="footer-links" style="margin: 16px 0; font-size: 14px;">
+          <a href="terms.html" style="color: var(--warm-gray-500); text-decoration: none; margin-right: 16px;">Terms of
+            Service</a>
+          <a href="privacy.html" style="color: var(--warm-gray-500); text-decoration: none;">Privacy Policy</a>
+        </div>
+        <p class="footer-copyright">© 2026 RecipeKeeper. Made with love for families everywhere.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Sticky Mobile CTA -->
+  <div class="sticky-cta" id="stickyCta">
+    <a href="#start" class="btn btn-primary">Start Saving Recipes</a>
+  </div>
+
+  <script>
+    // Scroll animations
+    const observerOptions = {
+      threshold: 0.15,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Sticky CTA visibility
+    const stickyCta = document.getElementById('stickyCta');
+    const hero = document.querySelector('.hero');
+    const finalCta = document.querySelector('.final-cta');
+
+    const stickyObserver = new IntersectionObserver((entries) => {
+      const heroVisible = entries.find(e => e.target === hero)?.isIntersecting;
+      const finalCtaVisible = entries.find(e => e.target === finalCta)?.isIntersecting;
+
+      // Show sticky CTA only when hero is not visible and final CTA is not visible
+      if (!heroVisible && !finalCtaVisible) {
+        stickyCta.classList.add('visible');
+      } else {
+        stickyCta.classList.remove('visible');
+      }
+    }, { threshold: 0.1 });
+
+    stickyObserver.observe(hero);
+    stickyObserver.observe(finalCta);
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
