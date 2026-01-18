@@ -20,6 +20,7 @@ export default function SignupPage() {
   const { locale, t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const {
     register,
@@ -50,8 +51,41 @@ export default function SignupPage() {
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    setIsSuccess(true);
+    setIsLoading(false);
+  }
+
+  if (isSuccess) {
+    return (
+      <Card className="w-full max-w-md border-warm-gray-200 shadow-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="font-display text-2xl text-warm-gray-700">
+            {locale === "de" ? "E-Mail bestätigen" : "Check your email"}
+          </CardTitle>
+          <CardDescription className="text-warm-gray-500">
+            {locale === "de"
+              ? "Wir haben Ihnen einen Bestätigungslink gesendet."
+              : "We have sent you a confirmation link."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 text-center">
+          <p className="text-warm-gray-600">
+            {locale === "de"
+              ? "Bitte überprüfen Sie Ihren Posteingang (und Spam-Ordner) und klicken Sie auf den Link, um Ihr Konto zu aktivieren."
+              : "Please check your inbox (and spam folder) and click the link to activate your account."}
+          </p>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          <Button
+            onClick={() => router.push('/login')}
+            variant="outline"
+            className="w-full border-peach-200 text-peach-700 hover:bg-peach-50"
+          >
+            {locale === "de" ? "Zurück zum Login" : "Back to Login"}
+          </Button>
+        </CardFooter>
+      </Card>
+    )
   }
 
   return (
@@ -61,8 +95,8 @@ export default function SignupPage() {
           {locale === "de" ? "Konto erstellen" : "Create your account"}
         </CardTitle>
         <CardDescription className="text-warm-gray-500">
-          {locale === "de" 
-            ? "Beginnen Sie noch heute, Ihre Familienrezepte zu bewahren" 
+          {locale === "de"
+            ? "Beginnen Sie noch heute, Ihre Familienrezepte zu bewahren"
             : "Start preserving your family recipes today"}
         </CardDescription>
       </CardHeader>

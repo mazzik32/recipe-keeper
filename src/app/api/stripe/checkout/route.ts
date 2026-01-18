@@ -109,8 +109,8 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       line_items: [lineItem],
       mode: 'payment',
-      success_url: `${returnUrl || req.headers.get('origin')}/dashboard/recipe-book?checkout_success=true`,
-      cancel_url: `${returnUrl || req.headers.get('origin')}/dashboard/recipe-book?checkout_canceled=true`,
+      success_url: `${returnUrl || `${req.headers.get('origin')}/dashboard`}[?&]checkout_success=true`.replace('[?&]', (returnUrl || '').includes('?') ? '&' : '?'),
+      cancel_url: `${returnUrl || `${req.headers.get('origin')}/dashboard`}[?&]checkout_canceled=true`.replace('[?&]', (returnUrl || '').includes('?') ? '&' : '?'),
       metadata: {
         userId: user.id,
         packageId: packageId,

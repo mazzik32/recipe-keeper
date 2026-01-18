@@ -119,6 +119,7 @@ Visit `http://localhost:3000`.
 1.  Push code to GitHub.
 2.  Import project in Vercel.
 3.  Add all Environment Variables from `.env.local`.
+    *   **CRITICAL**: You MUST include `SUPABASE_SERVICE_ROLE_KEY` in Vercel. It is required for the `/api/credits/consume` and `/api/stripe/webhook` endpoints to manage user credits securely.
 4.  Deploy.
 
 ### Supabase (Backend)
