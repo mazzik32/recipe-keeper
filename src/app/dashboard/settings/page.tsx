@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save, LogOut, Globe, Ruler } from "lucide-react";
+import { Loader2, Save, LogOut, Globe, Ruler, Download, Upload, Database as DatabaseIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,10 +14,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { localeNames, type Locale } from "@/lib/i18n";
 import { type MeasurementSystem } from "@/lib/i18n/units";
+import { ExportImportService } from "@/lib/export-import";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -27,6 +35,12 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Export/Import State
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function loadUser() {
@@ -68,6 +82,65 @@ export default function SettingsPage() {
     router.refresh();
   };
 
+  const handleExport = async () => {
+    setIsProcessing(true);
+    setProgress(0);
+    setProgressMessage(locale === "de" ? "Export wird vorbereitet..." : "Preparing export...");
+
+    try {
+      const service = new ExportImportService((msg, prog) => {
+        setProgressMessage(msg);
+        setProgress(prog);
+      });
+      await service.exportUserData();
+      setMessage({ type: "success", text: locale === "de" ? "Export erfolgreich abgeschlossen." : "Export completed successfully." });
+    } catch (error) {
+      console.error(error);
+      setMessage({ type: "error", text: locale === "de" ? "Export fehlgeschlagen." : "Export failed." });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset input
+    event.target.value = "";
+
+    setIsProcessing(true);
+    setProgress(0);
+    setProgressMessage(locale === "de" ? "Import wird vorbereitet..." : "Preparing import...");
+
+    if (!confirm(locale === "de"
+      ? "Möchten Sie wirklich Daten importieren? Dies wird neue Rezepte, Sammlungen und Bilder hinzufügen."
+      : "Are you sure you want to import data? This will add new recipes, collections, and images.")) {
+      setIsProcessing(false);
+      return;
+    }
+
+    try {
+      const service = new ExportImportService((msg, prog) => {
+        setProgressMessage(msg);
+        setProgress(prog);
+      });
+      await service.importUserData(file);
+      setMessage({ type: "success", text: locale === "de" ? "Import erfolgreich abgeschlossen." : "Import completed successfully." });
+      // Refresh to show new data?
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      setMessage({ type: "error", text: locale === "de" ? "Import fehlgeschlagen." : "Import failed." });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -97,11 +170,10 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             {message && (
               <div
-                className={`p-3 text-sm rounded-lg ${
-                  message.type === "success"
-                    ? "bg-green-50 text-green-600"
-                    : "bg-red-50 text-red-600"
-                }`}
+                className={`p-3 text-sm rounded-lg ${message.type === "success"
+                  ? "bg-green-50 text-green-600"
+                  : "bg-red-50 text-red-600"
+                  }`}
               >
                 {message.text}
               </div>
@@ -204,6 +276,38 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Data Management */}
+        <Card className="border-warm-gray-100">
+          <CardHeader>
+            <CardTitle className="font-display text-xl text-warm-gray-700 flex items-center gap-2">
+              <DatabaseIcon className="w-5 h-5" />
+              {locale === "de" ? "Datenverwaltung" : "Data Management"}
+            </CardTitle>
+            <CardDescription>
+              {locale === "de" ? "Exportieren oder importieren Sie Ihre Rezepte und Daten." : "Export or import your recipes and data."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-4">
+              <Button onClick={handleExport} variant="outline" className="flex-1">
+                <Download className="w-4 h-4 mr-2" />
+                {locale === "de" ? "Exportieren" : "Export Data"}
+              </Button>
+              <Button onClick={handleImportClick} variant="outline" className="flex-1">
+                <Upload className="w-4 h-4 mr-2" />
+                {locale === "de" ? "Importieren" : "Import Data"}
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept=".zip"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Danger Zone */}
         <Card className="border-red-200">
           <CardHeader>
@@ -225,6 +329,21 @@ export default function SettingsPage() {
             </Button>
           </CardContent>
         </Card>
+
+        <Dialog open={isProcessing} onOpenChange={(open) => !isProcessing && open}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{locale === "de" ? "Wird verarbeitet..." : "Processing..."}</DialogTitle>
+              <DialogDescription>
+                {progressMessage}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-4">
+              <div className="bg-peach-500 h-2.5 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
       </div>
     </div>
   );

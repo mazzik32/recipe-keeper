@@ -9,8 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Loader2, Package } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { initializePaddle, Paddle } from '@paddle/paddle-js';
+import { useEffect, useState } from 'react';
 
 interface PricingModalProps {
     open: boolean;
@@ -25,29 +26,68 @@ const PACKAGES = [
 
 export function PricingModal({ open, onOpenChange }: PricingModalProps) {
     const [loadingId, setLoadingId] = useState<string | null>(null);
+    const [paddle, setPaddle] = useState<Paddle | undefined>(undefined);
+    const [provider, setProvider] = useState<'paddle' | 'stripe'>('paddle');
+
+    useEffect(() => {
+        initializePaddle({
+            environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+            token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!
+        }).then((paddleInstance) => {
+            if (paddleInstance) {
+                setPaddle(paddleInstance);
+            }
+        });
+    }, []);
 
     const handlePurchase = async (packageId: string) => {
         try {
             setLoadingId(packageId);
-            const response = await fetch('/api/stripe/checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    packageId,
-                    returnUrl: window.location.href
-                }),
-            });
 
-            const data = await response.json();
+            if (provider === 'paddle') {
+                if (!paddle) {
+                    throw new Error('Paddle not initialized');
+                }
 
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to start checkout');
-            }
+                const response = await fetch('/api/paddle/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ packageId }),
+                });
 
-            if (data.url) {
-                window.location.href = data.url;
+                const data = await response.json();
+
+                if (!response.ok) throw new Error(data.error || 'Failed to start checkout');
+
+                paddle.Checkout.open({
+                    transactionId: data.transactionId,
+                    settings: {
+                        theme: 'light',
+                        successUrl: window.location.href,
+                    }
+                });
+            } else {
+                // Stripe Legacy Flow
+                const response = await fetch('/api/stripe/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        packageId,
+                        returnUrl: window.location.href
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to start checkout');
+                }
+
+                if (data.url) {
+                    window.location.href = data.url;
+                }
             }
         } catch (error: any) {
             console.error('Purchase error:', error);
@@ -102,6 +142,14 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
                             </div>
                         </div>
                     ))}
+                </div>
+                <div className="flex justify-center pb-4">
+                    <button
+                        onClick={() => setProvider(provider === 'paddle' ? 'stripe' : 'paddle')}
+                        className="text-xs text-gray-400 hover:text-gray-600 underline"
+                    >
+                        {provider === 'paddle' ? 'Pay with Stripe (Legacy)' : 'Pay with Paddle'}
+                    </button>
                 </div>
             </DialogContent>
         </Dialog>

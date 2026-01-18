@@ -2,21 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database.types';
+import { addCredits } from '@/lib/credits';
 
-// Initialize Supabase admin client (Service Role)
+// Initialize Supabase admin client (Service Role) - NOT NEEDED HERE ANYMORE as logic is in credits.ts
+// But kept if we need it for other things? No, we don't.
+// Removing it to keep it clean.
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 if (!supabaseServiceKey) {
   console.error('SUPABASE_SERVICE_ROLE_KEY is missing');
 }
-
-const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceKey || '', {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+// Client init removed as it is internal to addCredits now.
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -52,33 +50,7 @@ export async function POST(req: NextRequest) {
       // I didn't create an increment RPC. I'll read and write for now.
       
       try {
-        const { data: profile, error: fetchError } = await supabaseAdmin
-          .from('profiles')
-          .select('credits')
-          .eq('id', userId)
-          .single();
-        
-        const currentProfile = profile as any; // Temporary fix for type inference issue
-
-        if (fetchError) {
-             console.error('Error fetching profile:', fetchError);
-             throw fetchError;
-        }
-
-        const newCredits = (currentProfile?.credits || 0) + creditsToAdd;
-
-        const { error: updateError } = await (supabaseAdmin
-            .from('profiles') as any)
-            .update({ credits: newCredits })
-            .eq('id', userId);
-
-        if (updateError) {
-          console.error('Error updating credits:', updateError);
-          throw updateError;
-        }
-        
-        console.log(`Successfully added credits. New balance: ${newCredits}`);
-
+        await addCredits(userId, creditsToAdd);
       } catch (err) {
         console.error('Database update failed:', err);
         return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
