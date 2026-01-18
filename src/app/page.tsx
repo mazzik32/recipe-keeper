@@ -211,6 +211,82 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Save From Everywhere Section */}
+      <section className="py-[clamp(80px,12vw,160px)] bg-peach-50 overflow-hidden">
+        <div className="container mx-auto px-[clamp(20px,5vw,40px)]">
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+            <div className="lg:w-1/2 fade-in text-center lg:text-left">
+              <h2 className="font-display text-warm-gray-700 font-medium leading-[1.15] text-[clamp(32px,5vw,56px)] tracking-[-0.01em] mb-6">
+                Save Recipes<br />From Everywhere
+              </h2>
+              <p className="text-[clamp(18px,2vw,22px)] text-warm-gray-600 mb-10 leading-relaxed">
+                Found a great recipe on Instagram? A friend texted you their famous pasta sauce? Saw something amazing on a food blog?
+              </p>
+
+              <div className="space-y-8 mb-10 text-left">
+                <div className="flex gap-4">
+                  <div className="shrink-0 w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl shadow-sm text-peach-500">
+                    💬
+                  </div>
+                  <div>
+                    <h3 className="font-display text-xl text-warm-gray-700 font-semibold mb-1">From friends</h3>
+                    <p className="text-warm-gray-500">Screenshot their text or photo and scan it</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="shrink-0 w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl shadow-sm text-peach-500">
+                    📱
+                  </div>
+                  <div>
+                    <h3 className="font-display text-xl text-warm-gray-700 font-semibold mb-1">From social media</h3>
+                    <p className="text-warm-gray-500">Capture recipes from Instagram, TikTok, or Pinterest</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="shrink-0 w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl shadow-sm text-peach-500">
+                    🌐
+                  </div>
+                  <div>
+                    <h3 className="font-display text-xl text-warm-gray-700 font-semibold mb-1">From websites</h3>
+                    <p className="text-warm-gray-500">Save that blog recipe before it disappears</p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="font-medium text-peach-600 text-lg">
+                No more lost bookmarks. No more scrolling through old messages. Every recipe you love – in one app.
+              </p>
+            </div>
+
+            <div className="lg:w-1/2 relative fade-in">
+              {/* Composition of screenshots */}
+              <div className="relative z-10 rounded-2xl overflow-hidden shadow-[0_24px_80px_rgba(61,54,50,0.15)] bg-white border-4 border-white max-w-[500px] mx-auto lg:ml-auto lg:mr-10">
+                <Image
+                  src="/assets/desktop-app-preview.jpg"
+                  alt="RecipeKeeper Desktop Dashboard"
+                  width={800}
+                  height={600}
+                  className="w-full h-auto"
+                />
+              </div>
+              <div className="absolute -bottom-12 -right-4 lg:-right-8 z-20 w-[180px] lg:w-[220px] rounded-[32px] overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.2)] border-8 border-white">
+                <Image
+                  src="/assets/mobile-app-preview.jpg"
+                  alt="RecipeKeeper Mobile App"
+                  width={300}
+                  height={600}
+                  className="w-full h-auto"
+                />
+              </div>
+              {/* Decorative background circle */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-peach-100/50 rounded-full -z-10 blur-3xl opacity-60 pointer-events-none"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+
       {/* Features Section */}
       <section className="py-[clamp(80px,12vw,160px)] bg-white">
         <div className="container mx-auto px-[clamp(20px,5vw,40px)]">
