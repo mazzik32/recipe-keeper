@@ -17,6 +17,12 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('credits')
+    .eq('id', user.id)
+    .single();
+
   return (
     <div className="flex min-h-screen bg-cream">
       <Sidebar />
@@ -25,6 +31,8 @@ export default async function DashboardLayout({
           user={{
             email: user.email,
             displayName: user.user_metadata?.display_name,
+            credits: profile?.credits ?? 0,
+            id: user.id, // Pass ID for convenience if needed, though Header uses client supbase
           }}
         />
         <main className="flex-1 p-6 overflow-auto">{children}</main>

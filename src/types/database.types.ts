@@ -16,6 +16,7 @@ export type Database = {
           avatar_url: string | null;
           created_at: string;
           updated_at: string;
+          credits: number;
         };
         Insert: {
           id: string;
@@ -23,6 +24,7 @@ export type Database = {
           avatar_url?: string | null;
           created_at?: string;
           updated_at?: string;
+          credits?: number;
         };
         Update: {
           id?: string;
@@ -30,6 +32,7 @@ export type Database = {
           avatar_url?: string | null;
           created_at?: string;
           updated_at?: string;
+          credits?: number;
         };
       };
       categories: {

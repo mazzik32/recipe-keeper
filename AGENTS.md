@@ -12,6 +12,7 @@ Recipe Keeper is a web application for digitalizing and preserving family recipe
 |-------|------------|
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
 | Backend | Supabase (PostgreSQL, Auth, Storage, Edge Functions) |
+| Payments | Stripe (Checkout, Webhooks) |
 | Edge | Cloudflare Workers |
 | AI | OpenAI GPT-4 Vision API |
 | PDF | @react-pdf/renderer |
@@ -89,6 +90,7 @@ recipe-keeper/
 - avatar_url: text
 - created_at: timestamptz
 - updated_at: timestamptz
+- credits: integer (default 5 for new users)
 ```
 
 #### recipes
@@ -252,7 +254,13 @@ OPENAI_API_KEY=
 
 # Cloudflare
 CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_ACCOUNT_ID=
 CLOUDFLARE_API_TOKEN=
+
+# Stripe
+STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
 ```
 
 ---

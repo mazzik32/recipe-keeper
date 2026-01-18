@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PricingModal } from "@/components/monetization/PricingModal";
 
 type ScanStatus = "idle" | "uploading" | "analyzing" | "complete" | "error";
 
@@ -59,6 +60,7 @@ export default function ScanRecipePage() {
   const [error, setError] = useState<string | null>(null);
   const [extractedRecipe, setExtractedRecipe] = useState<ExtractedRecipe | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
 
   // Input State
   const [inputMode, setInputMode] = useState<"image" | "web" | "text">("image");
@@ -140,6 +142,15 @@ export default function ScanRecipePage() {
     const uploadedUrls: string[] = [];
 
     try {
+      // Check and consume credit first
+      const consumeRes = await fetch('/api/credits/consume', { method: 'POST' });
+      if (!consumeRes.ok) {
+        if (consumeRes.status === 403) {
+          throw new Error('INSUFFICIENT_CREDITS');
+        }
+        throw new Error('Failed to verify credits');
+      }
+
       // Upload all images to Supabase Storage
       for (const image of images) {
         const fileName = `${user.id}/scans/${Date.now()}-${image.file.name}`;
@@ -211,6 +222,17 @@ export default function ScanRecipePage() {
     const { session } = sessionData;
 
     try {
+      // Check and consume credit first
+      const consumeRes = await fetch('/api/credits/consume', { method: 'POST' });
+      if (!consumeRes.ok) {
+        if (consumeRes.status === 403) {
+          setIsPricingOpen(true);
+          setStatus("idle");
+          return;
+        }
+        throw new Error('Failed to verify credits');
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/scrape-recipe`,
         {
@@ -262,6 +284,17 @@ export default function ScanRecipePage() {
     const { session } = sessionData;
 
     try {
+      // Check and consume credit first
+      const consumeRes = await fetch('/api/credits/consume', { method: 'POST' });
+      if (!consumeRes.ok) {
+        if (consumeRes.status === 403) {
+          setIsPricingOpen(true);
+          setStatus("idle");
+          return;
+        }
+        throw new Error('Failed to verify credits');
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/parse-recipe-text`,
         {
@@ -718,6 +751,8 @@ Instructions:
           </CardContent>
         </Card>
       )}
+
+      <PricingModal open={isPricingOpen} onOpenChange={setIsPricingOpen} />
     </div>
   );
 }
