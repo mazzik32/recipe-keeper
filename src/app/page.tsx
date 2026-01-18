@@ -75,7 +75,13 @@ export default function Home() {
       <header className="fixed top-0 left-0 right-0 z-50 py-4 bg-cream/85 backdrop-blur-md border-b border-[rgba(93,83,77,0.08)]">
         <div className="max-w-[1200px] mx-auto px-[clamp(20px,5vw,40px)] flex items-center justify-between">
           <Link href="#" className="flex items-center gap-2.5 no-underline">
-            <span className="text-[28px]">🍳</span>
+            <Image
+              src="/assets/logo.png"
+              alt="RecipeKeeper Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10 object-contain"
+            />
             <span className="font-display text-[22px] font-semibold text-warm-gray-700">
               RecipeKeeper
             </span>
