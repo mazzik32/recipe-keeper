@@ -423,7 +423,7 @@ export default function Home() {
                     alt={step.alt}
                     width={280}
                     height={500}
-                    className="w-full h-auto block object-cover object-[center_15%]"
+                    className="w-full h-auto block object-cover object-center scale-150"
                   />
                 </div>
                 <div className="font-display text-[48px] font-bold text-peach-300 leading-none mb-3 opacity-90">
