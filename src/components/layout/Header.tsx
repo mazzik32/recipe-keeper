@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, LogOut, User, Globe, Coins, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -69,7 +70,13 @@ export function Header({ user }: HeaderProps) {
           href="/dashboard"
           className="flex items-center gap-2 md:hidden"
         >
-          <span className="text-xl">🍳</span>
+          <Image
+            src="/assets/logo.png"
+            alt="RecipeKeeper Logo"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain"
+          />
           <span className="font-display text-lg text-warm-gray-700">
             {t.common.appName}
           </span>

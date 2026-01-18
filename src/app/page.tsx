@@ -78,9 +78,9 @@ export default function Home() {
             <Image
               src="/assets/logo.png"
               alt="RecipeKeeper Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10 object-contain"
+              width={48}
+              height={48}
+              className="w-12 h-12 object-contain"
             />
             <span className="font-display text-[22px] font-semibold text-warm-gray-700">
               RecipeKeeper

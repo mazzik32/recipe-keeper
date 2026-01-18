@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Home,
@@ -45,8 +46,14 @@ export function Sidebar() {
     <aside className="hidden md:flex w-64 bg-warm-white border-r border-warm-gray-100 flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-warm-gray-100">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="text-2xl">🍳</span>
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <Image
+            src="/assets/logo.png"
+            alt="RecipeKeeper Logo"
+            width={40}
+            height={40}
+            className="w-10 h-10 object-contain"
+          />
           <span className="font-display text-xl text-warm-gray-700">
             {t.common.appName}
           </span>
