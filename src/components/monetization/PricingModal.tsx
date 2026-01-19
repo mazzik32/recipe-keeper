@@ -30,8 +30,9 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
     const [provider, setProvider] = useState<'paddle' | 'stripe'>('paddle');
 
     useEffect(() => {
+        const isSandbox = process.env.NEXT_PUBLIC_PADDLE_ENV === 'sandbox' || process.env.NODE_ENV !== 'production';
         initializePaddle({
-            environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+            environment: isSandbox ? 'sandbox' : 'production',
             token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!
         }).then((paddleInstance) => {
             if (paddleInstance) {
