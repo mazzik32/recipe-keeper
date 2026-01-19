@@ -144,14 +144,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
                         </div>
                     ))}
                 </div>
-                <div className="flex justify-center pb-4">
-                    <button
-                        onClick={() => setProvider(provider === 'paddle' ? 'stripe' : 'paddle')}
-                        className="text-xs text-gray-400 hover:text-gray-600 underline"
-                    >
-                        {provider === 'paddle' ? 'Pay with Stripe (Legacy)' : 'Pay with Paddle'}
-                    </button>
-                </div>
+
             </DialogContent>
         </Dialog>
     );
