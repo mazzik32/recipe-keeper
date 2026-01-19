@@ -24,6 +24,7 @@ const PACKAGES = [
     { id: 'pack_400', credits: 400, price: '35.00 CHF', description: 'Large Pack' },
 ];
 
+
 export function PricingModal({ open, onOpenChange }: PricingModalProps) {
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [paddle, setPaddle] = useState<Paddle | undefined>(undefined);
