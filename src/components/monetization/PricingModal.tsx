@@ -21,7 +21,7 @@ interface PricingModalProps {
 const PACKAGES = [
     { id: 'pack_20', credits: 20, price: '5.00 CHF', description: 'Small Pack' },
     { id: 'pack_50', credits: 50, price: '10.00 CHF', description: 'Medium Pack' },
-    { id: 'pack_100', credits: 100, price: '35.00 CHF', description: 'Large Pack' },
+    { id: 'pack_400', credits: 400, price: '35.00 CHF', description: 'Large Pack' },
 ];
 
 export function PricingModal({ open, onOpenChange }: PricingModalProps) {

@@ -8,7 +8,7 @@ import { Database } from '@/types/database.types';
 const PADDLE_PRICES = {
   'pack_20': process.env.PADDLE_PRICE_ID_20 || 'pri_PLACEHOLDER_20',
   'pack_50': process.env.PADDLE_PRICE_ID_50 || 'pri_PLACEHOLDER_50',
-  'pack_100': process.env.PADDLE_PRICE_ID_100 || 'pri_PLACEHOLDER_100',
+  'pack_400': process.env.PADDLE_PRICE_ID_400 || 'pri_PLACEHOLDER_400',
 };
 
 export async function POST(req: NextRequest) {
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       customData: {
         userId: user.id,
         packageId: packageId,
-        credits: packageId === 'pack_20' ? '20' : packageId === 'pack_50' ? '50' : '100'
+        credits: packageId === 'pack_20' ? '20' : packageId === 'pack_50' ? '50' : '400'
       },
     });
 
