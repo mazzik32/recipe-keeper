@@ -45,7 +45,7 @@ export function DashboardContent({ recipes: initialRecipes, allTags }: Dashboard
   }, [initialRecipes, allTags]);
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="mb-8">
         <h1 className="font-display text-3xl text-warm-gray-700 mb-2">
           {t.nav.myRecipes}

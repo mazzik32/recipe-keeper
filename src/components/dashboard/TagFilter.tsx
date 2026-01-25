@@ -20,9 +20,9 @@ export function TagFilter({ tags, selectedTagId, onSelectTag }: TagFilterProps) 
     if (tags.length === 0) return null;
 
     return (
-        <div className="mb-6">
-            <ScrollArea className="w-full whitespace-nowrap pb-4">
-                <div className="flex w-max space-x-2 p-1">
+        <div className="mb-6 -mx-4 px-4 overflow-hidden">
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex space-x-2 py-1">
                     <Badge
                         variant={selectedTagId === null ? "default" : "outline"}
                         className={cn(

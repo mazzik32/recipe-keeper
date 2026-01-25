@@ -23,8 +23,8 @@ export function RecipeCard({ recipe, onToggleFavorite, actions }: RecipeCardProp
   const primaryImage = recipe.images?.find((img) => img.is_primary);
 
   return (
-    <Link href={`/dashboard/recipes/${recipe.id}`}>
-      <Card className="group overflow-hidden border-warm-gray-100 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+    <Link href={`/dashboard/recipes/${recipe.id}`} className="block overflow-hidden">
+      <Card className="group overflow-hidden border-warm-gray-100 hover:shadow-md transition-all duration-200 hover:-translate-y-1 active:scale-[0.98]">
         {/* Image */}
         <div className="aspect-[4/3] bg-peach-100 relative overflow-hidden">
           {primaryImage ? (
@@ -58,7 +58,7 @@ export function RecipeCard({ recipe, onToggleFavorite, actions }: RecipeCardProp
                 onToggleFavorite(recipe.id, !recipe.is_favorite);
               }}
               className={cn(
-                "absolute w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors",
+                "absolute w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors touch-target active:scale-95",
                 actions ? "top-3 left-3" : "top-3 right-3"
               )}
             >
@@ -86,8 +86,8 @@ export function RecipeCard({ recipe, onToggleFavorite, actions }: RecipeCardProp
         </div>
 
         {/* Content */}
-        <CardContent className="p-5">
-          <h3 className="font-display text-xl text-warm-gray-700 mb-2 line-clamp-1 group-hover:text-peach-600 transition-colors">
+        <CardContent className="p-4 md:p-5 min-w-0">
+          <h3 className="font-display text-lg md:text-xl text-warm-gray-700 mb-2 line-clamp-1 group-hover:text-peach-600 transition-colors">
             {recipe.title}
           </h3>
 
