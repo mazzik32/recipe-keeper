@@ -529,7 +529,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="servings">{t.recipes.servings}</Label>
+              <Label htmlFor="servings" className="h-[42px] flex items-end pb-1">{t.recipes.servings}</Label>
               <Input
                 id="servings"
                 type="number"
@@ -539,7 +539,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="prep_time_minutes">{t.recipes.activePrepTime} ({t.recipes.minutes})</Label>
+              <Label htmlFor="prep_time_minutes" className="h-[42px] flex items-end pb-1">{t.recipes.activePrepTime} ({t.recipes.minutes})</Label>
               <Input
                 id="prep_time_minutes"
                 type="number"
@@ -549,7 +549,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cook_time_minutes">{t.recipes.cookTime} ({t.recipes.minutes})</Label>
+              <Label htmlFor="cook_time_minutes" className="h-[42px] flex items-end pb-1">{t.recipes.cookTime} ({t.recipes.minutes})</Label>
               <Input
                 id="cook_time_minutes"
                 type="number"
@@ -559,7 +559,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="total_time_minutes">{t.recipes.totalTime} ({t.recipes.minutes})</Label>
+              <Label htmlFor="total_time_minutes" className="h-[42px] flex items-end pb-1">{t.recipes.totalTime} ({t.recipes.minutes})</Label>
               <Input
                 id="total_time_minutes"
                 type="number"
@@ -569,7 +569,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="difficulty">{t.recipes.difficulty}</Label>
+              <Label htmlFor="difficulty" className="h-[42px] flex items-end pb-1">{t.recipes.difficulty}</Label>
               <Select
                 value={watch("difficulty")}
                 onValueChange={(value) =>
