@@ -87,8 +87,8 @@ export default function Home() {
             </span>
           </Link>
           <Link
-            href="#start"
-            className="inline-flex items-center justify-center font-semibold text-[17px] no-underline transition-all duration-300 rounded-full px-9 py-[18px] bg-peach-300 text-warm-gray-700 shadow-[0_4px_24px_rgba(248,168,136,0.35)] hover:bg-peach-400 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(248,168,136,0.45)]"
+            href="/signup"
+            className="inline-flex items-center justify-center font-semibold text-[15px] no-underline transition-all duration-300 rounded-full px-6 py-3 bg-peach-300 text-warm-gray-700 shadow-[0_4px_24px_rgba(248,168,136,0.35)] hover:bg-peach-400 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(248,168,136,0.45)]"
           >
             Start Saving Recipes
           </Link>
@@ -112,7 +112,7 @@ export default function Home() {
             </p>
             <div className="opacity-0 animate-[fadeInUp_1s_ease_0.4s_forwards]">
               <Link
-                href="#start"
+                href="/signup"
                 className="inline-flex items-center justify-center font-semibold text-[17px] no-underline transition-all duration-300 rounded-full px-9 py-[18px] bg-peach-300 text-warm-gray-700 shadow-[0_4px_24px_rgba(248,168,136,0.35)] hover:bg-peach-400 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(248,168,136,0.45)]"
               >
                 Start Saving Recipes
@@ -523,7 +523,7 @@ export default function Home() {
           }`}
       >
         <Link
-          href="#start"
+          href="/signup"
           className="flex w-full items-center justify-center font-semibold text-[17px] no-underline transition-all duration-300 rounded-full px-8 py-4 bg-peach-300 text-warm-gray-700 shadow-lg"
         >
           Start Saving Recipes
