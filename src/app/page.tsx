@@ -86,12 +86,14 @@ export default function Home() {
               RecipeKeeper
             </span>
           </Link>
-          <Link
-            href="/signup"
-            className="inline-flex items-center justify-center font-semibold text-[15px] no-underline transition-all duration-300 rounded-full px-6 py-3 bg-peach-300 text-warm-gray-700 shadow-[0_4px_24px_rgba(248,168,136,0.35)] hover:bg-peach-400 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(248,168,136,0.45)]"
-          >
-            Start Saving Recipes
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center font-semibold text-[15px] no-underline transition-all duration-300 rounded-full px-6 py-2.5 bg-white border border-peach-200 text-warm-gray-700 hover:bg-peach-50 hover:border-peach-300"
+            >
+              Login
+            </Link>
+          </div>
         </div>
       </header>
 
