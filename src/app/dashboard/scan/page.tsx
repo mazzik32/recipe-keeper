@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Upload, Camera, FileText, Loader2, Sparkles, ArrowRight, X, Plus, Languages, Link as LinkIcon, CaseUpper } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,17 @@ export default function ScanRecipePage() {
 
   // Input State
   const [inputMode, setInputMode] = useState<"image" | "web" | "text">("image");
+
+  // Handle URL query parameters for mode selection
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "web" || mode === "text") {
+      setInputMode(mode);
+    } else {
+      setInputMode("image");
+    }
+  }, [searchParams]);
 
   // Image Mode State
   const [images, setImages] = useState<UploadedImage[]>([]);
