@@ -25,6 +25,25 @@ import { recipeSchema, type RecipeFormData } from "@/lib/validations/recipe";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Category, RecipeWithRelations } from "@/types/database.types";
 
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+
 interface ScannedData {
   title: string;
   description?: string | null;
@@ -55,6 +74,81 @@ interface RecipeFormProps {
   categories: Category[];
   recipe?: RecipeWithRelations;
   scannedData?: ScannedData;
+}
+
+function SortableIngredientRow({ field, index, register, remove, count, t }: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 1 : 0,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-start gap-2 bg-white rounded-md p-1">
+      <div {...attributes} {...listeners} className="mt-2.5 cursor-grab touch-none">
+        <GripVertical className="w-5 h-5 text-warm-gray-300 hover:text-warm-gray-500" />
+      </div>
+
+      <div className="flex-1 flex flex-col gap-2">
+        {/* Row 1: Quantity, Unit, Name */}
+        <div className="flex gap-2">
+          <div className="w-[20%] min-w-[60px]">
+            <Input
+              {...register(`ingredients.${index}.quantity`)}
+              placeholder={t.recipes.quantity}
+              type="number"
+              step="0.01"
+              className="border-warm-gray-200"
+            />
+          </div>
+          <div className="w-[20%] min-w-[60px]">
+            <Input
+              {...register(`ingredients.${index}.unit`)}
+              placeholder={t.recipes.unit}
+              className="border-warm-gray-200"
+            />
+          </div>
+          <div className="flex-1">
+            <Input
+              {...register(`ingredients.${index}.name`)}
+              placeholder={t.recipes.ingredientName + " *"}
+              className="border-warm-gray-200"
+            />
+          </div>
+        </div>
+
+        {/* Row 2: Notes (Full width) */}
+        <div>
+          <Input
+            {...register(`ingredients.${index}.notes`)}
+            placeholder={t.recipes.ingredientNotes}
+            className="border-warm-gray-200 text-sm text-warm-gray-500 bg-warm-gray-50/50"
+          />
+        </div>
+      </div>
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={() => remove(index)}
+        disabled={count === 1}
+        className="text-warm-gray-400 hover:text-red-500 mt-1"
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+    </div>
+  );
 }
 
 export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps) {
@@ -168,10 +262,12 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
     defaultValues,
   });
 
+  // We need access to the move function from useFieldArray for drag and drop
   const {
     fields: ingredientFields,
     append: appendIngredient,
     remove: removeIngredient,
+    move: moveIngredient,
   } = useFieldArray({
     control,
     name: "ingredients",
@@ -185,6 +281,23 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
     control,
     name: "steps",
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = ingredientFields.findIndex((item) => item.id === active.id);
+      const newIndex = ingredientFields.findIndex((item) => item.id === over.id);
+      moveIngredient(oldIndex, newIndex);
+    }
+  }
 
   async function onSubmit(data: RecipeFormData) {
     setIsLoading(true);
@@ -534,45 +647,32 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {ingredientFields.map((field, index) => (
-            <div key={field.id} className="flex items-start gap-2">
-              <GripVertical className="w-5 h-5 text-warm-gray-300 mt-2.5 cursor-grab" />
-              <div className="flex-1 grid grid-cols-12 gap-2">
-                <Input
-                  {...register(`ingredients.${index}.quantity`)}
-                  placeholder={t.recipes.quantity}
-                  type="number"
-                  step="0.01"
-                  className="col-span-2 border-warm-gray-200"
-                />
-                <Input
-                  {...register(`ingredients.${index}.unit`)}
-                  placeholder={t.recipes.unit}
-                  className="col-span-2 border-warm-gray-200"
-                />
-                <Input
-                  {...register(`ingredients.${index}.name`)}
-                  placeholder={t.recipes.ingredientName + " *"}
-                  className="col-span-5 border-warm-gray-200"
-                />
-                <Input
-                  {...register(`ingredients.${index}.notes`)}
-                  placeholder={t.recipes.ingredientNotes}
-                  className="col-span-3 border-warm-gray-200"
-                />
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+          >
+            <SortableContext
+              items={ingredientFields.map((field) => field.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {ingredientFields.map((field, index) => (
+                  <SortableIngredientRow
+                    key={field.id}
+                    field={field}
+                    index={index}
+                    register={register}
+                    remove={removeIngredient}
+                    count={ingredientFields.length}
+                    t={t}
+                  />
+                ))}
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeIngredient(index)}
-                disabled={ingredientFields.length === 1}
-                className="text-warm-gray-400 hover:text-red-500"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
+            </SortableContext>
+          </DndContext>
+
           {errors.ingredients && (
             <p className="text-sm text-red-500">
               {errors.ingredients.message || (locale === "de" ? "Bitte Zutatenfehler beheben" : "Please fix ingredient errors")}
