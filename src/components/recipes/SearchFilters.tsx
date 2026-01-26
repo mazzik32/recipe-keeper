@@ -68,16 +68,16 @@ export function SearchFilters({ categories, currentParams }: SearchFiltersProps)
       <div className="flex flex-wrap gap-3">
         {/* Category filter */}
         <Select
-          value={currentParams.category || ""}
+          value={currentParams.category || "all"}
           onValueChange={(value) =>
-            updateFilter("category", value || null)
+            updateFilter("category", value === "all" ? null : value)
           }
         >
           <SelectTrigger className="w-[160px] border-warm-gray-200">
             <SelectValue placeholder={t.nav.categories} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{t.search.allCategories}</SelectItem>
+            <SelectItem value="all">{t.search.allCategories}</SelectItem>
             {categories.map((cat) => (
               <SelectItem key={cat.id} value={cat.id}>
                 {cat.icon} {cat.name}
@@ -88,16 +88,16 @@ export function SearchFilters({ categories, currentParams }: SearchFiltersProps)
 
         {/* Difficulty filter */}
         <Select
-          value={currentParams.difficulty || ""}
+          value={currentParams.difficulty || "all"}
           onValueChange={(value) =>
-            updateFilter("difficulty", value || null)
+            updateFilter("difficulty", value === "all" ? null : value)
           }
         >
           <SelectTrigger className="w-[140px] border-warm-gray-200">
             <SelectValue placeholder={t.recipes.difficulty} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{t.search.allLevels}</SelectItem>
+            <SelectItem value="all">{t.search.allLevels}</SelectItem>
             <SelectItem value="easy">{t.recipes.easy}</SelectItem>
             <SelectItem value="medium">{t.recipes.medium}</SelectItem>
             <SelectItem value="hard">{t.recipes.hard}</SelectItem>
@@ -106,14 +106,14 @@ export function SearchFilters({ categories, currentParams }: SearchFiltersProps)
 
         {/* Sort options */}
         <Select
-          value={currentParams.sort || ""}
-          onValueChange={(value) => updateFilter("sort", value || null)}
+          value={currentParams.sort || "newest"} // default is newest
+          onValueChange={(value) => updateFilter("sort", value === "newest" ? null : value)}
         >
           <SelectTrigger className="w-[160px] border-warm-gray-200">
             <SelectValue placeholder={t.search.sortBy} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{t.search.newestFirst}</SelectItem>
+            <SelectItem value="newest">{t.search.newestFirst}</SelectItem>
             <SelectItem value="oldest">{t.search.oldestFirst}</SelectItem>
             <SelectItem value="title">{t.search.alphabetical}</SelectItem>
             <SelectItem value="prep_time">{t.search.byPrepTime}</SelectItem>
