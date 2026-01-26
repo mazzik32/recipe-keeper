@@ -109,6 +109,22 @@ Deno.serve(async (req) => {
       throw new Error("URL is required");
     }
 
+    // SSRF / Abuse Check
+    try {
+      const parsedUrl = new URL(url);
+      if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+         throw new Error("Invalid protocol");
+      }
+      const hostname = parsedUrl.hostname;
+      // Basic private IP check (regex covering 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, localhost, ::1)
+      const isPrivate = /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|::1$|localhost)/.test(hostname);
+      if (isPrivate) {
+         throw new Error("Target is prohibited");
+      }
+    } catch (e) {
+       throw new Error(e instanceof Error && e.message === "Target is prohibited" ? "Target is prohibited" : "Invalid URL");
+    }
+
     // Validate target language
     const validLanguages: TargetLanguage[] = ["en", "de"];
     const lang: TargetLanguage = validLanguages.includes(targetLanguage) ? targetLanguage : "en";

@@ -133,7 +133,23 @@ export class ExportImportService {
             // Or just try to fetch everything? Let's try to fetch everything but handle CORS safely.
             // Actually, for Supabase images, we can download from the public URL.
             
-            const response = await fetch(url);
+            let fetchUrl = url;
+            if (url.includes("/original-scans/")) {
+                try {
+                   // Extract path: .../original-scans/user_id/scans/filename
+                   const parts = url.split("/original-scans/");
+                   if (parts.length === 2) {
+                       const { data } = await this.supabase.storage
+                           .from("original-scans")
+                           .createSignedUrl(parts[1], 300); // 5 mins
+                       if (data?.signedUrl) fetchUrl = data.signedUrl;
+                   }
+                } catch (e) {
+                    console.warn("Failed to sign URL for export", e);
+                }
+            }
+
+            const response = await fetch(fetchUrl);
             if (!response.ok) continue;
             
             const blob = await response.blob();

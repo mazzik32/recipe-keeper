@@ -1,8 +1,36 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function proxy(request: NextRequest) {
-  return await updateSession(request);
+  // Security Checks for API routes
+  if (request.nextUrl.pathname.startsWith("/api") || request.nextUrl.pathname.startsWith("/supabase")) {
+    // 1. Origin Check for MUTATING requests (POST, PUT, DELETE, PATCH)
+    if (["POST", "PUT", "DELETE", "PATCH"].includes(request.method)) {
+      const origin = request.headers.get("origin");
+      const referer = request.headers.get("referer");
+      const allowedOrigin = request.nextUrl.origin;
+      
+      // If origin is present, it must match.
+      if (origin && !origin.startsWith(allowedOrigin)) {
+         return new NextResponse("Forbidden: Invalid Origin", { status: 403 });
+      }
+      
+      // If referer is present, it must match.
+      if (referer && !referer.startsWith(allowedOrigin)) {
+         return new NextResponse("Forbidden: Invalid Referer", { status: 403 });
+      }
+    }
+  }
+
+  const response = await updateSession(request);
+
+  // Security Headers
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("Permissions-Policy", "camera=(self), microphone=(), geolocation=()");
+
+  return response;
 }
 
 export const config = {

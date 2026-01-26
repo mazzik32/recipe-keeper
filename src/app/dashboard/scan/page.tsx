@@ -171,11 +171,12 @@ export default function ScanRecipePage() {
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
+        const { data, error: signedUrlError } = await supabase.storage
           .from("original-scans")
-          .getPublicUrl(fileName);
+          .createSignedUrl(fileName, 3600); // 1 hour validity
 
-        uploadedUrls.push(publicUrl);
+        if (signedUrlError) throw signedUrlError;
+        uploadedUrls.push(data.signedUrl);
       }
 
       setUploadedImageUrls(uploadedUrls);

@@ -2,7 +2,7 @@
 INSERT INTO storage.buckets (id, name, public) VALUES 
     ('recipe-images', 'recipe-images', true),
     ('step-images', 'step-images', true),
-    ('original-scans', 'original-scans', true),
+    ('original-scans', 'original-scans', false),
     ('avatars', 'avatars', true);
 
 -- Storage policies for recipe-images bucket

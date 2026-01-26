@@ -157,7 +157,7 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [primaryImage, setPrimaryImage] = useState<string | null>(
-    recipe?.images?.find((img) => img.is_primary)?.image_url || null
+    recipe?.images?.find((img) => img.is_primary)?.image_url || scannedData?.original_image_url || null
   );
   const [secondaryImage, setSecondaryImage] = useState<string | null>(
     recipe?.images?.find((img) => !img.is_primary)?.image_url || null
@@ -315,6 +315,40 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
     }
 
     try {
+      // Helper to move private scan images to public bucket
+      const ensurePermanentImage = async (url?: string | null) => {
+        if (!url || !url.includes("/original-scans/")) return url || null;
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          const file = new File([blob], "image.jpg", { type: blob.type });
+          const fileName = `${user.id}/moved-${Date.now()}.jpg`;
+          const { error: uploadError } = await supabase.storage
+            .from("recipe-images")
+            .upload(fileName, file);
+          if (uploadError) throw uploadError;
+          const { data: { publicUrl } } = supabase.storage
+            .from("recipe-images")
+            .getPublicUrl(fileName);
+          return publicUrl;
+        } catch (e) {
+          console.warn("Failed to move image to permanent storage:", e);
+          return url; // Fallback
+        }
+      };
+
+      // Process images
+      const finalPrimaryImage = await ensurePermanentImage(primaryImage);
+      const finalSecondaryImage = await ensurePermanentImage(secondaryImage);
+
+      // Also process step images if they happen to come from scans (unlikely but safe)
+      const processedSteps = await Promise.all(data.steps.map(async (step) => ({
+        ...step,
+        image_url: await ensurePermanentImage(step.image_url)
+      })));
+
+      data.steps = processedSteps;
+
       if (recipe) {
         const { error: recipeError } = await supabase
           .from("recipes")
@@ -371,14 +405,14 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
         if (primaryImage) {
           imagesToInsert.push({
             recipe_id: recipe.id,
-            image_url: primaryImage,
+            image_url: finalPrimaryImage,
             is_primary: true,
           });
         }
         if (secondaryImage) {
           imagesToInsert.push({
             recipe_id: recipe.id,
-            image_url: secondaryImage,
+            image_url: finalSecondaryImage,
             is_primary: false,
           });
         }
@@ -452,14 +486,14 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
         if (primaryImage) {
           imagesToInsert.push({
             recipe_id: newRecipe.id,
-            image_url: primaryImage,
+            image_url: finalPrimaryImage,
             is_primary: true,
           });
         }
         if (secondaryImage) {
           imagesToInsert.push({
             recipe_id: newRecipe.id,
-            image_url: secondaryImage,
+            image_url: finalSecondaryImage,
             is_primary: false,
           });
         }
