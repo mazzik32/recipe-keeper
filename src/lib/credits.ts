@@ -42,10 +42,10 @@ export async function addCredits(userId: string, amount: number): Promise<number
 
   const supabaseAdmin = getAdminClient();
 
-  const { data, error } = await supabaseAdmin.rpc('increment_credits', {
-    p_user_id: userId,
-    p_amount: amount,
-  });
+  const { data, error } = await supabaseAdmin.rpc(
+    'increment_credits',
+    { p_user_id: userId, p_amount: amount } as any
+  );
 
   if (error) {
     console.error('Error incrementing credits:', error);
@@ -65,10 +65,10 @@ export async function deductCredits(userId: string, amount: number): Promise<num
 
   const supabaseAdmin = getAdminClient();
 
-  const { data, error } = await supabaseAdmin.rpc('decrement_credits', {
-    p_user_id: userId,
-    p_amount: amount,
-  });
+  const { data, error } = await supabaseAdmin.rpc(
+    'decrement_credits',
+    { p_user_id: userId, p_amount: amount } as any
+  );
 
   if (error) {
     console.error('Error decrementing credits:', error);
