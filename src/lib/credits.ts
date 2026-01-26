@@ -1,66 +1,64 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database.types';
 
-// Initialize Supabase admin client (Service Role)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseServiceKey) {
-  console.error('SUPABASE_SERVICE_ROLE_KEY is missing');
+function getAdminClient() {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL is missing');
+  }
+
+  return createClient<Database>(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 }
 
-const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceKey || '', {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
-
 /**
- * Adds credits to a user's account.
- * @param userId - The ID of the user to add credits to.
- * @param amount - The number of credits to add.
- * @returns The new credit balance or throws an error.
+ * Adds credits to a user's account (atomic).
  */
 export async function addCredits(userId: string, amount: number): Promise<number> {
   if (!userId || amount <= 0) {
     throw new Error('Invalid userId or amount');
   }
 
-  console.log(`Adding ${amount} credits to user ${userId}`);
+  const supabaseAdmin = getAdminClient();
 
-  try {
-    // 1. Fetch current credits
-    const { data: profile, error: fetchError } = await supabaseAdmin
-      .from('profiles')
-      .select('credits')
-      .eq('id', userId)
-      .single();
+  const { data, error } = await supabaseAdmin.rpc('increment_credits', {
+    p_user_id: userId,
+    p_amount: amount,
+  });
 
-    if (fetchError) {
-      console.error('Error fetching profile:', fetchError);
-      throw fetchError;
-    }
-
-    const currentProfile = profile as any; // Temporary fix for type inference if needed
-    const currentCredits = currentProfile?.credits || 0;
-    const newCredits = currentCredits + amount;
-
-    // 2. Update credits
-    const { error: updateError } = await (supabaseAdmin
-        .from('profiles') as any)
-        .update({ credits: newCredits })
-        .eq('id', userId);
-
-    if (updateError) {
-      console.error('Error updating credits:', updateError);
-      throw updateError;
-    }
-
-    console.log(`Successfully added credits. New balance: ${newCredits}`);
-    return newCredits;
-  } catch (err) {
-    console.error('Database update failed:', err);
-    throw err;
+  if (error) {
+    console.error('Error incrementing credits:', error);
+    throw error;
   }
+
+  return data as number;
+}
+
+/**
+ * Deducts credits from a user's account (atomic).
+ */
+export async function deductCredits(userId: string, amount: number): Promise<number> {
+  if (!userId || amount <= 0) {
+    throw new Error('Invalid userId or amount');
+  }
+
+  const supabaseAdmin = getAdminClient();
+
+  const { data, error } = await supabaseAdmin.rpc('decrement_credits', {
+    p_user_id: userId,
+    p_amount: amount,
+  });
+
+  if (error) {
+    console.error('Error decrementing credits:', error);
+    throw error;
+  }
+
+  return data as number;
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { paddle } from '@/lib/paddle';
 import { addCredits } from '@/lib/credits';
 import { EventName } from '@paddle/paddle-node-sdk';
+import { recordWebhookEvent } from '@/lib/webhook-events';
 
 export async function POST(req: NextRequest) {
   const signature = req.headers.get('paddle-signature') as string;
@@ -19,6 +20,16 @@ export async function POST(req: NextRequest) {
     );
 
     if (eventData) {
+      const eventId = (eventData as any).eventId || (eventData as any).event_id;
+      if (eventId) {
+        const isNew = await recordWebhookEvent('paddle', eventId);
+        if (!isNew) {
+          return NextResponse.json({ received: true });
+        }
+      } else {
+        console.warn('Paddle webhook event missing event id');
+      }
+
       switch (eventData.eventType) {
         case EventName.TransactionCompleted:
           const transaction = eventData.data;

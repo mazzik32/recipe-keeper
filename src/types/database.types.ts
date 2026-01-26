@@ -9,6 +9,26 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      webhook_events: {
+        Row: {
+          id: number;
+          provider: string;
+          event_id: string;
+          received_at: string;
+        };
+        Insert: {
+          id?: number;
+          provider: string;
+          event_id: string;
+          received_at?: string;
+        };
+        Update: {
+          id?: number;
+          provider?: string;
+          event_id?: string;
+          received_at?: string;
+        };
+      };
       profiles: {
         Row: {
           id: string;
@@ -268,6 +288,19 @@ export type Database = {
         };
       };
     };
+    Views: {};
+    Functions: {
+      increment_credits: {
+        Args: { p_user_id: string; p_amount: number };
+        Returns: number;
+      };
+      decrement_credits: {
+        Args: { p_user_id: string; p_amount: number };
+        Returns: number;
+      };
+    };
+    Enums: {};
+    CompositeTypes: {};
   };
 };
 
