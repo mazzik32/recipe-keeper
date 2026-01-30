@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   title: "Recipe Keeper - Preserve Family Recipes",
   description:
     "Digitalize and preserve your family recipes. Scan handwritten recipes, organize by category, and create beautiful recipe books.",
+  icons: {
+    icon: "/assets/RecipeKeeperLogo.png",
+  },
 };
 
 export default function RootLayout({

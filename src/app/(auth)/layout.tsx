@@ -13,7 +13,7 @@ export default function AuthLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/assets/logo.png"
+              src="/assets/RecipeKeeperLogo.png"
               alt="RecipeKeeper Logo"
               width={32}
               height={32}

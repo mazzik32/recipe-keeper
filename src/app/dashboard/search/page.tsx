@@ -40,44 +40,68 @@ export default async function SearchPage({
       .eq("is_archived", false);
 
     if (query) {
-      queryBuilder = queryBuilder.or(
-        `title.ilike.%${query}%,description.ilike.%${query}%`
-      );
+      // 1. Search in recipes (title, description)
+      const { data: recipeMatches } = await supabase
+        .from("recipes")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("is_archived", false)
+        .or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+
+      // 2. Search in ingredients
+      const { data: ingredientMatches } = await supabase
+        .from("recipe_ingredients")
+        .select("recipe_id")
+        .ilike("name", `%${query}%`);
+
+      // Merge IDs
+      const matchedIds = new Set<string>();
+      recipeMatches?.forEach((r) => matchedIds.add(r.id));
+      ingredientMatches?.forEach((i) => matchedIds.add(i.recipe_id));
+
+      if (matchedIds.size === 0) {
+        // No matches found, return empty result immediately
+        recipes = [];
+      } else {
+        queryBuilder = queryBuilder.in("id", Array.from(matchedIds));
+      }
     }
 
-    if (category) {
-      queryBuilder = queryBuilder.eq("category_id", category);
-    }
+    if (!query || (query && recipes === null)) {
+      if (category) {
+        queryBuilder = queryBuilder.eq("category_id", category);
+      }
 
-    if (difficulty) {
-      queryBuilder = queryBuilder.eq("difficulty", difficulty);
-    }
+      if (difficulty) {
+        queryBuilder = queryBuilder.eq("difficulty", difficulty);
+      }
 
-    switch (sort) {
-      case "title":
-        queryBuilder = queryBuilder.order("title", { ascending: true });
-        break;
-      case "oldest":
-        queryBuilder = queryBuilder.order("created_at", { ascending: true });
-        break;
-      case "prep_time":
-        queryBuilder = queryBuilder.order("prep_time_minutes", {
-          ascending: true,
-          nullsFirst: false,
-        });
-        break;
-      case "cook_time":
-        queryBuilder = queryBuilder.order("cook_time_minutes", {
-          ascending: true,
-          nullsFirst: false,
-        });
-        break;
-      default:
-        queryBuilder = queryBuilder.order("created_at", { ascending: false });
-    }
+      switch (sort) {
+        case "title":
+          queryBuilder = queryBuilder.order("title", { ascending: true });
+          break;
+        case "oldest":
+          queryBuilder = queryBuilder.order("created_at", { ascending: true });
+          break;
+        case "prep_time":
+          queryBuilder = queryBuilder.order("prep_time_minutes", {
+            ascending: true,
+            nullsFirst: false,
+          });
+          break;
+        case "cook_time":
+          queryBuilder = queryBuilder.order("cook_time_minutes", {
+            ascending: true,
+            nullsFirst: false,
+          });
+          break;
+        default:
+          queryBuilder = queryBuilder.order("created_at", { ascending: false });
+      }
 
-    const { data } = await queryBuilder;
-    recipes = data;
+      const { data } = await queryBuilder;
+      recipes = data;
+    }
   }
 
   return (

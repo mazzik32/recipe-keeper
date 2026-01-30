@@ -86,7 +86,7 @@ export function Header({ user }: HeaderProps) {
         {/* Mobile: Just logo icon */}
         <Link href="/dashboard" className="md:hidden shrink-0">
           <Image
-            src="/assets/logo.png"
+            src="/assets/RecipeKeeperLogo.png"
             alt="RecipeKeeper"
             width={28}
             height={28}

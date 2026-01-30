@@ -76,7 +76,7 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-[clamp(20px,5vw,40px)] flex items-center justify-between">
           <Link href="#" className="flex items-center gap-2.5 no-underline">
             <Image
-              src="/assets/logo.png"
+              src="/assets/RecipeKeeperLogo.png"
               alt="RecipeKeeper Logo"
               width={48}
               height={48}
