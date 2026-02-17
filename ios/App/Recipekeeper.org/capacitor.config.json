@@ -1,0 +1,15 @@
+{
+	"appId": "com.recipekeeper.app",
+	"appName": "Recipe Keeper",
+	"webDir": "public",
+	"server": {
+		"url": "https://recipe-keeper.derived.ch",
+		"allowNavigation": [
+			"recipe-keeper.derived.ch",
+			"*.supabase.co"
+		]
+	},
+	"packageClassList": [
+		"CAPCameraPlugin"
+	]
+}
