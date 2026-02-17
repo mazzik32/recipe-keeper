@@ -2,12 +2,13 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.recipekeeper.app',
-  appName: 'Recipe Keeper',
+  appName: 'Recipekeeper.org',
   webDir: 'public',
   server: {
-    url: 'https://recipe-keeper.derived.ch', // TODO: Verify production URL
+    url: 'https://mobile.recipekeeper.com',
     allowNavigation: [
-      'recipe-keeper.derived.ch',
+      'mobile.recipekeeper.com',
+      'recipe-keeper.derived.ch', // Keep old one just in case redirects happen
       '*.supabase.co'
     ]
   }

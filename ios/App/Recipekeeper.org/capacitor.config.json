@@ -1,10 +1,11 @@
 {
 	"appId": "com.recipekeeper.app",
-	"appName": "Recipe Keeper",
+	"appName": "Recipekeeper.org",
 	"webDir": "public",
 	"server": {
-		"url": "https://recipe-keeper.derived.ch",
+		"url": "https://mobile.recipekeeper.com",
 		"allowNavigation": [
+			"mobile.recipekeeper.com",
 			"recipe-keeper.derived.ch",
 			"*.supabase.co"
 		]
