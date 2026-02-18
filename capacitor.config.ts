@@ -5,9 +5,9 @@ const config: CapacitorConfig = {
   appName: 'Recipekeeper.org',
   webDir: 'public',
   server: {
-    url: 'https://mobile.recipekeeper.com',
+    url: 'https://mobile.recipekeeper.org/login',
     allowNavigation: [
-      'mobile.recipekeeper.com',
+      'mobile.recipekeeper.org',
       'recipe-keeper.derived.ch', // Keep old one just in case redirects happen
       '*.supabase.co'
     ]

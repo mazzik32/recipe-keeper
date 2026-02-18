@@ -43,7 +43,7 @@ export function Sidebar() {
   const { t } = useLanguage();
 
   return (
-    <aside className="hidden md:flex w-64 bg-warm-white border-r border-warm-gray-100 flex-col">
+    <aside className="hidden md:flex w-64 pt-[env(safe-area-inset-top)] bg-warm-white border-r border-warm-gray-100 flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-warm-gray-100">
         <Link href="/dashboard" className="flex items-center gap-3">

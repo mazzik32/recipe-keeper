@@ -68,7 +68,7 @@ export function MobileNav() {
       {/* Drawer */}
       <div
         className={cn(
-          "fixed top-0 left-0 h-full w-72 bg-warm-white z-50 transform transition-transform duration-300 ease-in-out md:hidden",
+          "fixed top-0 left-0 h-full w-72 pt-[env(safe-area-inset-top)] bg-warm-white z-50 transform transition-transform duration-300 ease-in-out md:hidden",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

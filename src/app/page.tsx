@@ -72,7 +72,7 @@ export default function Home() {
   return (
     <div className="font-sans text-warm-gray-600 bg-cream overflow-x-hidden text-lg leading-relaxed">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 py-4 bg-cream/85 backdrop-blur-md border-b border-[rgba(93,83,77,0.08)]">
+      <header className="fixed top-0 left-0 right-0 z-50 pt-[max(1rem,env(safe-area-inset-top))] pb-4 bg-cream/85 backdrop-blur-md border-b border-[rgba(93,83,77,0.08)]">
         <div className="max-w-[1200px] mx-auto px-[clamp(20px,5vw,40px)] flex items-center justify-between">
           <Link href="#" className="flex items-center gap-2.5 no-underline">
             <Image
