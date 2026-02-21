@@ -10,10 +10,12 @@ Recipe Keeper is a modern web application for digitalizing, organizing, and pres
 -   **PDF Export**: Generate beautiful PDF cookbooks from your collections.
 -   **Multi-language**: Supports English and German.
 -   **Responsive Design**: Mobile-first interface built with Tailwind CSS and Shadcn UI.
+-   **Mobile App**: Native mobile experience built with React Native (Expo) featuring offline caching and full feature parity.
 
 ## Tech Stack
 
 -   **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
+-   **Mobile**: React Native, Expo Router, NativeWind (Tailwind CSS)
 -   **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
 -   **AI**: OpenAI GPT-4 Vision API
 -   **Payments**: Stripe
@@ -111,6 +113,15 @@ OPENAI_API_KEY=sk-...
 npm run dev
 ```
 Visit `http://localhost:3000`.
+
+### 6. Run Mobile App Locally
+
+```bash
+cd mobile
+npm install
+npx expo start
+```
+Use the Expo Go app or a simulator to view the mobile app.
 
 ## Deployment
 

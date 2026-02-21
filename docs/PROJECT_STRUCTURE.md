@@ -27,6 +27,16 @@ recipe-keeper/
 │           ├── modern.jpg
 │           └── rustic.jpg
 │
+├── mobile/                             # React Native (Expo) Mobile App
+│   ├── app/                            # Expo Router (screens/navigation)
+│   ├── assets/                         # Images, fonts, and splash screens
+│   ├── components/                     # Native UI components
+│   ├── contexts/                       # React Contexts (Auth, Language)
+│   ├── lib/                            # Supabase client, utils
+│   ├── package.json                    # Mobile dependencies
+│   ├── app.json                        # Expo app configuration
+│   └── tailwind.config.js              # NativeWind configuration
+│
 ├── src/
 │   │
 │   ├── app/                            # Next.js App Router
@@ -303,6 +313,9 @@ Supabase-specific files:
 
 ### `/cloudflare`
 Cloudflare Workers for edge computing tasks like image optimization.
+
+### `/mobile`
+React Native application using the Expo framework. It is integrated tightly with NativeWind for styling and accesses the same Supabase database and Edge Functions as the web application. Features Expo Router for file-based routing.
 
 ## File Naming Conventions
 

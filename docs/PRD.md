@@ -150,11 +150,9 @@ Family recipes, especially those passed down from parents and grandparents, are 
 ### 3.1 Technology Stack
 
 #### Frontend
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **State Management**: React Query (TanStack Query)
+- **Web App**: Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- **Mobile App**: React Native, Expo, NativeWind
+- **State Management**: React Context, React Query (TanStack Query)
 - **Forms**: React Hook Form + Zod validation
 - **PDF Generation**: @react-pdf/renderer
 
@@ -173,8 +171,8 @@ Family recipes, especially those passed down from parents and grandparents, are 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         CLIENT (Browser)                         │
-│                     Next.js 14 App (React 18)                   │
+│                           CLIENTS                                │
+│        Next.js 14 Web App     |    React Native Mobile App       │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -308,7 +306,6 @@ Semantic Colors:
 
 ## 7. Future Considerations (Post-MVP)
 
-- **Mobile Apps**: Native iOS/Android apps
 - **Sharing**: Share recipes with family members
 - **Collaboration**: Multiple users contribute to family cookbook
 - **Meal Planning**: Weekly meal planner integration
