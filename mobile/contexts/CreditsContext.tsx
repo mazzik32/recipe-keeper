@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { Alert } from 'react-native';
-import {
-    purchaseUpdatedListener,
-    purchaseErrorListener,
-} from 'react-native-iap';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import {
@@ -11,17 +7,16 @@ import {
     cleanupIAP,
     purchaseProduct,
     validateAndFulfill,
+    getPurchaseListeners,
+    isIAPAvailable,
     PRODUCT_CREDITS,
-    type Purchase,
-    type Product,
-    type PurchaseError,
 } from '../lib/iap';
 
 interface CreditsContextType {
     /** Current credit balance */
     credits: number;
     /** Available IAP products from the store */
-    products: Product[];
+    products: any[];
     /** Whether a purchase is in progress */
     purchasing: boolean;
     /** Whether products are still loading */
@@ -44,7 +39,7 @@ const CreditsContext = createContext<CreditsContextType>({
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
     const [credits, setCredits] = useState(0);
-    const [products, setProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<any[]>([]);
     const [purchasing, setPurchasing] = useState(false);
     const [loadingProducts, setLoadingProducts] = useState(true);
     const purchaseUpdateSubscription = useRef<any>(null);
@@ -69,11 +64,16 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         let mounted = true;
 
         async function setup() {
+            if (!isIAPAvailable()) {
+                console.warn('IAP not available — skipping product fetch');
+                if (mounted) setLoadingProducts(false);
+                return;
+            }
+
             try {
                 const fetchedProducts = await initIAP();
                 if (mounted) {
-                    // Sort products by credit amount
-                    const sorted = fetchedProducts.sort((a, b) => {
+                    const sorted = fetchedProducts.sort((a: any, b: any) => {
                         const creditsA = PRODUCT_CREDITS[a.productId] || 0;
                         const creditsB = PRODUCT_CREDITS[b.productId] || 0;
                         return creditsA - creditsB;
@@ -97,8 +97,11 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for purchase updates
     useEffect(() => {
-        purchaseUpdateSubscription.current = purchaseUpdatedListener(
-            async (purchase: Purchase) => {
+        const listeners = getPurchaseListeners();
+        if (!listeners) return;
+
+        purchaseUpdateSubscription.current = listeners.purchaseUpdatedListener(
+            async (purchase: any) => {
                 try {
                     const result = await validateAndFulfill(purchase);
                     setCredits(result.credits);
@@ -115,9 +118,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
             }
         );
 
-        purchaseErrorSubscription.current = purchaseErrorListener(
-            (error: PurchaseError) => {
-                // User cancelled is not an error
+        purchaseErrorSubscription.current = listeners.purchaseErrorListener(
+            (error: any) => {
                 if (error.code === 'E_USER_CANCELLED') {
                     setPurchasing(false);
                     return;
@@ -145,10 +147,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
 
         try {
             await purchaseProduct(productId);
-            // The purchaseUpdatedListener will handle the rest
         } catch (err: any) {
             console.error('Purchase request error:', err);
-            // Don't alert here — the purchaseErrorListener handles it
             setPurchasing(false);
         }
     }, [purchasing]);

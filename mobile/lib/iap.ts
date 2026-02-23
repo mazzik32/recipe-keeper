@@ -3,19 +3,21 @@
  *
  * Handles IAP initialization, product fetching, purchase flow,
  * and server-side receipt validation.
+ *
+ * All functions are wrapped with try/catch to prevent crashes
+ * if the native IAP module is not available (e.g. old builds
+ * without the plugin, or simulators).
  */
 import { Platform } from 'react-native';
-import {
-  initConnection,
-  endConnection,
-  fetchProducts,
-  requestPurchase,
-  finishTransaction,
-  type Purchase,
-  type Product,
-  type PurchaseError,
-} from 'react-native-iap';
 import { supabase } from './supabase';
+
+// Lazy-load react-native-iap to prevent crash if native module is missing
+let RNIap: typeof import('react-native-iap') | null = null;
+try {
+  RNIap = require('react-native-iap');
+} catch (e) {
+  console.warn('react-native-iap native module not available. IAP disabled.');
+}
 
 /** Product IDs — must match App Store Connect / Google Play Console */
 export const CREDIT_PRODUCT_IDS = [
@@ -31,12 +33,22 @@ export const PRODUCT_CREDITS: Record<string, number> = {
   'org.recipekeeper.credits.400': 400,
 };
 
+// Re-export types (safe even if module is missing)
+export type Purchase = import('react-native-iap').Purchase;
+export type Product = import('react-native-iap').Product;
+export type PurchaseError = import('react-native-iap').PurchaseError;
+
+/** Whether the IAP native module is available */
+export const isIAPAvailable = (): boolean => RNIap !== null;
+
 /**
  * Initialize IAP connection and fetch available products.
+ * Returns empty array if IAP is not available.
  */
-export async function initIAP(): Promise<Product[]> {
-  await initConnection();
-  const products = await fetchProducts({ skus: CREDIT_PRODUCT_IDS });
+export async function initIAP(): Promise<any[]> {
+  if (!RNIap) return [];
+  await RNIap.initConnection();
+  const products = await RNIap.fetchProducts({ skus: CREDIT_PRODUCT_IDS });
   return products;
 }
 
@@ -44,7 +56,8 @@ export async function initIAP(): Promise<Product[]> {
  * Clean up IAP connection.
  */
 export async function cleanupIAP(): Promise<void> {
-  await endConnection();
+  if (!RNIap) return;
+  await RNIap.endConnection();
 }
 
 /**
@@ -52,7 +65,8 @@ export async function cleanupIAP(): Promise<void> {
  * Uses the v14 API with platform-specific request objects.
  */
 export async function purchaseProduct(productId: string): Promise<void> {
-  await requestPurchase({
+  if (!RNIap) throw new Error('IAP not available');
+  await RNIap.requestPurchase({
     request: {
       apple: { sku: productId },
       google: { skus: [productId] },
@@ -62,12 +76,25 @@ export async function purchaseProduct(productId: string): Promise<void> {
 }
 
 /**
+ * Get purchase listeners (safe — returns null if IAP unavailable).
+ */
+export function getPurchaseListeners() {
+  if (!RNIap) return null;
+  return {
+    purchaseUpdatedListener: RNIap.purchaseUpdatedListener,
+    purchaseErrorListener: RNIap.purchaseErrorListener,
+  };
+}
+
+/**
  * Validate receipt with our server and fulfill credits.
  * Returns the new credit balance.
  */
 export async function validateAndFulfill(
-  purchase: Purchase
+  purchase: any
 ): Promise<{ credits: number; added: number }> {
+  if (!RNIap) throw new Error('IAP not available');
+
   const platform = Platform.OS === 'ios' ? 'ios' : 'android';
   const receipt = platform === 'ios'
     ? purchase.transactionReceipt
@@ -105,9 +132,7 @@ export async function validateAndFulfill(
   }
 
   // Finish the transaction (tells Apple/Google we've delivered the content)
-  await finishTransaction({ purchase, isConsumable: true });
+  await RNIap.finishTransaction({ purchase, isConsumable: true });
 
   return { credits: data.credits, added: data.added || 0 };
 }
-
-export type { Purchase, Product, PurchaseError };
