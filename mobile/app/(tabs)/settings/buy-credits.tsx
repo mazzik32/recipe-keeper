@@ -16,8 +16,18 @@ export default function BuyCreditsScreen() {
     const { t } = useLanguage();
     const { credits, products, purchasing, loadingProducts, buyCredits } = useCredits();
 
-    const handlePurchase = (productId: string) => {
-        const creditAmount = PRODUCT_CREDITS[productId] || 0;
+    const handlePurchase = (product: any) => {
+        // Extract credit amount from productId (e.g. 'org.recipekeeper.credits.20' -> 20)
+        let creditAmount = PRODUCT_CREDITS[product.productId];
+        if (!creditAmount) {
+            const match = product.productId.match(/\d+$/);
+            if (match) {
+                creditAmount = parseInt(match[0], 10);
+            } else {
+                const titleMatch = product.title?.match(/\d+/);
+                creditAmount = titleMatch ? parseInt(titleMatch[0], 10) : 0;
+            }
+        }
 
         Alert.alert(
             t.nav.credits,
@@ -28,7 +38,7 @@ export default function BuyCreditsScreen() {
                     text: t.common.confirm,
                     onPress: async () => {
                         try {
-                            await buyCredits(productId);
+                            await buyCredits(product.productId);
                         } catch (err: any) {
                             Alert.alert('Store Connection Error', err.message || 'Could not connect to the App Store.');
                         }
@@ -100,7 +110,7 @@ export default function BuyCreditsScreen() {
                                 return (
                                     <TouchableOpacity
                                         key={product.productId}
-                                        onPress={() => handlePurchase(product.productId)}
+                                        onPress={() => handlePurchase(product)}
                                         disabled={purchasing}
                                         className="bg-white rounded-2xl border border-warm-gray-100 shadow-sm p-5 flex-row items-center active:opacity-70"
                                         style={{ opacity: purchasing ? 0.6 : 1 }}
