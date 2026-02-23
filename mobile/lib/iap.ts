@@ -49,7 +49,7 @@ export async function initIAP(): Promise<any[]> {
   if (!RNIap) return [];
   await RNIap.initConnection();
   const products = await RNIap.fetchProducts({ skus: CREDIT_PRODUCT_IDS });
-  return products;
+  return products || [];
 }
 
 /**
@@ -66,13 +66,19 @@ export async function cleanupIAP(): Promise<void> {
  */
 export async function purchaseProduct(productId: string): Promise<void> {
   if (!RNIap) throw new Error('IAP not available');
-  await RNIap.requestPurchase({
-    request: {
-      apple: { sku: productId },
-      google: { skus: [productId] },
-    },
-    type: 'in-app',
-  });
+  
+  try {
+    await RNIap.requestPurchase({
+      request: {
+        apple: { sku: productId },
+        google: { skus: [productId] },
+      },
+      type: 'in-app'
+    });
+  } catch (err: any) {
+    console.error('purchaseProduct native error:', err);
+    throw err;
+  }
 }
 
 /**

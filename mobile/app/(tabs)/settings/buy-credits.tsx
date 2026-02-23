@@ -26,7 +26,13 @@ export default function BuyCreditsScreen() {
                 { text: t.common.cancel, style: "cancel" },
                 {
                     text: t.common.confirm,
-                    onPress: () => buyCredits(productId),
+                    onPress: async () => {
+                        try {
+                            await buyCredits(productId);
+                        } catch (err: any) {
+                            Alert.alert('Store Connection Error', err.message || 'Could not connect to the App Store.');
+                        }
+                    },
                 },
             ]
         );
