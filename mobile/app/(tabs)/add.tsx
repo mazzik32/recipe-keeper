@@ -5,7 +5,7 @@ import { Camera, RefreshCcw, UploadCloud, Link as LinkIcon } from "lucide-react-
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { decode } from "base64-arraybuffer";
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useRouter } from "expo-router";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -27,7 +27,7 @@ export default function AddRecipeScreen() {
         }
 
         const result = await ImagePicker.launchCameraAsync({
-            allowsEditing: true,
+            allowsEditing: false,
             quality: 0.8,
         });
 
@@ -39,7 +39,7 @@ export default function AddRecipeScreen() {
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
-            allowsEditing: true,
+            allowsEditing: false,
             quality: 0.8,
         });
 
