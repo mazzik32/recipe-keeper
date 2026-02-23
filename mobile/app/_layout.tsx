@@ -2,6 +2,7 @@ import { Slot, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { LanguageProvider } from "../contexts/LanguageContext";
+import { CreditsProvider } from "../contexts/CreditsContext";
 import "../global.css";
 
 function RootLayoutNav() {
@@ -23,7 +24,9 @@ function RootLayoutNav() {
 
     return (
         <LanguageProvider>
-            <Slot />
+            <CreditsProvider>
+                <Slot />
+            </CreditsProvider>
         </LanguageProvider>
     );
 }

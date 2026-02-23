@@ -3,8 +3,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useCredits } from "../../contexts/CreditsContext";
 import { supabase } from "../../lib/supabase";
-import { LogOut, User as UserIcon, Settings as SettingsIcon, CreditCard, ChevronRight } from "lucide-react-native";
+import { LogOut, User as UserIcon, Settings as SettingsIcon, CreditCard, ChevronRight, Plus } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 
@@ -12,6 +13,7 @@ export default function SettingsScreen() {
     const { user, signOut } = useAuth();
     const router = useRouter();
     const { t } = useLanguage();
+    const { credits } = useCredits();
     const [profile, setProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -84,12 +86,21 @@ export default function SettingsScreen() {
                                 </View>
                                 <Text className="text-warm-gray-700 font-medium text-base">{t.nav.credits}</Text>
                             </View>
-                            {loading ? (
-                                <ActivityIndicator size="small" color="#eb6e3e" />
-                            ) : (
-                                <Text className="text-peach-600 font-bold text-lg">{profile?.credits || 0}</Text>
-                            )}
+                            <Text className="text-peach-600 font-bold text-lg">{credits}</Text>
                         </View>
+
+                        <TouchableOpacity
+                            onPress={() => router.push('/(tabs)/settings/buy-credits')}
+                            className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 bg-white active:opacity-70"
+                        >
+                            <View className="flex-row items-center gap-3">
+                                <View className="w-8 h-8 rounded-full bg-green-50 items-center justify-center">
+                                    <Plus color="#22c55e" size={18} />
+                                </View>
+                                <Text className="text-warm-gray-700 font-medium text-base">Buy Credits</Text>
+                            </View>
+                            <ChevronRight color="#d4d4d8" size={20} />
+                        </TouchableOpacity>
 
                         <TouchableOpacity
                             onPress={() => router.push('/(tabs)/settings/preferences')}
