@@ -77,7 +77,19 @@ export default function BuyCreditsScreen() {
                             {products.map((product, index) => {
                                 const Icon = PACKAGE_ICONS[index] || Coins;
                                 const color = PACKAGE_COLORS[index] || "#f59e0b";
-                                const creditAmount = PRODUCT_CREDITS[product.productId] || 0;
+                                // Extract credit amount from productId (e.g. 'org.recipekeeper.credits.20' -> 20)
+                                // or fallback to parsing the title/description
+                                let creditAmount = PRODUCT_CREDITS[product.productId];
+                                if (!creditAmount) {
+                                    const match = product.productId.match(/\d+$/);
+                                    if (match) {
+                                        creditAmount = parseInt(match[0], 10);
+                                    } else {
+                                        // Fallback to title parsing
+                                        const titleMatch = product.title?.match(/\d+/);
+                                        creditAmount = titleMatch ? parseInt(titleMatch[0], 10) : 0;
+                                    }
+                                }
 
                                 return (
                                     <TouchableOpacity
@@ -98,7 +110,7 @@ export default function BuyCreditsScreen() {
                                             <Text className="font-playfair text-xl text-warm-gray-700">
                                                 {creditAmount} Credits
                                             </Text>
-                                            <Text className="text-warm-gray-400 text-sm mt-0.5">
+                                            <Text className="text-warm-gray-400 text-sm mt-0.5" numberOfLines={2}>
                                                 {product.description || `${creditAmount} Scan Credits`}
                                             </Text>
                                         </View>
