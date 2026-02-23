@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.recipekeeper.mobile"
+      "bundleIdentifier": "org.recipekeeper.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +27,11 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "org.recipekeeper.mobile"
+      "package": "org.recipekeeper.mobile",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -43,6 +50,12 @@
           "photosPermission": "Allow RecipeKeeper to access your photos to upload recipes."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a745ee60-ad64-4a62-a011-2d9f6cfe42a7"
+      }
+    }
   }
 }
