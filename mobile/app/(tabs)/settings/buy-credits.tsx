@@ -39,6 +39,27 @@ function parseCreditAmount(product: any): number {
     return creditAmount || 0;
 }
 
+/** 
+ * Safely extract the formatted, localized price string.
+ * v14 API changes depending on platform (iOS: localizedPriceString, Android: various).
+ */
+function getProductPrice(product: any): string {
+    // iOS v14 or general formatted price
+    if (product.localizedPriceString) return product.localizedPriceString;
+    if (product.localizedPrice) return product.localizedPrice;
+
+    // Android v14 (Subscriptions / In-app)
+    if (product.subscriptionOfferDetailsAndroid?.[0]?.pricingPhases?.[0]?.formattedPrice) {
+        return product.subscriptionOfferDetailsAndroid[0].pricingPhases[0].formattedPrice;
+    }
+    if (product.oneTimePurchaseOfferDetailsAndroid?.formattedPrice) {
+        return product.oneTimePurchaseOfferDetailsAndroid.formattedPrice;
+    }
+
+    // Fallback
+    return String(product.price || '');
+}
+
 export default function BuyCreditsScreen() {
     const router = useRouter();
     const { t } = useLanguage();
@@ -148,10 +169,11 @@ export default function BuyCreditsScreen() {
 
     const handlePurchase = useCallback((product: any) => {
         const creditAmount = parseCreditAmount(product);
+        const priceString = getProductPrice(product);
 
         Alert.alert(
-            t.nav.credits,
-            `${creditAmount} Credits?`,
+            `Purchase ${creditAmount} Credits`,
+            `Are you sure you want to buy ${creditAmount} credits for ${priceString}?`,
             [
                 { text: t.common.cancel, style: "cancel" },
                 {
@@ -255,7 +277,7 @@ export default function BuyCreditsScreen() {
 
                                         <View className="bg-peach-500 rounded-xl px-4 py-2">
                                             <Text className="text-white font-bold text-base">
-                                                {product.localizedPrice || product.price}
+                                                {getProductPrice(product)}
                                             </Text>
                                         </View>
                                     </TouchableOpacity>
