@@ -319,9 +319,13 @@ async function validatePurchase(
 ): Promise<{ credits: number; added: number }> {
     const { supabase } = require('../../../lib/supabase');
 
+    console.log('Raw purchase object:', JSON.stringify(purchase, null, 2));
+
     const platform = Platform.OS === 'ios' ? 'ios' : 'android';
-    const receipt = platform === 'ios'
-        ? purchase.transactionReceipt
+
+    // In v14, iOS transactionReceipt might be missing from the object, so we fall back to getReceiptIOS()
+    let receipt = platform === 'ios'
+        ? (purchase.transactionReceipt || await RNIap.getReceiptIOS())
         : purchase.purchaseToken;
 
     if (!receipt) {
