@@ -8,8 +8,8 @@ import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import { useState, useEffect, useRef, useCallback } from "react";
 
-const PACKAGE_ICONS = [Coins, Sparkles, Crown];
-const PACKAGE_COLORS = ["#f59e0b", "#8b5cf6", "#ec4899"];
+const PACKAGE_ICONS = [Coins, Sparkles, Zap, Crown];
+const PACKAGE_COLORS = ["#f59e0b", "#8b5cf6", "#3b82f6", "#ec4899"];
 
 /** Map product ID → credits (client-side display only) */
 const PRODUCT_CREDITS: Record<string, number> = {
