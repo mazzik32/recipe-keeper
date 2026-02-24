@@ -18,11 +18,17 @@ const PRODUCT_CREDITS: Record<string, number> = {
     'org.recipekeeper.credits.400': 400,
 };
 
+/** Get the product ID from a product object (v14 uses `id`, older versions use `productId`) */
+function getProductId(product: any): string {
+    return product.productId || product.id || '';
+}
+
 /** Parse credit amount from a product object */
 function parseCreditAmount(product: any): number {
-    let creditAmount = PRODUCT_CREDITS[product.productId];
-    if (!creditAmount) {
-        const match = product.productId.match(/\d+$/);
+    const pid = getProductId(product);
+    let creditAmount = PRODUCT_CREDITS[pid];
+    if (!creditAmount && pid) {
+        const match = pid.match(/\d+$/);
         if (match) {
             creditAmount = parseInt(match[0], 10);
         } else {
@@ -30,7 +36,7 @@ function parseCreditAmount(product: any): number {
             creditAmount = titleMatch ? parseInt(titleMatch[0], 10) : 0;
         }
     }
-    return creditAmount;
+    return creditAmount || 0;
 }
 
 export default function BuyCreditsScreen() {
@@ -156,10 +162,11 @@ export default function BuyCreditsScreen() {
 
                         setPurchasing(true);
                         try {
+                            const sku = getProductId(product);
                             await iapRef.current.requestPurchase({
                                 request: {
-                                    apple: { sku: product.productId },
-                                    google: { skus: [product.productId] },
+                                    apple: { sku },
+                                    google: { skus: [sku] },
                                 },
                                 type: 'in-app'
                             });
@@ -222,7 +229,7 @@ export default function BuyCreditsScreen() {
 
                                 return (
                                     <TouchableOpacity
-                                        key={product.productId}
+                                        key={getProductId(product)}
                                         onPress={() => handlePurchase(product)}
                                         disabled={purchasing}
                                         className="bg-white rounded-2xl border border-warm-gray-100 shadow-sm p-5 flex-row items-center active:opacity-70"
