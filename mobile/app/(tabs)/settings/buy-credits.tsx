@@ -323,10 +323,9 @@ async function validatePurchase(
 
     const platform = Platform.OS === 'ios' ? 'ios' : 'android';
 
-    // In v14, iOS transactionReceipt might be missing from the object, so we fall back to getReceiptIOS()
-    let receipt = platform === 'ios'
-        ? (purchase.transactionReceipt || await RNIap.getReceiptIOS())
-        : purchase.purchaseToken;
+    // In v14, both iOS (JWS format) and Android store the core transaction string in purchaseToken.
+    // Older iOS v12 APIs might still use transactionReceipt.
+    const receipt = purchase.transactionReceipt || purchase.purchaseToken;
 
     if (!receipt) {
         throw new Error('No receipt/token found on purchase');
