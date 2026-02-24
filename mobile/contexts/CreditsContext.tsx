@@ -97,43 +97,47 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for purchase updates
     useEffect(() => {
-        const listeners = getPurchaseListeners();
-        if (!listeners) return;
+        try {
+            const listeners = getPurchaseListeners();
+            if (!listeners) return;
 
-        purchaseUpdateSubscription.current = listeners.purchaseUpdatedListener(
-            async (purchase: any) => {
-                try {
-                    const result = await validateAndFulfill(purchase);
-                    setCredits(result.credits);
-                    Alert.alert(
-                        '🎉 Credits Added!',
-                        `${result.added} credits have been added to your account.`
-                    );
-                } catch (err: any) {
-                    console.error('Purchase fulfillment error:', err);
-                    Alert.alert('Purchase Error', err.message || 'Failed to add credits. Please try again.');
-                } finally {
+            purchaseUpdateSubscription.current = listeners.purchaseUpdatedListener(
+                async (purchase: any) => {
+                    try {
+                        const result = await validateAndFulfill(purchase);
+                        setCredits(result.credits);
+                        Alert.alert(
+                            '🎉 Credits Added!',
+                            `${result.added} credits have been added to your account.`
+                        );
+                    } catch (err: any) {
+                        console.error('Purchase fulfillment error:', err);
+                        Alert.alert('Purchase Error', err.message || 'Failed to add credits. Please try again.');
+                    } finally {
+                        setPurchasing(false);
+                    }
+                }
+            );
+
+            purchaseErrorSubscription.current = listeners.purchaseErrorListener(
+                (error: any) => {
+                    if (error.code === 'E_USER_CANCELLED') {
+                        setPurchasing(false);
+                        return;
+                    }
+                    console.error('Purchase error:', error);
+                    Alert.alert('Purchase Error', error.message || 'Something went wrong.');
                     setPurchasing(false);
                 }
-            }
-        );
+            );
 
-        purchaseErrorSubscription.current = listeners.purchaseErrorListener(
-            (error: any) => {
-                if (error.code === 'E_USER_CANCELLED') {
-                    setPurchasing(false);
-                    return;
-                }
-                console.error('Purchase error:', error);
-                Alert.alert('Purchase Error', error.message || 'Something went wrong.');
-                setPurchasing(false);
-            }
-        );
-
-        return () => {
-            purchaseUpdateSubscription.current?.remove();
-            purchaseErrorSubscription.current?.remove();
-        };
+            return () => {
+                purchaseUpdateSubscription.current?.remove();
+                purchaseErrorSubscription.current?.remove();
+            };
+        } catch (err) {
+            console.warn('Failed to attach IAP listeners (expected if IAP module not ready):', err);
+        }
     }, []);
 
     // Fetch credits when user changes

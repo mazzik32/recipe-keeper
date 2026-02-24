@@ -43,13 +43,18 @@ export const isIAPAvailable = (): boolean => RNIap !== null;
 
 /**
  * Initialize IAP connection and fetch available products.
- * Returns empty array if IAP is not available.
+ * Returns empty array if IAP is not available or crashes.
  */
 export async function initIAP(): Promise<any[]> {
   if (!RNIap) return [];
-  await RNIap.initConnection();
-  const products = await RNIap.fetchProducts({ skus: CREDIT_PRODUCT_IDS });
-  return products || [];
+  try {
+    await RNIap.initConnection();
+    const products = await RNIap.fetchProducts({ skus: CREDIT_PRODUCT_IDS });
+    return products || [];
+  } catch (err) {
+    console.warn('initIAP failed (Nitro/native module may not be ready):', err);
+    return [];
+  }
 }
 
 /**
@@ -57,7 +62,11 @@ export async function initIAP(): Promise<any[]> {
  */
 export async function cleanupIAP(): Promise<void> {
   if (!RNIap) return;
-  await RNIap.endConnection();
+  try {
+    await RNIap.endConnection();
+  } catch (err) {
+    console.warn('cleanupIAP failed:', err);
+  }
 }
 
 /**
@@ -82,14 +91,19 @@ export async function purchaseProduct(productId: string): Promise<void> {
 }
 
 /**
- * Get purchase listeners (safe — returns null if IAP unavailable).
+ * Get purchase listeners (safe — returns null if IAP unavailable or crashes).
  */
 export function getPurchaseListeners() {
   if (!RNIap) return null;
-  return {
-    purchaseUpdatedListener: RNIap.purchaseUpdatedListener,
-    purchaseErrorListener: RNIap.purchaseErrorListener,
-  };
+  try {
+    return {
+      purchaseUpdatedListener: RNIap.purchaseUpdatedListener,
+      purchaseErrorListener: RNIap.purchaseErrorListener,
+    };
+  } catch (err) {
+    console.warn('getPurchaseListeners failed:', err);
+    return null;
+  }
 }
 
 /**
