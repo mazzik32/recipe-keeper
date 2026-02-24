@@ -23,6 +23,7 @@ try {
 export const CREDIT_PRODUCT_IDS = [
   'org.recipekeeper.credits.20',
   'org.recipekeeper.credits.50',
+  'org.recipekeeper.credits.200',
   'org.recipekeeper.credits.400',
 ];
 
@@ -30,6 +31,7 @@ export const CREDIT_PRODUCT_IDS = [
 export const PRODUCT_CREDITS: Record<string, number> = {
   'org.recipekeeper.credits.20': 20,
   'org.recipekeeper.credits.50': 50,
+  'org.recipekeeper.credits.200': 200,
   'org.recipekeeper.credits.400': 400,
 };
 

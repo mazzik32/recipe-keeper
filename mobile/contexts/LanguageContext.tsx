@@ -113,6 +113,11 @@ export const en = {
     },
     errors: {
         notFound: "Page not found",
+    },
+    iap: {
+        buyCredits: "Buy Credits",
+        purchase: "Purchase {credits} Credits",
+        confirmPurchase: "Are you sure you want to buy {credits} credits for {price}?",
     }
 };
 
@@ -228,6 +233,11 @@ export const de: Translations = {
     },
     errors: {
         notFound: "Seite nicht gefunden",
+    },
+    iap: {
+        buyCredits: "Guthaben kaufen",
+        purchase: "{credits} Guthaben kaufen",
+        confirmPurchase: "Möchtest du wirklich {credits} Guthaben für {price} kaufen?",
     }
 };
 

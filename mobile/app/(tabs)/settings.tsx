@@ -97,7 +97,7 @@ export default function SettingsScreen() {
                                 <View className="w-8 h-8 rounded-full bg-green-50 items-center justify-center">
                                     <Plus color="#22c55e" size={18} />
                                 </View>
-                                <Text className="text-warm-gray-700 font-medium text-base">Buy Credits</Text>
+                                <Text className="text-warm-gray-700 font-medium text-base">{t.iap.buyCredits}</Text>
                             </View>
                             <ChevronRight color="#d4d4d8" size={20} />
                         </TouchableOpacity>

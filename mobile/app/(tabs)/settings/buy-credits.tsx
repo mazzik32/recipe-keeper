@@ -15,6 +15,7 @@ const PACKAGE_COLORS = ["#f59e0b", "#8b5cf6", "#ec4899"];
 const PRODUCT_CREDITS: Record<string, number> = {
     'org.recipekeeper.credits.20': 20,
     'org.recipekeeper.credits.50': 50,
+    'org.recipekeeper.credits.200': 200,
     'org.recipekeeper.credits.400': 400,
 };
 
@@ -65,7 +66,7 @@ function getProductPrice(product: any): string {
 
 export default function BuyCreditsScreen() {
     const router = useRouter();
-    const { t } = useLanguage();
+    const { t, ti } = useLanguage();
     const { credits, refreshCredits } = useCredits();
 
     // Local IAP state — all IAP logic is self-contained in this screen
@@ -175,8 +176,8 @@ export default function BuyCreditsScreen() {
         const priceString = getProductPrice(product);
 
         Alert.alert(
-            `Purchase ${creditAmount} Credits`,
-            `Are you sure you want to buy ${creditAmount} credits for ${priceString}?`,
+            ti('iap.purchase', { credits: creditAmount }),
+            ti('iap.confirmPurchase', { credits: creditAmount, price: priceString }),
             [
                 { text: t.common.cancel, style: "cancel" },
                 {
