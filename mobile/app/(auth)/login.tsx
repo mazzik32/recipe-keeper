@@ -2,11 +2,13 @@ import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     async function signInWithEmail() {
         setLoading(true);
@@ -44,6 +46,12 @@ export default function LoginScreen() {
                     onChangeText={setPassword}
                     secureTextEntry
                 />
+
+                <View className="items-end mt-2">
+                    <TouchableOpacity onPress={() => router.push("/forgot-password")}>
+                        <Text className="text-peach-600 font-medium text-sm">Forgot Password?</Text>
+                    </TouchableOpacity>
+                </View>
 
                 <TouchableOpacity
                     className={`bg-peach-500 rounded-full h-12 items-center justify-center mt-6 ${loading ? 'opacity-50' : ''}`}
