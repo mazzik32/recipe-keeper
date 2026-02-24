@@ -66,6 +66,12 @@ export default function TabLayout() {
                     href: null,
                 }}
             />
+            <Tabs.Screen
+                name="settings/buy-credits"
+                options={{
+                    href: null,
+                }}
+            />
         </Tabs>
     );
 }
