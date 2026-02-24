@@ -70,8 +70,10 @@ export default function BuyCreditsScreen() {
                 });
 
                 if (mounted) {
+                    // Log raw product structure for debugging
+                    console.log('IAP products received:', JSON.stringify(fetchedProducts, null, 2));
                     const sorted = (fetchedProducts || []).sort((a: any, b: any) => {
-                        return (PRODUCT_CREDITS[a.productId] || 0) - (PRODUCT_CREDITS[b.productId] || 0);
+                        return (PRODUCT_CREDITS[getProductId(a)] || 0) - (PRODUCT_CREDITS[getProductId(b)] || 0);
                     });
                     setProducts(sorted);
                 }
