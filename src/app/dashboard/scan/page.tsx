@@ -154,13 +154,18 @@ export default function ScanRecipePage() {
 
     try {
       // Check and consume credit first
-      const consumeRes = await fetch('/api/credits/consume', { method: 'POST' });
-      if (!consumeRes.ok) {
-        if (consumeRes.status === 403) {
-          throw new Error('INSUFFICIENT_CREDITS');
+      const { data: newCredits, error: consumeError } = await supabase.rpc("consume_single_credit");
+      if (consumeError) {
+        if (consumeError.message.includes("insufficient_credits") || consumeError.code === "P0001") {
+          setIsPricingOpen(true);
+          setStatus("idle");
+          return;
         }
-        throw new Error('Failed to verify credits');
+        throw new Error("Failed to verify credits: " + consumeError.message);
       }
+
+      // Instantly trigger re-render of layout header with new credits
+      router.refresh();
 
       // Upload all images to Supabase Storage
       for (const image of images) {
@@ -231,19 +236,22 @@ export default function ScanRecipePage() {
 
     const sessionData = await getSession();
     if (!sessionData) return;
-    const { session } = sessionData;
+    const { session, supabase } = sessionData;
 
     try {
       // Check and consume credit first
-      const consumeRes = await fetch('/api/credits/consume', { method: 'POST' });
-      if (!consumeRes.ok) {
-        if (consumeRes.status === 403) {
+      const { error: consumeError } = await supabase.rpc("consume_single_credit");
+      if (consumeError) {
+        if (consumeError.message?.includes("insufficient_credits") || consumeError.code === "P0001") {
           setIsPricingOpen(true);
           setStatus("idle");
           return;
         }
-        throw new Error('Failed to verify credits');
+        throw new Error("Failed to verify credits: " + (consumeError.message || "Unknown error"));
       }
+
+      // Instantly trigger re-render of layout header with new credits
+      router.refresh();
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/scrape-recipe`,
@@ -293,19 +301,22 @@ export default function ScanRecipePage() {
 
     const sessionData = await getSession();
     if (!sessionData) return;
-    const { session } = sessionData;
+    const { session, supabase } = sessionData;
 
     try {
       // Check and consume credit first
-      const consumeRes = await fetch('/api/credits/consume', { method: 'POST' });
-      if (!consumeRes.ok) {
-        if (consumeRes.status === 403) {
+      const { error: consumeError } = await supabase.rpc("consume_single_credit");
+      if (consumeError) {
+        if (consumeError.message?.includes("insufficient_credits") || consumeError.code === "P0001") {
           setIsPricingOpen(true);
           setStatus("idle");
           return;
         }
-        throw new Error('Failed to verify credits');
+        throw new Error("Failed to verify credits: " + (consumeError.message || "Unknown error"));
       }
+
+      // Instantly trigger re-render of layout header with new credits
+      router.refresh();
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/parse-recipe-text`,

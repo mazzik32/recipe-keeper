@@ -40,10 +40,12 @@ export default function PrivacyPage() {
                             service (e.g., which features are most popular).
                         </li>
                         <li>
-                            <strong>Payment data:</strong> Payments are processed securely via
+                            <strong>Payment and Credit Data:</strong> Payments are processed securely via
                             native In-App Purchases (Apple App Store / Google Play Store) or by our
                             Merchant of Record, Paddle, for web purchases. We do not store or see
-                            your full credit card number.
+                            your full credit card number. All purchased credits are permanently linked
+                            to your RecipeKeeper account profile, making them securely accessible
+                            across any device.
                         </li>
                     </ul>
 

@@ -8,6 +8,7 @@ import { decode } from "base64-arraybuffer";
 import * as FileSystem from 'expo-file-system/legacy';
 import { useRouter } from "expo-router";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useCredits } from "../../contexts/CreditsContext";
 
 export default function AddRecipeScreen() {
     const [imageUri, setImageUri] = useState<string | null>(null);
@@ -15,6 +16,7 @@ export default function AddRecipeScreen() {
     const [showUrlInput, setShowUrlInput] = useState(false);
     const [urlValue, setUrlValue] = useState("");
     const { user } = useAuth();
+    const { refreshCredits } = useCredits();
     const router = useRouter();
     const { t, locale } = useLanguage();
 
@@ -53,6 +55,18 @@ export default function AddRecipeScreen() {
         setUploading(true);
 
         try {
+            // 0. Consume credit first
+            const { error: consumeError } = await supabase.rpc("consume_single_credit");
+            if (consumeError) {
+                if (consumeError.message?.includes("insufficient_credits") || consumeError.code === "P0001") {
+                    throw new Error("Insufficient credits. Please purchase more to continue scanning.");
+                }
+                throw new Error("Failed to verify credits: " + (consumeError.message || "Unknown error"));
+            }
+
+            // Instantly update local credit context
+            await refreshCredits();
+
             // 1. Read the image as base64
             const base64 = await FileSystem.readAsStringAsync(imageUri, {
                 encoding: 'base64',
@@ -127,6 +141,18 @@ export default function AddRecipeScreen() {
         setUploading(true);
 
         try {
+            // 0. Consume credit first
+            const { error: consumeError } = await supabase.rpc("consume_single_credit");
+            if (consumeError) {
+                if (consumeError.message?.includes("insufficient_credits") || consumeError.code === "P0001") {
+                    throw new Error("Insufficient credits. Please purchase more to continue scanning.");
+                }
+                throw new Error("Failed to verify credits: " + (consumeError.message || "Unknown error"));
+            }
+
+            // Instantly update local credit context
+            await refreshCredits();
+
             const { data: sessionData } = await supabase.auth.getSession();
 
             const response = await fetch(

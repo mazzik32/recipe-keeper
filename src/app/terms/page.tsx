@@ -65,13 +65,13 @@ export default function TermsPage() {
                     </p>
 
                     <h2 className="font-display text-2xl font-bold mt-8 mb-3 text-warm-gray-800">
-                        License
+                        Access and Usage Rights
                     </h2>
                     <p className="mb-4">
                         For paid or free accounts, we grant you a personal,
-                        non-transferable, limited license to access and use the RecipeKeeper
+                        non-transferable, limited right to access and use the RecipeKeeper
                         application for your personal use. You may not resell or redistribute
-                        your account access.
+                        your account access or your acquired credits.
                     </p>
 
                     <h2 className="font-display text-2xl font-bold mt-8 mb-3 text-warm-gray-800">
@@ -85,13 +85,14 @@ export default function TermsPage() {
                     </p>
 
                     <h2 className="font-display text-2xl font-bold mt-8 mb-3 text-warm-gray-800">
-                        Purchases and Restore
+                        Credits and Account
                     </h2>
                     <p className="mb-4">
-                        Mobile in-app purchases are tied to your Apple or Google account. You can
-                        restore previous purchases on new devices using the &quot;Restore Purchases&quot; option
-                        within the mobile app. Web purchases and subscriptions made via Paddle are tied
-                        to your RecipeKeeper account email address.
+                        RecipeKeeper operates on a credit-based system. All purchased credits are permanently
+                        linked to your RecipeKeeper account email address. Once logged in, your balance automatically
+                        syncs across all devices and platforms (Apple, Google, Web). Because credits are consumable
+                        items tied to your account profile, there is no "Restore Purchases" mechanism necessary or
+                        available.
                     </p>
 
                     <h2 className="font-display text-2xl font-bold mt-8 mb-3 text-warm-gray-800">
