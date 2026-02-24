@@ -71,44 +71,39 @@ export default function TermsPage() {
                         For paid or free accounts, we grant you a personal,
                         non-transferable, limited license to access and use the RecipeKeeper
                         application for your personal use. You may not resell or redistribute
-                        your account access or license keys.
+                        your account access.
                     </p>
 
                     <h2 className="font-display text-2xl font-bold mt-8 mb-3 text-warm-gray-800">
-                        Payments
+                        Purchases and Payments
                     </h2>
                     <p className="mb-4">
-                        Paid upgrades and subscriptions are processed by our Merchant of
-                        Record. Checkout collects the email address needed to send your
-                        receipt and license key (or activation link). We do not store your
-                        payment card information.
+                        Paid upgrades, credits, and subscriptions are processed through native
+                        In-App Purchases (via Apple App Store or Google Play Store) for our mobile
+                        applications, or through our Merchant of Record, Paddle, for web purchases.
+                        We do not process or store your payment card information directly.
                     </p>
 
                     <h2 className="font-display text-2xl font-bold mt-8 mb-3 text-warm-gray-800">
-                        License delivery
+                        Purchases and Restore
                     </h2>
                     <p className="mb-4">
-                        After payment, we email your license key and receipt to the address
-                        you provide at checkout. Please keep that email for your records.
-                    </p>
-
-                    <h2 className="font-display text-2xl font-bold mt-8 mb-3 text-warm-gray-800">
-                        License recovery
-                    </h2>
-                    <p className="mb-4">
-                        If you lose your license, we can resend it to the original purchase
-                        email after verifying the request.
+                        Mobile in-app purchases are tied to your Apple or Google account. You can
+                        restore previous purchases on new devices using the &quot;Restore Purchases&quot; option
+                        within the mobile app. Web purchases and subscriptions made via Paddle are tied
+                        to your RecipeKeeper account email address.
                     </p>
 
                     <h2 className="font-display text-2xl font-bold mt-8 mb-3 text-warm-gray-800">
                         Refunds
                     </h2>
                     <p className="mb-4">
-                        Refunds are provided at the sole discretion of visionite gmbh or its
-                        Merchant of Record and on a case-by-case basis and may be refused.
-                        We will refuse a refund request if we find evidence of fraud, refund
-                        abuse, or other manipulative behaviour that entitles us to
-                        counterclaim the refund.
+                        Refunds for mobile In-App Purchases are subject to the respective refund policies
+                        of Apple and Google, and must be requested directly through their platforms.
+                        Refunds for web purchases processed via our Merchant of Record, Paddle, are
+                        provided at the sole discretion of visionite gmbh or Paddle on a case-by-case
+                        basis and may be refused if we find evidence of fraud, refund abuse, or other
+                        manipulative behaviour.
                     </p>
                     <p className="mb-4">
                         This does not affect your rights as a Consumer in relation to
@@ -120,19 +115,18 @@ export default function TermsPage() {
                     </h2>
                     <p className="mb-4">
                         If you are a Consumer and unless the below exception applies, you
-                        have the right to cancel this Agreement and return the Product
-                        within 14 days without giving any reason. The cancellation period
-                        will expire after 14 days from the day after completion of the
-                        Transaction. To meet the cancellation deadline, it is sufficient
-                        that you send us your communication concerning your exercise of the
-                        cancellation right before the expiration of the 14 day period.
+                        have the right to cancel this Agreement within 14 days without giving any reason.
+                        The cancellation period will expire after 14 days from the day after completion of the
+                        Transaction.
                     </p>
 
                     <p className="mb-4">
-                        To cancel your order, you must inform visionite gmbh or its assigned
-                        Merchant of Record of your decision. To ensure immediate processing,
-                        please do so by contacting us here. Please note that in respect of
-                        subscription services your right to cancel is only present following
+                        To cancel your order or subscription:
+                        <br />• For Apple App Store or Google Play Store subscriptions, you must manage
+                        cancellations and refund requests directly within your device&apos;s account settings.
+                        <br />• For web purchases via Paddle, you must inform visionite gmbh or Paddle of your
+                        decision. To ensure immediate processing, please do so by contacting us. Please note
+                        that in respect of subscription services your right to cancel is only present following
                         the initial subscription and not upon each automatic renewal.
                     </p>
 

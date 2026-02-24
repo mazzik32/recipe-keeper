@@ -40,9 +40,10 @@ export default function PrivacyPage() {
                             service (e.g., which features are most popular).
                         </li>
                         <li>
-                            <strong>Payment data:</strong> Payments are processed by our
-                            Merchant of Record. We do not store or see your full credit card
-                            number.
+                            <strong>Payment data:</strong> Payments are processed securely via
+                            native In-App Purchases (Apple App Store / Google Play Store) or by our
+                            Merchant of Record, Paddle, for web purchases. We do not store or see
+                            your full credit card number.
                         </li>
                     </ul>
 
@@ -85,8 +86,8 @@ export default function PrivacyPage() {
                     </h2>
                     <p className="mb-4">
                         We do not sell your personal data or your recipes to third parties.
-                        We only share data with trusted service providers (like our payment
-                        processor or cloud hosting provider) who are contractually strict
+                        We only share data with trusted service providers (like Apple, Google,
+                        Paddle, or our cloud hosting provider) who are contractually strict
                         about data protection.
                     </p>
 
