@@ -44,6 +44,9 @@ function parseCreditAmount(product: any): number {
  * v14 API changes depending on platform (iOS: localizedPriceString, Android: various).
  */
 function getProductPrice(product: any): string {
+    // v14 formatted price
+    if (product.displayPrice) return product.displayPrice;
+
     // iOS v14 or general formatted price
     if (product.localizedPriceString) return product.localizedPriceString;
     if (product.localizedPrice) return product.localizedPrice;
