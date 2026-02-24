@@ -5,29 +5,141 @@ import { useCredits } from "../../../contexts/CreditsContext";
 import { useLanguage } from "../../../contexts/LanguageContext";
 import { ArrowLeft, Coins, Sparkles, Crown, Zap } from "lucide-react-native";
 import { StatusBar } from "expo-status-bar";
-import { PRODUCT_CREDITS } from "../../../lib/iap";
 import { Platform } from "react-native";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const PACKAGE_ICONS = [Coins, Sparkles, Crown];
 const PACKAGE_COLORS = ["#f59e0b", "#8b5cf6", "#ec4899"];
 
+/** Map product ID → credits (client-side display only) */
+const PRODUCT_CREDITS: Record<string, number> = {
+    'org.recipekeeper.credits.20': 20,
+    'org.recipekeeper.credits.50': 50,
+    'org.recipekeeper.credits.400': 400,
+};
+
+/** Parse credit amount from a product object */
+function parseCreditAmount(product: any): number {
+    let creditAmount = PRODUCT_CREDITS[product.productId];
+    if (!creditAmount) {
+        const match = product.productId.match(/\d+$/);
+        if (match) {
+            creditAmount = parseInt(match[0], 10);
+        } else {
+            const titleMatch = product.title?.match(/\d+/);
+            creditAmount = titleMatch ? parseInt(titleMatch[0], 10) : 0;
+        }
+    }
+    return creditAmount;
+}
+
 export default function BuyCreditsScreen() {
     const router = useRouter();
     const { t } = useLanguage();
-    const { credits, products, purchasing, loadingProducts, buyCredits } = useCredits();
+    const { credits, refreshCredits } = useCredits();
 
-    const handlePurchase = (product: any) => {
-        // Extract credit amount from productId (e.g. 'org.recipekeeper.credits.20' -> 20)
-        let creditAmount = PRODUCT_CREDITS[product.productId];
-        if (!creditAmount) {
-            const match = product.productId.match(/\d+$/);
-            if (match) {
-                creditAmount = parseInt(match[0], 10);
-            } else {
-                const titleMatch = product.title?.match(/\d+/);
-                creditAmount = titleMatch ? parseInt(titleMatch[0], 10) : 0;
+    // Local IAP state — all IAP logic is self-contained in this screen
+    const [products, setProducts] = useState<any[]>([]);
+    const [purchasing, setPurchasing] = useState(false);
+    const [loadingProducts, setLoadingProducts] = useState(true);
+    const [iapError, setIapError] = useState<string | null>(null);
+    const iapRef = useRef<typeof import('react-native-iap') | null>(null);
+    const purchaseUpdateSub = useRef<any>(null);
+    const purchaseErrorSub = useRef<any>(null);
+
+    // Load IAP module and fetch products on mount
+    useEffect(() => {
+        let mounted = true;
+
+        async function setupIAP() {
+            try {
+                // Lazy-load the native module only when this screen mounts
+                const RNIap = require('react-native-iap');
+                iapRef.current = RNIap;
+
+                await RNIap.initConnection();
+
+                const fetchedProducts = await RNIap.fetchProducts({
+                    skus: Object.keys(PRODUCT_CREDITS),
+                });
+
+                if (mounted) {
+                    const sorted = (fetchedProducts || []).sort((a: any, b: any) => {
+                        return (PRODUCT_CREDITS[a.productId] || 0) - (PRODUCT_CREDITS[b.productId] || 0);
+                    });
+                    setProducts(sorted);
+                }
+            } catch (err: any) {
+                console.warn('IAP setup failed:', err);
+                if (mounted) {
+                    setIapError(err.message || 'Failed to connect to the store.');
+                }
+            } finally {
+                if (mounted) setLoadingProducts(false);
             }
         }
+
+        setupIAP();
+
+        return () => {
+            mounted = false;
+            // Clean up connection
+            if (iapRef.current) {
+                iapRef.current.endConnection().catch(() => { });
+            }
+        };
+    }, []);
+
+    // Set up purchase listeners
+    useEffect(() => {
+        // Wait for IAP module to be loaded
+        if (!iapRef.current) return;
+
+        try {
+            const RNIap = iapRef.current;
+
+            purchaseUpdateSub.current = RNIap.purchaseUpdatedListener(
+                async (purchase: any) => {
+                    try {
+                        // Validate receipt with backend
+                        const result = await validatePurchase(purchase, RNIap);
+                        refreshCredits();
+                        Alert.alert(
+                            '🎉 Credits Added!',
+                            `${result.added} credits have been added to your account.`
+                        );
+                    } catch (err: any) {
+                        console.error('Purchase fulfillment error:', err);
+                        Alert.alert('Purchase Error', err.message || 'Failed to add credits.');
+                    } finally {
+                        setPurchasing(false);
+                    }
+                }
+            );
+
+            purchaseErrorSub.current = RNIap.purchaseErrorListener(
+                (error: any) => {
+                    if (error.code === 'E_USER_CANCELLED') {
+                        setPurchasing(false);
+                        return;
+                    }
+                    console.error('Purchase error:', error);
+                    Alert.alert('Purchase Error', error.message || 'Something went wrong.');
+                    setPurchasing(false);
+                }
+            );
+        } catch (err) {
+            console.warn('Failed to attach IAP listeners:', err);
+        }
+
+        return () => {
+            purchaseUpdateSub.current?.remove();
+            purchaseErrorSub.current?.remove();
+        };
+    }, [products]); // Re-run after products load (means IAP is ready)
+
+    const handlePurchase = useCallback((product: any) => {
+        const creditAmount = parseCreditAmount(product);
 
         Alert.alert(
             t.nav.credits,
@@ -37,16 +149,30 @@ export default function BuyCreditsScreen() {
                 {
                     text: t.common.confirm,
                     onPress: async () => {
+                        if (!iapRef.current) {
+                            Alert.alert('Store Error', 'In-App Purchases are not available.');
+                            return;
+                        }
+
+                        setPurchasing(true);
                         try {
-                            await buyCredits(product.productId);
+                            await iapRef.current.requestPurchase({
+                                request: {
+                                    apple: { sku: product.productId },
+                                    google: { skus: [product.productId] },
+                                },
+                                type: 'in-app'
+                            });
                         } catch (err: any) {
+                            console.error('requestPurchase error:', err);
                             Alert.alert('Store Connection Error', err.message || 'Could not connect to the App Store.');
+                            setPurchasing(false);
                         }
                     },
                 },
             ]
         );
-    };
+    }, [t]);
 
     return (
         <SafeAreaView edges={['top']} className="flex-1 bg-cream">
@@ -79,13 +205,12 @@ export default function BuyCreditsScreen() {
                             <ActivityIndicator size="large" color="#eb6e3e" />
                             <Text className="text-warm-gray-400 mt-3 text-sm">{t.common.loading}</Text>
                         </View>
-                    ) : products.length === 0 ? (
-                        /* Fallback when products can't be loaded (e.g., simulator) */
+                    ) : iapError || products.length === 0 ? (
                         <View className="bg-white rounded-2xl border border-warm-gray-100 p-6 items-center">
                             <Text className="text-warm-gray-500 text-center">
-                                {Platform.OS === 'ios'
+                                {iapError || (Platform.OS === 'ios'
                                     ? 'In-App Purchases are not available in the simulator. Please use a physical device.'
-                                    : 'In-App Purchases are currently unavailable. Please try again later.'}
+                                    : 'In-App Purchases are currently unavailable. Please try again later.')}
                             </Text>
                         </View>
                     ) : (
@@ -93,19 +218,7 @@ export default function BuyCreditsScreen() {
                             {products.map((product, index) => {
                                 const Icon = PACKAGE_ICONS[index] || Coins;
                                 const color = PACKAGE_COLORS[index] || "#f59e0b";
-                                // Extract credit amount from productId (e.g. 'org.recipekeeper.credits.20' -> 20)
-                                // or fallback to parsing the title/description
-                                let creditAmount = PRODUCT_CREDITS[product.productId];
-                                if (!creditAmount) {
-                                    const match = product.productId.match(/\d+$/);
-                                    if (match) {
-                                        creditAmount = parseInt(match[0], 10);
-                                    } else {
-                                        // Fallback to title parsing
-                                        const titleMatch = product.title?.match(/\d+/);
-                                        creditAmount = titleMatch ? parseInt(titleMatch[0], 10) : 0;
-                                    }
-                                }
+                                const creditAmount = parseCreditAmount(product);
 
                                 return (
                                     <TouchableOpacity
@@ -166,4 +279,52 @@ export default function BuyCreditsScreen() {
             <StatusBar style="auto" />
         </SafeAreaView>
     );
+}
+
+/** Validate receipt with backend and finish transaction */
+async function validatePurchase(
+    purchase: any,
+    RNIap: typeof import('react-native-iap')
+): Promise<{ credits: number; added: number }> {
+    const { supabase } = require('../../../lib/supabase');
+
+    const platform = Platform.OS === 'ios' ? 'ios' : 'android';
+    const receipt = platform === 'ios'
+        ? purchase.transactionReceipt
+        : purchase.purchaseToken;
+
+    if (!receipt) {
+        throw new Error('No receipt/token found on purchase');
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+        throw new Error('Not authenticated');
+    }
+
+    const apiUrl = process.env.EXPO_PUBLIC_API_URL || '';
+
+    const response = await fetch(`${apiUrl}/api/iap/verify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+            platform,
+            receipt,
+            productId: purchase.productId,
+        }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error || 'Verification failed');
+    }
+
+    // Finish the transaction (tells Apple/Google we've delivered the content)
+    await RNIap.finishTransaction({ purchase, isConsumable: true });
+
+    return { credits: data.credits, added: data.added || 0 };
 }
