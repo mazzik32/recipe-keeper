@@ -52,6 +52,8 @@ export const en = {
         credits: "Credits",
         myRecipes: "My Recipes",
         allRecipes: "All Recipes",
+        myCollection: "My Collection",
+        familyRecipes: "Family Recipes",
     },
     recipes: {
         title: "Recipe",
@@ -172,6 +174,8 @@ export const de: Translations = {
         credits: "Guthaben",
         myRecipes: "Meine Rezepte",
         allRecipes: "Alle Rezepte",
+        myCollection: "Meine Sammlung",
+        familyRecipes: "Familienrezepte",
     },
     recipes: {
         title: "Rezept",
