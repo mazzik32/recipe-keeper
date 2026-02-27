@@ -12,6 +12,8 @@
         "mobile:android": "npx cap open android"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.999.0",
+        "@aws-sdk/s3-request-presigner": "^3.999.0",
         "@capacitor/android": "^8.1.0",
         "@capacitor/camera": "^8.0.1",
         "@capacitor/cli": "^8.1.0",

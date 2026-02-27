@@ -67,30 +67,46 @@ export default function AddRecipeScreen() {
             // Instantly update local credit context
             await refreshCredits();
 
-            // 1. Read the image as base64
-            const base64 = await FileSystem.readAsStringAsync(imageUri, {
-                encoding: 'base64',
+            // 1. Get Presigned URL from Next.js Backend
+            const { data: sessionData } = await supabase.auth.getSession();
+
+            const presignRes = await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'}/api/storage/presign`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${sessionData.session?.access_token}`,
+                },
+                body: JSON.stringify({
+                    filename: `scan-${Date.now()}.jpg`,
+                    contentType: "image/jpeg",
+                }),
             });
 
-            // 2. Upload to Supabase Storage - matching web app's "original-scans" bucket
-            const fileName = `${user.id}/scans/${Date.now()}-scan.jpg`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from("original-scans")
-                .upload(fileName, decode(base64), {
-                    contentType: "image/jpeg",
-                });
+            if (!presignRes.ok) {
+                throw new Error("Failed to get secure upload URL");
+            }
 
-            if (uploadError) throw uploadError;
+            const { presignedUrl, publicUrl } = await presignRes.json();
 
-            // 3. Get signed URL (required by the Edge function)
-            const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-                .from("original-scans")
-                .createSignedUrl(fileName, 3600);
+            // 2. Upload directly to Cloudflare R2
+            // We use fetch with the actual file blob for the PUT request
+            const imgRes = await fetch(imageUri);
+            const imageBlob = await imgRes.blob();
 
-            if (signedUrlError) throw signedUrlError;
+            const uploadRes = await fetch(presignedUrl, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "image/jpeg",
+                },
+                body: imageBlob,
+            });
+
+            if (!uploadRes.ok) {
+                throw new Error("Failed to upload image to Edge Storage");
+            }
 
             // 4. Call Supabase Edge Function to analyze
-            const { data: sessionData } = await supabase.auth.getSession();
+            // sessionData is already fetched above
 
             const response = await fetch(
                 `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/analyze-recipe`,
@@ -101,7 +117,7 @@ export default function AddRecipeScreen() {
                         "Authorization": `Bearer ${sessionData.session?.access_token}`,
                     },
                     body: JSON.stringify({
-                        imageUrls: [signedUrlData.signedUrl],
+                        imageUrls: [publicUrl],
                         targetLanguage: "en", // Defaulting to english for v1
                     }),
                 }
@@ -119,7 +135,7 @@ export default function AddRecipeScreen() {
             // For now, stringify the essential data:
             const recipeToReview = {
                 ...result.data,
-                originalImageUrl: signedUrlData.signedUrl
+                originalImageUrl: publicUrl
             };
 
             setImageUri(null);
