@@ -6,6 +6,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "*.supabase.co",
       },
+      {
+        protocol: "https",
+        hostname: "data.recipekeeper.org",
+      },
     ],
   },
   async headers() {
@@ -19,9 +23,9 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' blob: data: https://*.supabase.co",
+              "img-src 'self' blob: data: https://*.supabase.co https://data.recipekeeper.org",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co",
+              "connect-src 'self' https://*.supabase.co https://data.recipekeeper.org",
             ].join('; '),
           },
         ],
