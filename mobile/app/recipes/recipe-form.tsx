@@ -6,6 +6,7 @@ import { ArrowLeft, Save, Trash2, Plus } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { RecipeTagsInput, Tag } from "../../components/RecipeTagsInput";
 
 export default function RecipeFormScreen() {
     const { mode, id, recipe: recipeParam } = useLocalSearchParams();
@@ -28,6 +29,7 @@ export default function RecipeFormScreen() {
         scannedData?.originalImageUrls || (scannedData?.originalImageUrl ? [scannedData.originalImageUrl] : [])
     );
     const [recipeMetadata, setRecipeMetadata] = useState<any>(null);
+    const [tags, setTags] = useState<Tag[]>([]);
 
     // Load existing recipe data for edit mode
     useEffect(() => {
@@ -40,7 +42,8 @@ export default function RecipeFormScreen() {
                     *,
                     images:recipe_images(*),
                     ingredients:recipe_ingredients(*),
-                    instructions:recipe_steps(*)
+                    instructions:recipe_steps(*),
+                    recipe_tags(tag:tags(*))
                 `)
                 .eq("id", id)
                 .single();
@@ -65,6 +68,12 @@ export default function RecipeFormScreen() {
             setInstructions(data.instructions || []);
             setRecipeMetadata(data);
             setOriginalImageUrls(data.images?.map((img: any) => img.image_url) || []);
+            if (data.recipe_tags) {
+                const loadedTags = data.recipe_tags
+                    .map((rt: any) => rt.tag)
+                    .filter((t: any): t is Tag => !!t && typeof t.id === 'string');
+                setTags(loadedTags);
+            }
             setLoading(false);
         }
 
@@ -158,6 +167,17 @@ export default function RecipeFormScreen() {
                     if (instError) console.error("Error saving instructions", instError);
                 }
 
+                // Delete old tags and re-insert
+                await supabase.from("recipe_tags").delete().eq("recipe_id", id);
+                if (tags.length > 0) {
+                    const tagRows = tags.map(tag => ({
+                        recipe_id: id,
+                        tag_id: tag.id
+                    }));
+                    const { error: tagsError } = await supabase.from("recipe_tags").insert(tagRows);
+                    if (tagsError) console.error("Error saving tags", tagsError);
+                }
+
                 // Clear AsyncStorage cache for this recipe
                 try {
                     const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
@@ -224,6 +244,16 @@ export default function RecipeFormScreen() {
                     await supabase.from("recipe_images").insert(imageRows);
                 }
 
+                // Link tags
+                if (tags.length > 0) {
+                    const tagRows = tags.map(tag => ({
+                        recipe_id: newRecipe.id,
+                        tag_id: tag.id
+                    }));
+                    const { error: tagsError } = await supabase.from("recipe_tags").insert(tagRows);
+                    if (tagsError) console.error("Error saving tags", tagsError);
+                }
+
                 router.replace(`/(tabs)/`);
                 router.push(`/recipes/${newRecipe.id}`);
             }
@@ -281,6 +311,12 @@ export default function RecipeFormScreen() {
                         className="bg-white border border-warm-gray-200 rounded-xl px-4 py-4 text-warm-gray-600 min-h-[100px] text-base leading-relaxed"
                         textAlignVertical="top"
                     />
+                </View>
+
+                {/* Tags */}
+                <View className="mb-6">
+                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{t.tags?.tags || "Tags"}</Text>
+                    <RecipeTagsInput value={tags} onChange={setTags} />
                 </View>
 
                 {/* Ingredients */}

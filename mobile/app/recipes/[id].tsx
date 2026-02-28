@@ -34,7 +34,8 @@ export default function RecipeDetailScreen() {
               *, 
               images:recipe_images(*),
               ingredients:recipe_ingredients(*),
-              instructions:recipe_steps(*)
+              instructions:recipe_steps(*),
+              recipe_tags(tag:tags(*))
             `)
             .eq("id", id)
             .single();
@@ -197,6 +198,21 @@ export default function RecipeDetailScreen() {
 
                     {recipe.description && (
                         <Text className="text-warm-gray-500 text-base leading-relaxed mb-6">{recipe.description}</Text>
+                    )}
+
+                    {/* Tags */}
+                    {recipe.recipe_tags && recipe.recipe_tags.length > 0 && (
+                        <View className="flex-row flex-wrap gap-2 mb-6">
+                            {recipe.recipe_tags.map((rt: any, i: number) => {
+                                const tag = rt.tag;
+                                if (!tag) return null;
+                                return (
+                                    <View key={i} className="bg-peach-100 px-3 py-1.5 rounded-full">
+                                        <Text className="text-peach-700 font-medium text-sm">{tag.name}</Text>
+                                    </View>
+                                );
+                            })}
+                        </View>
                     )}
 
                     {/* Meta Info Bar */}

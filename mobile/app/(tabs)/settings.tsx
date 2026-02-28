@@ -1,11 +1,11 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Linking } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Linking, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useCredits } from "../../contexts/CreditsContext";
 import { supabase } from "../../lib/supabase";
-import { LogOut, User as UserIcon, Settings as SettingsIcon, CreditCard, ChevronRight, Plus } from "lucide-react-native";
+import { LogOut, User as UserIcon, CreditCard, ChevronRight, Plus, Globe, Bell, Moon, Tag as TagIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 
@@ -16,6 +16,16 @@ export default function SettingsScreen() {
     const { credits } = useCredits();
     const [profile, setProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+
+    // Mock states for UI
+    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+    const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+
+    const { locale, setLanguage } = useLanguage();
+
+    const toggleLanguage = () => {
+        setLanguage(locale === 'en' ? 'de' : 'en');
+    };
 
     useEffect(() => {
         async function loadProfile() {
@@ -91,7 +101,7 @@ export default function SettingsScreen() {
 
                         <TouchableOpacity
                             onPress={() => router.push('/(tabs)/settings/buy-credits')}
-                            className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 bg-white active:opacity-70"
+                            className="flex-row items-center justify-between p-4 bg-white active:opacity-70"
                         >
                             <View className="flex-row items-center gap-3">
                                 <View className="w-8 h-8 rounded-full bg-green-50 items-center justify-center">
@@ -101,19 +111,81 @@ export default function SettingsScreen() {
                             </View>
                             <ChevronRight color="#d4d4d8" size={20} />
                         </TouchableOpacity>
+                    </View>
+                </View>
 
+                {/* Content & Organization */}
+                <View className="mt-8 px-4">
+                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">Content</Text>
+
+                    <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
                         <TouchableOpacity
-                            onPress={() => router.push('/(tabs)/settings/preferences')}
+                            onPress={() => router.push('/(tabs)/settings/tags')}
                             className="flex-row items-center justify-between p-4 bg-white active:opacity-70"
                         >
                             <View className="flex-row items-center gap-3">
-                                <View className="w-8 h-8 rounded-full bg-warm-gray-100 items-center justify-center">
-                                    <SettingsIcon color="#75716d" size={18} />
+                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                    <TagIcon color="#eb6e3e" size={18} />
                                 </View>
-                                <Text className="text-warm-gray-700 font-medium text-base">{t.nav.preferences}</Text>
+                                <Text className="text-warm-gray-700 font-medium text-base">{t.tags?.manageTags || "Manage Tags"}</Text>
                             </View>
                             <ChevronRight color="#d4d4d8" size={20} />
                         </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Preferences Elements */}
+                <View className="mt-8 px-4">
+                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.nav.preferences}</Text>
+
+                    <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
+                        {/* Language */}
+                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 bg-white">
+                            <View className="flex-row items-center gap-3">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                    <Globe color="#eb6e3e" size={18} />
+                                </View>
+                                <Text className="text-warm-gray-700 font-medium text-base">{t.nav.appLanguage}</Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={toggleLanguage}
+                                className="bg-peach-100 px-4 py-2 rounded-full"
+                            >
+                                <Text className="text-peach-700 font-semibold">{locale === 'en' ? 'English' : 'Deutsch'}</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Notifications */}
+                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 bg-white">
+                            <View className="flex-row items-center gap-3">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                    <Bell color="#eb6e3e" size={18} />
+                                </View>
+                                <Text className="text-warm-gray-700 font-medium text-base">{t.nav.pushNotifications}</Text>
+                            </View>
+                            <Switch
+                                value={notificationsEnabled}
+                                onValueChange={setNotificationsEnabled}
+                                trackColor={{ false: "#dfd8d3", true: "#eb6e3e" }}
+                                thumbColor="#ffffff"
+                            />
+                        </View>
+
+                        {/* Appearance */}
+                        <View className="flex-row items-center justify-between p-4 bg-white">
+                            <View className="flex-row items-center gap-3">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                    <Moon color="#eb6e3e" size={18} />
+                                </View>
+                                <Text className="text-warm-gray-700 font-medium text-base">{t.nav.darkMode}</Text>
+                            </View>
+                            <Switch
+                                value={darkModeEnabled}
+                                onValueChange={setDarkModeEnabled}
+                                trackColor={{ false: "#dfd8d3", true: "#eb6e3e" }}
+                                thumbColor="#ffffff"
+                            />
+                        </View>
                     </View>
                 </View>
 
