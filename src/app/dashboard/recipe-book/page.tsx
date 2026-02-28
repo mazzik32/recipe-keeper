@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { createClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translateCategoryName } from "@/lib/i18n";
+import { WhiskLoader } from "@/components/shared/WhiskLoader";
 import type { RecipeWithRelations } from "@/types/database.types";
 
 export default function RecipeBookPage() {
@@ -119,8 +120,8 @@ export default function RecipeBookPage() {
             }, 500);
           };
         } else {
-          alert(locale === "de" 
-            ? "Bitte erlauben Sie Popups, um das Rezeptbuch zu erstellen." 
+          alert(locale === "de"
+            ? "Bitte erlauben Sie Popups, um das Rezeptbuch zu erstellen."
             : "Please allow popups to generate the recipe book.");
         }
       }
@@ -134,8 +135,8 @@ export default function RecipeBookPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-peach-500" />
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+        <WhiskLoader />
       </div>
     );
   }
