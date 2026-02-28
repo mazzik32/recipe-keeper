@@ -61,7 +61,7 @@ export default function TabLayout() {
             />
             {/* Hide nested screens from the tab bar */}
             <Tabs.Screen
-                name="settings/preferences"
+                name="settings/tags"
                 options={{
                     href: null,
                 }}

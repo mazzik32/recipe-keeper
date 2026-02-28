@@ -1,10 +1,10 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useLanguage } from "../../../contexts/LanguageContext";
 import { supabase } from "../../../lib/supabase";
-import { ArrowLeft, Tag as TagIcon, Trash2 } from "lucide-react-native";
+import { ArrowLeft, Tag as TagIcon, Trash2, Edit2, Plus, Save, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Tag } from "../../../components/RecipeTagsInput";
@@ -20,6 +20,15 @@ export default function TagsManagementScreen() {
     const [tags, setTags] = useState<TagWithCount[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    // Create State
+    const [newTagName, setNewTagName] = useState("");
+    const [creating, setCreating] = useState(false);
+
+    // Edit State
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editName, setEditName] = useState("");
+    const [savingId, setSavingId] = useState<string | null>(null);
 
     useEffect(() => {
         loadTags();
@@ -81,6 +90,71 @@ export default function TagsManagementScreen() {
         );
     };
 
+    const handleCreate = async () => {
+        const cleanName = newTagName.trim();
+        if (!cleanName || !user) return;
+
+        // Check if exists
+        if (tags.some(t => t.name.toLowerCase() === cleanName.toLowerCase())) {
+            Alert.alert(t.common.error, t.tags?.tagExists || "A tag with this name already exists");
+            return;
+        }
+
+        setCreating(true);
+        const { data, error } = await supabase
+            .from("tags")
+            .insert({ name: cleanName, user_id: user.id })
+            .select()
+            .single();
+
+        if (error) {
+            Alert.alert(t.common.error, error.message);
+        } else if (data) {
+            const newTag = { ...data, recipe_count: 0 } as TagWithCount;
+            setTags(prev => [newTag, ...prev].sort((a, b) => a.name.localeCompare(b.name)));
+            setNewTagName("");
+        }
+        setCreating(false);
+    };
+
+    const startEditing = (tag: TagWithCount) => {
+        setEditingId(tag.id);
+        setEditName(tag.name);
+    };
+
+    const cancelEditing = () => {
+        setEditingId(null);
+        setEditName("");
+    };
+
+    const handleEditSave = async (tag: TagWithCount) => {
+        const cleanName = editName.trim();
+        if (!cleanName || cleanName === tag.name) {
+            cancelEditing();
+            return;
+        }
+
+        // Check if exists (excluding self)
+        if (tags.some(t => t.id !== tag.id && t.name.toLowerCase() === cleanName.toLowerCase())) {
+            Alert.alert(t.common.error, t.tags?.tagExists || "A tag with this name already exists");
+            return;
+        }
+
+        setSavingId(tag.id);
+        const { error } = await supabase
+            .from("tags")
+            .update({ name: cleanName })
+            .eq("id", tag.id);
+
+        if (error) {
+            Alert.alert(t.common.error, error.message);
+        } else {
+            setTags(prev => prev.map(t => t.id === tag.id ? { ...t, name: cleanName } : t).sort((a, b) => a.name.localeCompare(b.name)));
+            setEditingId(null);
+        }
+        setSavingId(null);
+    };
+
     return (
         <SafeAreaView edges={['top']} className="flex-1 bg-cream">
             <View className="flex-row items-center px-4 py-3 bg-white border-b border-warm-gray-100">
@@ -95,45 +169,103 @@ export default function TagsManagementScreen() {
                     <ActivityIndicator size="large" color="#eb6e3e" />
                 </View>
             ) : (
-                <ScrollView className="flex-1 px-4 py-6">
+                <ScrollView className="flex-1 px-4 py-6" keyboardShouldPersistTaps="handled">
+                    {/* Create New Tag Input */}
+                    <View className="flex-row items-center bg-white rounded-2xl border border-warm-gray-200 px-4 py-3 mb-6 shadow-sm">
+                        <TextInput
+                            value={newTagName}
+                            onChangeText={setNewTagName}
+                            placeholder={t.tags?.newTagName || "New tag name..."}
+                            className="flex-1 text-base text-warm-gray-700 h-8"
+                            onSubmitEditing={handleCreate}
+                            returnKeyType="done"
+                        />
+                        <TouchableOpacity
+                            onPress={handleCreate}
+                            disabled={!newTagName.trim() || creating}
+                            className={`ml-3 p-2 rounded-full ${newTagName.trim() ? 'bg-peach-500' : 'bg-warm-gray-100'}`}
+                        >
+                            {creating ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Plus color={newTagName.trim() ? "#fff" : "#a8a29e"} size={20} />
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
                     {tags.length === 0 ? (
-                        <View className="py-12 items-center">
+                        <View className="py-8 items-center">
                             <TagIcon color="#dfd8d3" size={64} className="mb-4" />
                             <Text className="text-warm-gray-500 text-center px-8 text-lg">
-                                {t.tags?.noTags || "No tags yet. Create tags while adding or editing recipes."}
+                                {t.tags?.noTags || "No tags yet. Create your first tag above."}
                             </Text>
                         </View>
                     ) : (
                         <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
-                            {tags.map((tag, index) => (
-                                <View
-                                    key={tag.id}
-                                    className={`flex-row items-center justify-between p-4 bg-white ${index !== tags.length - 1 ? 'border-b border-warm-gray-50' : ''}`}
-                                >
-                                    <View className="flex-1 flex-row items-center gap-3">
-                                        <View className="w-10 h-10 rounded-full bg-peach-50 items-center justify-center">
-                                            <TagIcon color="#eb6e3e" size={20} />
+                            {tags.map((tag, index) => {
+                                const isEditing = editingId === tag.id;
+                                return (
+                                    <View
+                                        key={tag.id}
+                                        className={`flex-row items-center justify-between p-4 bg-white ${index !== tags.length - 1 ? 'border-b border-warm-gray-50' : ''}`}
+                                    >
+                                        <View className="flex-1 flex-row items-center gap-3">
+                                            <View className="w-10 h-10 rounded-full bg-peach-50 items-center justify-center">
+                                                <TagIcon color="#eb6e3e" size={20} />
+                                            </View>
+                                            <View className="flex-1">
+                                                {isEditing ? (
+                                                    <TextInput
+                                                        value={editName}
+                                                        onChangeText={setEditName}
+                                                        className="text-base text-warm-gray-700 font-medium py-1 px-2 -ml-2 bg-warm-gray-50 rounded border border-peach-200"
+                                                        autoFocus
+                                                        onSubmitEditing={() => handleEditSave(tag)}
+                                                        returnKeyType="done"
+                                                    />
+                                                ) : (
+                                                    <>
+                                                        <Text className="text-warm-gray-700 font-medium text-base mb-0.5">{tag.name}</Text>
+                                                        <Text className="text-warm-gray-500 text-sm">
+                                                            {(t.tags?.tagUsedBy || "Used by {count} recipe(s)").replace("{count}", tag.recipe_count.toString())}
+                                                        </Text>
+                                                    </>
+                                                )}
+                                            </View>
                                         </View>
-                                        <View className="flex-1">
-                                            <Text className="text-warm-gray-700 font-medium text-base mb-0.5">{tag.name}</Text>
-                                            <Text className="text-warm-gray-500 text-sm">
-                                                {(t.tags?.tagUsedBy || "Used by {count} recipe(s)").replace("{count}", tag.recipe_count.toString())}
-                                            </Text>
+
+                                        <View className="flex-row items-center ml-2">
+                                            {isEditing ? (
+                                                <>
+                                                    <TouchableOpacity onPress={cancelEditing} className="p-2 mr-1">
+                                                        <X color="#a8a29e" size={20} />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity onPress={() => handleEditSave(tag)} disabled={savingId === tag.id} className="p-2 bg-peach-100 rounded-full">
+                                                        {savingId === tag.id ? <ActivityIndicator size="small" color="#eb6e3e" /> : <Save color="#eb6e3e" size={18} />}
+                                                    </TouchableOpacity>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <TouchableOpacity onPress={() => startEditing(tag)} className="p-2 mr-1">
+                                                        <Edit2 color="#a8a29e" size={20} />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity
+                                                        onPress={() => handleDelete(tag)}
+                                                        disabled={deletingId === tag.id}
+                                                        className="p-2"
+                                                    >
+                                                        {deletingId === tag.id ? (
+                                                            <ActivityIndicator size="small" color="#ef4444" />
+                                                        ) : (
+                                                            <Trash2 color="#dfd8d3" size={20} />
+                                                        )}
+                                                    </TouchableOpacity>
+                                                </>
+                                            )}
                                         </View>
                                     </View>
-                                    <TouchableOpacity
-                                        onPress={() => handleDelete(tag)}
-                                        disabled={deletingId === tag.id}
-                                        className="p-3 ml-2"
-                                    >
-                                        {deletingId === tag.id ? (
-                                            <ActivityIndicator size="small" color="#ef4444" />
-                                        ) : (
-                                            <Trash2 color="#dfd8d3" size={20} />
-                                        )}
-                                    </TouchableOpacity>
-                                </View>
-                            ))}
+                                );
+                            })}
                         </View>
                     )}
                     <View className="h-10" />
