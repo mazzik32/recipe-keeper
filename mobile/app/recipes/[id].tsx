@@ -1,13 +1,14 @@
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../../lib/supabase";
-import { ArrowLeft, Clock, Users, Flame, Heart } from "lucide-react-native";
+import { ArrowLeft, Clock, Users, Flame, Heart, Pencil, Trash2 } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Image } from "expo-image";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function RecipeDetailScreen() {
     const { id } = useLocalSearchParams();
@@ -16,55 +17,57 @@ export default function RecipeDetailScreen() {
     const [recipe, setRecipe] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        async function loadRecipe() {
-            try {
-                const cachedData = await AsyncStorage.getItem(`recipe_detail_${id}`);
-                if (cachedData) {
-                    setRecipe(JSON.parse(cachedData));
-                    setLoading(false);
-                }
-            } catch (e) {
-                console.log("Failed to load recipe detail cache", e);
-            }
-
-            const { data, error } = await supabase
-                .from("recipes")
-                .select(`
-                  *, 
-                  images:recipe_images(*),
-                  ingredients:recipe_ingredients(*),
-                  instructions:recipe_steps(*)
-                `)
-                .eq("id", id)
-                .single();
-
-            if (error) {
-                console.error("Supabase Query Error:", error);
+    const loadRecipe = useCallback(async () => {
+        try {
+            const cachedData = await AsyncStorage.getItem(`recipe_detail_${id}`);
+            if (cachedData) {
+                setRecipe(JSON.parse(cachedData));
                 setLoading(false);
             }
-
-            if (data) {
-                // Sort them locally to ensure order just in case
-                if (data.ingredients) {
-                    data.ingredients.sort((a: any, b: any) => (a.order_index || 0) - (b.order_index || 0));
-                }
-                if (data.instructions) {
-                    data.instructions.sort((a: any, b: any) => (a.step_number || 0) - (b.step_number || 0));
-                }
-                setRecipe(data);
-                AsyncStorage.setItem(`recipe_detail_${id}`, JSON.stringify(data))
-                    .catch(e => console.log("Failed to save recipe detail cache", e));
-                setLoading(false);
-            }
+        } catch (e) {
+            console.log("Failed to load recipe detail cache", e);
         }
-        loadRecipe();
+
+        const { data, error } = await supabase
+            .from("recipes")
+            .select(`
+              *, 
+              images:recipe_images(*),
+              ingredients:recipe_ingredients(*),
+              instructions:recipe_steps(*)
+            `)
+            .eq("id", id)
+            .single();
+
+        if (error) {
+            console.error("Supabase Query Error:", error);
+            setLoading(false);
+        }
+
+        if (data) {
+            if (data.ingredients) {
+                data.ingredients.sort((a: any, b: any) => (a.order_index || 0) - (b.order_index || 0));
+            }
+            if (data.instructions) {
+                data.instructions.sort((a: any, b: any) => (a.step_number || 0) - (b.step_number || 0));
+            }
+            setRecipe(data);
+            AsyncStorage.setItem(`recipe_detail_${id}`, JSON.stringify(data))
+                .catch(e => console.log("Failed to save recipe detail cache", e));
+            setLoading(false);
+        }
     }, [id]);
+
+    // Reload data when screen comes back into focus (e.g. after editing)
+    useFocusEffect(
+        useCallback(() => {
+            loadRecipe();
+        }, [loadRecipe])
+    );
 
     const toggleFavorite = async () => {
         if (!recipe) return;
 
-        // Optimistic update
         const newStatus = !recipe.is_favorite;
         setRecipe({ ...recipe, is_favorite: newStatus });
 
@@ -72,6 +75,45 @@ export default function RecipeDetailScreen() {
             .from("recipes")
             .update({ is_favorite: newStatus })
             .eq("id", id);
+    };
+
+    const handleEdit = () => {
+        router.push({
+            pathname: "/recipes/recipe-form",
+            params: { mode: "edit", id: id as string },
+        });
+    };
+
+    const handleDelete = () => {
+        Alert.alert(
+            t.recipes.confirmDeleteTitle,
+            t.recipes.confirmDeleteMessage,
+            [
+                { text: t.common.cancel, style: "cancel" },
+                {
+                    text: t.recipes.deleteRecipe,
+                    style: "destructive",
+                    onPress: async () => {
+                        const { error } = await supabase
+                            .from("recipes")
+                            .update({ is_archived: true })
+                            .eq("id", id);
+
+                        if (error) {
+                            Alert.alert(t.common.error, error.message);
+                            return;
+                        }
+
+                        // Clear cache
+                        try {
+                            await AsyncStorage.removeItem(`recipe_detail_${id}`);
+                        } catch (e) { }
+
+                        router.replace("/(tabs)/");
+                    },
+                },
+            ]
+        );
     };
 
     if (loading) {
@@ -98,7 +140,7 @@ export default function RecipeDetailScreen() {
 
     return (
         <View className="flex-1 bg-cream">
-            {/* Back Button & Favorite Overlay */}
+            {/* Back Button, Edit, Delete & Favorite Overlay */}
             <SafeAreaView edges={['top']} className="px-4 pt-2 pb-2 bg-peach-100 flex-row justify-between z-10">
                 <TouchableOpacity
                     onPress={() => router.back()}
@@ -107,12 +149,28 @@ export default function RecipeDetailScreen() {
                     <ArrowLeft color="#3d3632" size={20} />
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    onPress={toggleFavorite}
-                    className="w-10 h-10 bg-white/80 rounded-full items-center justify-center shadow-sm"
-                >
-                    <Heart color="#eb6e3e" size={20} fill={recipe.is_favorite ? "#eb6e3e" : "transparent"} />
-                </TouchableOpacity>
+                <View className="flex-row gap-2">
+                    <TouchableOpacity
+                        onPress={handleEdit}
+                        className="w-10 h-10 bg-white/80 rounded-full items-center justify-center shadow-sm"
+                    >
+                        <Pencil color="#3d3632" size={18} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={handleDelete}
+                        className="w-10 h-10 bg-white/80 rounded-full items-center justify-center shadow-sm"
+                    >
+                        <Trash2 color="#e53e3e" size={18} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={toggleFavorite}
+                        className="w-10 h-10 bg-white/80 rounded-full items-center justify-center shadow-sm"
+                    >
+                        <Heart color="#eb6e3e" size={20} fill={recipe.is_favorite ? "#eb6e3e" : "transparent"} />
+                    </TouchableOpacity>
+                </View>
             </SafeAreaView>
 
             <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
@@ -199,3 +257,4 @@ export default function RecipeDetailScreen() {
         </View>
     );
 }
+

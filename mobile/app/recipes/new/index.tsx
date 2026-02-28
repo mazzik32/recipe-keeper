@@ -83,15 +83,20 @@ export default function ReviewScannedRecipeScreen() {
                 if (instError) console.error("Error saving instructions", instError);
             }
 
-            // 4. Link the uploaded image
-            if (initialData?.originalImageUrl) {
+            // 4. Link the uploaded images
+            const imageUrls: string[] = initialData?.originalImageUrls ||
+                (initialData?.originalImageUrl ? [initialData.originalImageUrl] : []);
+
+            if (imageUrls.length > 0) {
+                const imageRows = imageUrls.map((url: string, idx: number) => ({
+                    recipe_id: newRecipe.id,
+                    image_url: url,
+                    is_primary: idx === 0,
+                }));
+
                 await supabase
                     .from("recipe_images")
-                    .insert({
-                        recipe_id: newRecipe.id,
-                        image_url: initialData.originalImageUrl, // Note: For persistence, signedUrls expire. The web app uses standard publicUrls, but since we used original-scans bucket here, we just save the signed one for MVP, though it will break. We should switch to a persistent URL later.
-                        is_primary: true
-                    });
+                    .insert(imageRows);
             }
 
             // Navigate to the newly created recipe details
