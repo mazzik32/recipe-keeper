@@ -17,7 +17,7 @@ export default function WhiskLoader({ isAnalyzing = false, fullScreen = false }:
     const content = (
         <View className="items-center justify-center">
             <LottieView
-                source={require('../../assets/recipekeeper.json')}
+                source={require('../assets/recipekeeper.json')}
                 autoPlay
                 loop
                 style={{ width: 150, height: 150 }}
