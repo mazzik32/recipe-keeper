@@ -361,6 +361,24 @@ export const en = {
     tableOfContents: "Table of Contents",
     recipeCollection: "A Collection of {count} Family Recipes",
   },
+  
+  loadingMessages: [
+    "Chopping virtual onions...",
+    "Arguing with the AI about salt...",
+    "Teaching the robot to fold in the cheese...",
+    "Translating Granny's handwriting...",
+    "Baking the bytes...",
+    "Sifting through the digital flour...",
+    "Preheating the server oven...",
+    "Finding the missing teaspoon...",
+    "Kneading the data into shape...",
+    "Whisking up something delicious...",
+    "Simmering the code for extra flavor...",
+    "Checking if the cake is a lie...",
+    "Waiting for the dough to rise...",
+    "Consulting the head chef algorithm...",
+    "Tasting the pixel soup..."
+  ],
 };
 
 export type Translations = typeof en;

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { WhiskLoader } from "@/components/shared/WhiskLoader";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -632,23 +633,13 @@ Instructions:
 
       {(status === "uploading" || status === "analyzing") && (
         <Card className="border-warm-gray-100">
-          <CardContent className="p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-peach-100 flex items-center justify-center animate-pulse">
-              {status === "uploading" ? (
-                <Upload className="w-8 h-8 text-peach-500" />
-              ) : (
-                <Sparkles className="w-8 h-8 text-peach-500" />
-              )}
-            </div>
-            <h3 className="font-display text-xl text-warm-gray-700 mb-2">
-              {status === "uploading" ? (t.scan.uploading || "Uploading...") : (t.scan.analyzing || "Analyzing...")}
-            </h3>
-            <p className="text-warm-gray-400">
+          <CardContent className="p-2 sm:p-12 text-center">
+            <WhiskLoader isAnalyzing={status === "analyzing"} />
+            <p className="text-warm-gray-400 mt-2">
               {status === "uploading"
                 ? `${images.length} ${images.length === 1 ? "image" : "images"} uploading...`
                 : (t.scan.analyzingDesc || "Processing content...")}
             </p>
-            <Loader2 className="w-6 h-6 animate-spin mx-auto mt-4 text-peach-500" />
           </CardContent>
         </Card>
       )}

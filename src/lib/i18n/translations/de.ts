@@ -363,4 +363,22 @@ export const de: Translations = {
     tableOfContents: "Inhaltsverzeichnis",
     recipeCollection: "Eine Sammlung von {count} Familienrezepten",
   },
+  
+  loadingMessages: [
+    "Schneide virtuelle Zwiebeln...",
+    "Diskutiere mit der KI über Salz...",
+    "Bringe dem Roboter das Unterheben bei...",
+    "Entzifere Omas Handschrift...",
+    "Backe die Bytes...",
+    "Siebe das digitale Mehl...",
+    "Heize den Server-Ofen vor...",
+    "Suche den fehlenden Teelöffel...",
+    "Knete die Daten in Form...",
+    "Schlage etwas Leckeres auf...",
+    "Lasse den Code für mehr Geschmack köcheln...",
+    "Prüfe, ob der Kuchen eine Lüge ist...",
+    "Warte darauf, dass der Teig aufgeht...",
+    "Konsultiere den Chefkoch-Algorithmus...",
+    "Probiere die Pixel-Suppe..."
+  ],
 };
