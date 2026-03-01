@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Linking, Switch } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useCredits } from "../../contexts/CreditsContext";
@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 
 export default function SettingsScreen() {
-    const { user, signOut } = useAuth();
+    const { user, signOut, refreshSession } = useAuth();
     const router = useRouter();
     const { t } = useLanguage();
     const { credits } = useCredits();
@@ -24,6 +24,12 @@ export default function SettingsScreen() {
     const [offlineStorageEnabled, setOfflineStorageEnabled] = useState(false);
 
     const { locale, setLanguage } = useLanguage();
+
+    useFocusEffect(
+        () => {
+            refreshSession();
+        }
+    );
 
     const toggleLanguage = () => {
         setLanguage(locale === 'en' ? 'de' : 'en');
@@ -151,11 +157,18 @@ export default function SettingsScreen() {
                         <UserIcon color="#eb6e3e" size={32} />
                     </View>
                     <View className="flex-1 justify-center">
-                        <Text className="font-playfair text-xl text-warm-gray-700 mb-1" numberOfLines={1}>
-                            {profile?.full_name || "Chef"}
-                        </Text>
+                        <View className="flex-row items-center gap-2 mb-1">
+                            <Text className="font-playfair text-xl text-warm-gray-700" numberOfLines={1}>
+                                {profile?.display_name || profile?.full_name || "Chef"}
+                            </Text>
+                            {user?.is_anonymous && user?.new_email && (
+                                <View className="bg-peach-100 px-2 py-0.5 rounded mb-1 max-w-[150px]">
+                                    <Text className="text-peach-700 text-[10px] font-medium uppercase tracking-wider" numberOfLines={1}>{t.auth.pendingVerification}</Text>
+                                </View>
+                            )}
+                        </View>
                         <Text className="text-warm-gray-500 text-sm" numberOfLines={1}>
-                            {user?.email}
+                            {user?.email || user?.new_email || (user?.is_anonymous ? "Anonymous User" : "")}
                         </Text>
                     </View>
                 </View>
@@ -187,6 +200,21 @@ export default function SettingsScreen() {
                             </View>
                             <ChevronRight color="#d4d4d8" size={20} />
                         </TouchableOpacity>
+
+                        {user?.is_anonymous && !user?.new_email && (
+                            <TouchableOpacity
+                                onPress={() => router.push('/(auth)/signup')}
+                                className="flex-row items-center justify-between p-4 border-t border-warm-gray-50 bg-white active:opacity-70"
+                            >
+                                <View className="flex-row items-center gap-3">
+                                    <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                        <UserIcon color="#eb6e3e" size={18} />
+                                    </View>
+                                    <Text className="text-warm-gray-700 font-medium text-base">{t.auth.signup || "Create Account"}</Text>
+                                </View>
+                                <ChevronRight color="#d4d4d8" size={20} />
+                            </TouchableOpacity>
+                        )}
                     </View>
                 </View>
 
@@ -330,7 +358,7 @@ export default function SettingsScreen() {
 
                 {/* Account Actions */}
                 <View className="mt-12 px-4 pb-10">
-                    {user?.is_anonymous ? (
+                    {user?.is_anonymous && !user?.new_email ? (
                         <>
                             <TouchableOpacity
                                 onPress={() => router.push('/(auth)/signup')}

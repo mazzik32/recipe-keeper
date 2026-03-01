@@ -17,7 +17,7 @@ try {
 }
 
 function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
-    const { session, initialized } = useAuth();
+    const { session, user, initialized } = useAuth();
     const segments = useSegments();
     const router = useRouter();
 
@@ -28,16 +28,14 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
 
         if (!session && !inAuthGroup) {
             router.replace('/(auth)/login');
-        } else if (session && inAuthGroup) {
+        } else if (session && inAuthGroup && !user?.is_anonymous) {
             router.replace('/(tabs)');
         }
 
         // Hide splash screen only when everything is ready
-        try {
-            SplashScreen.hideAsync();
-        } catch (e) {
-            console.warn("Error hiding splash screen:", e);
-        }
+        SplashScreen.hideAsync().catch((e) => {
+            // Splash screen already hidden
+        });
     }, [session, initialized, segments, fontsLoaded]);
 
     return (

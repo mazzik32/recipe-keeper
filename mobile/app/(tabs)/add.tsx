@@ -8,6 +8,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useCredits } from "../../contexts/CreditsContext";
 import WhiskLoader from "../../components/WhiskLoader";
+import CreditGateModal from "../../components/CreditGateModal";
 
 const MAX_IMAGES = 5;
 
@@ -16,8 +17,9 @@ export default function AddRecipeScreen() {
     const [uploading, setUploading] = useState(false);
     const [showUrlInput, setShowUrlInput] = useState(false);
     const [urlValue, setUrlValue] = useState("");
+    const [showCreditModal, setShowCreditModal] = useState(false);
     const { user } = useAuth();
-    const { refreshCredits } = useCredits();
+    const { refreshCredits, credits } = useCredits();
     const router = useRouter();
     const { t, locale } = useLanguage();
 
@@ -169,8 +171,12 @@ export default function AddRecipeScreen() {
             });
 
         } catch (error: any) {
-            Alert.alert("Analysis Failed", error.message);
             setUploading(false);
+            if (error.message?.includes("Insufficient credits")) {
+                setShowCreditModal(true);
+            } else {
+                Alert.alert("Analysis Failed", error.message);
+            }
         }
     };
 
@@ -237,13 +243,22 @@ export default function AddRecipeScreen() {
             });
 
         } catch (error: any) {
-            Alert.alert("Analysis Failed", error.message);
             setUploading(false);
+            if (error.message?.includes("Insufficient credits")) {
+                setShowCreditModal(true);
+            } else {
+                Alert.alert("Analysis Failed", error.message);
+            }
         }
     };
 
     return (
         <View className="flex-1 bg-cream px-6 justify-center items-center relative">
+            <CreditGateModal
+                visible={showCreditModal}
+                onClose={() => setShowCreditModal(false)}
+            />
+
             {uploading && (
                 <View className="absolute inset-0 z-50 bg-cream/95 flex-1 justify-center items-center" style={{ elevation: 10 }}>
                     <WhiskLoader isAnalyzing={true} />
@@ -405,7 +420,13 @@ export default function AddRecipeScreen() {
             ) : (
                 <View className="w-full gap-4">
                     <TouchableOpacity
-                        onPress={takePhoto}
+                        onPress={() => {
+                            if (credits <= 0) {
+                                setShowCreditModal(true);
+                            } else {
+                                takePhoto();
+                            }
+                        }}
                         className="bg-peach-500 p-6 rounded-2xl flex-row items-center justify-center gap-4 shadow-sm"
                     >
                         <Camera color="#fff" size={28} />
@@ -413,7 +434,13 @@ export default function AddRecipeScreen() {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        onPress={pickImage}
+                        onPress={() => {
+                            if (credits <= 0) {
+                                setShowCreditModal(true);
+                            } else {
+                                pickImage();
+                            }
+                        }}
                         className="bg-white border border-peach-200 p-6 rounded-2xl flex-row items-center justify-center gap-4"
                     >
                         <UploadCloud color="#eb6e3e" size={28} />
@@ -421,7 +448,13 @@ export default function AddRecipeScreen() {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        onPress={() => setShowUrlInput(true)}
+                        onPress={() => {
+                            if (credits <= 0) {
+                                setShowCreditModal(true);
+                            } else {
+                                setShowUrlInput(true);
+                            }
+                        }}
                         className="bg-white border border-peach-200 p-6 rounded-2xl flex-row items-center justify-center gap-4"
                     >
                         <LinkIcon color="#eb6e3e" size={28} />

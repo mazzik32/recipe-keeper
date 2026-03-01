@@ -7,6 +7,7 @@ type AuthContextType = {
     user: User | null;
     initialized: boolean;
     signOut: () => Promise<{ error: Error | null }>;
+    refreshSession: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     initialized: false,
     signOut: async () => ({ error: null }),
+    refreshSession: async () => { },
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -84,8 +86,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return await supabase.auth.signOut();
     };
 
+    const refreshSession = async () => {
+        // Fetch the latest user metadata object from DB without destroying the session tokens
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user) {
+            setUser(userData.user);
+
+            // Keep the existing session intact but update its nested user object
+            setSession((prev) => {
+                if (prev) {
+                    return { ...prev, user: userData.user };
+                }
+                return prev;
+            });
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ session, user, initialized, signOut }}>
+        <AuthContext.Provider value={{ session, user, initialized, signOut, refreshSession }}>
             {children}
         </AuthContext.Provider>
     );
