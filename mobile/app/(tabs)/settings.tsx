@@ -1,11 +1,12 @@
 import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Linking, Switch } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useCredits } from "../../contexts/CreditsContext";
 import { supabase } from "../../lib/supabase";
-import { LogOut, User as UserIcon, CreditCard, ChevronRight, Plus, Globe, Bell, Moon, Tag as TagIcon } from "lucide-react-native";
+import { LogOut, User as UserIcon, CreditCard, ChevronRight, Plus, Globe, Bell, Moon, Tag as TagIcon, Download, Trash2 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 
@@ -20,6 +21,7 @@ export default function SettingsScreen() {
     // Mock states for UI
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+    const [offlineStorageEnabled, setOfflineStorageEnabled] = useState(false);
 
     const { locale, setLanguage } = useLanguage();
 
@@ -39,9 +41,37 @@ export default function SettingsScreen() {
 
             if (data) setProfile(data);
             setLoading(false);
+
+            const offlineSettings = await AsyncStorage.getItem('settings_offline_storage');
+            setOfflineStorageEnabled(offlineSettings === 'true');
         }
         loadProfile();
     }, [user]);
+
+    const handleOfflineToggle = async (value: boolean) => {
+        setOfflineStorageEnabled(value);
+        await AsyncStorage.setItem('settings_offline_storage', value.toString());
+    };
+
+    const handleClearDownloads = () => {
+        Alert.alert(
+            t.settings?.confirmRemoveDownloadsTitle || "Remove Downloads",
+            t.settings?.confirmRemoveDownloadsDesc || "Are you sure you want to remove all offline recipe data? (Your recipes remain safely in the cloud).",
+            [
+                { text: t.common?.cancel || "Cancel", style: "cancel" },
+                {
+                    text: t.settings?.removeDownloads || "Remove",
+                    style: "destructive",
+                    onPress: async () => {
+                        const keys = await AsyncStorage.getAllKeys();
+                        const detailKeys = keys.filter(k => k.startsWith('recipe_detail_'));
+                        await AsyncStorage.multiRemove(detailKeys);
+                        Alert.alert(t.common?.success || "Success", t.settings?.downloadsRemoved || "Downloads removed");
+                    }
+                }
+            ]
+        );
+    };
 
     const handleSignOut = async () => {
         Alert.alert(
@@ -55,6 +85,52 @@ export default function SettingsScreen() {
                     onPress: async () => {
                         const { error } = await signOut();
                         if (error) Alert.alert("Error Signing Out", error.message);
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleDeleteAccount = async () => {
+        Alert.alert(
+            t.settings?.deleteAccountConfirmTitle || "Delete Account",
+            t.settings?.deleteAccountConfirmDesc || "Are you sure you want to delete your account? This action is irreversible.",
+            [
+                { text: t.common?.cancel || "Cancel", style: "cancel" },
+                {
+                    text: t.settings?.deleteAccount || "Delete Account",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            setLoading(true);
+
+                            // Get the current session to pass token to API
+                            const { data: { session } } = await supabase.auth.getSession();
+
+                            if (!session?.access_token) {
+                                throw new Error("No active session found");
+                            }
+
+                            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'https://www.recipekeeper.org'}/api/user/delete`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${session.access_token}`,
+                                }
+                            });
+
+                            const data = await response.json();
+
+                            if (!response.ok || !data.success) {
+                                throw new Error(data.error || "Failed to delete account");
+                            }
+
+                            // Sign out locally
+                            await signOut();
+
+                        } catch (error: any) {
+                            Alert.alert(t.common?.error || "Error", error.message || "Failed to delete account");
+                            setLoading(false);
+                        }
                     }
                 }
             ]
@@ -189,6 +265,48 @@ export default function SettingsScreen() {
                     </View>
                 </View>
 
+                {/* Offline Storage */}
+                <View className="mt-8 px-4">
+                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.settings?.offlineStorage || "Offline Storage"}</Text>
+
+                    <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
+
+                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 bg-white">
+                            <View className="flex-1 flex-row items-center gap-3 mr-4">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                    <Download color="#eb6e3e" size={18} />
+                                </View>
+                                <View className="flex-1">
+                                    <Text className="text-warm-gray-700 font-medium text-base mb-0.5">{t.settings?.offlineStorage || "Offline Storage"}</Text>
+                                    <Text className="text-warm-gray-400 text-xs" numberOfLines={2}>{t.settings?.offlineStorageDesc || "Download all recipes for offline viewing"}</Text>
+                                </View>
+                            </View>
+                            <Switch
+                                value={offlineStorageEnabled}
+                                onValueChange={handleOfflineToggle}
+                                trackColor={{ false: "#dfd8d3", true: "#eb6e3e" }}
+                                thumbColor="#ffffff"
+                            />
+                        </View>
+
+                        <TouchableOpacity
+                            onPress={handleClearDownloads}
+                            className="flex-row items-center justify-between p-4 bg-white active:opacity-70"
+                        >
+                            <View className="flex-1 flex-row items-center gap-3 mr-4">
+                                <View className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
+                                    <Trash2 color="#ef4444" size={18} />
+                                </View>
+                                <View className="flex-1">
+                                    <Text className="text-red-500 font-medium text-base mb-0.5">{t.settings?.removeDownloads || "Remove Downloads"}</Text>
+                                    <Text className="text-red-400 text-xs" numberOfLines={2}>{t.settings?.removeDownloadsDesc || "Clear all offline cached recipe details"}</Text>
+                                </View>
+                            </View>
+                            <ChevronRight color="#fca5a5" size={20} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
                 {/* Legal & Help */}
                 <View className="mt-8 px-4">
                     <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.nav.supportLegal}</Text>
@@ -214,17 +332,24 @@ export default function SettingsScreen() {
                 <View className="mt-12 px-4 pb-10">
                     <TouchableOpacity
                         onPress={handleSignOut}
+                        className="bg-white border border-warm-gray-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-warm-gray-50 mb-4"
+                    >
+                        <LogOut color="#737373" size={20} className="mr-2" />
+                        <Text className="text-warm-gray-500 font-semibold text-lg">{t.nav.signOut}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={handleDeleteAccount}
                         className="bg-white border border-red-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-red-50"
                     >
-                        <LogOut color="#ef4444" size={20} className="mr-2" />
-                        <Text className="text-red-500 font-semibold text-lg">{t.nav.signOut}</Text>
+                        <Trash2 color="#ef4444" size={20} className="mr-2" />
+                        <Text className="text-red-500 font-semibold text-lg">{t.settings?.deleteAccount || "Delete Account"}</Text>
                     </TouchableOpacity>
 
                     <Text className="text-center mt-6 text-warm-gray-400 text-xs">RecipeKeeper v1.0.0</Text>
                 </View>
-
             </ScrollView>
             <StatusBar style="auto" />
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }

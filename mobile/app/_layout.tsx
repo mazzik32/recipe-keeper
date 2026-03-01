@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { LanguageProvider } from "../contexts/LanguageContext";
 import { CreditsProvider } from "../contexts/CreditsContext";
 import { useFonts, DancingScript_400Regular, DancingScript_500Medium, DancingScript_600SemiBold, DancingScript_700Bold } from '@expo-google-fonts/dancing-script';
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import { PlayfairDisplay_400Regular, PlayfairDisplay_500Medium, PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import * as SplashScreen from 'expo-splash-screen';
 import "../global.css";
 
@@ -41,6 +43,13 @@ export default function RootLayout() {
         DancingScript_500Medium,
         DancingScript_600SemiBold,
         DancingScript_700Bold,
+        Inter: Inter_400Regular,
+        Inter_500Medium,
+        Inter_600SemiBold,
+        'Playfair Display': PlayfairDisplay_400Regular,
+        PlayfairDisplay_500Medium,
+        PlayfairDisplay_600SemiBold,
+        PlayfairDisplay_700Bold
     });
 
     useEffect(() => {

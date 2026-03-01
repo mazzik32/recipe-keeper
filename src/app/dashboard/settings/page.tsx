@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save, LogOut, Globe, Ruler, Download, Upload, Database as DatabaseIcon } from "lucide-react";
+import { Loader2, Save, LogOut, Globe, Ruler, Download, Upload, Database as DatabaseIcon, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +41,10 @@ export default function SettingsPage() {
   const [progress, setProgress] = useState(0);
   const [progressMessage, setProgressMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Delete Account State
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -104,6 +108,27 @@ export default function SettingsPage() {
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      const response = await fetch("/api/user/delete", { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to delete account");
+      }
+
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/");
+      router.refresh();
+    } catch (error: any) {
+      console.error(error);
+      setMessage({ type: "error", text: error.message || (locale === "de" ? "Konto löschen fehlgeschlagen." : "Failed to delete account.") });
+      setIsDeletingAccount(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -318,14 +343,23 @@ export default function SettingsPage() {
               {locale === "de" ? "Unumkehrbare Aktionen." : "Irreversible actions."}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <Button
               variant="outline"
               onClick={handleSignOut}
-              className="border-red-300 text-red-600 hover:bg-red-50"
+              className="w-full justify-start border-red-300 text-red-600 hover:bg-red-50"
             >
               <LogOut className="w-4 h-4 mr-2" />
               {t.auth.logout}
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(true)}
+              className="w-full justify-start border-red-300 text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              {locale === "de" ? "Konto löschen" : "Delete Account"}
             </Button>
           </CardContent>
         </Card>
@@ -340,6 +374,46 @@ export default function SettingsPage() {
             </DialogHeader>
             <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-4">
               <div className="bg-peach-500 h-2.5 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Account Dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={(open) => !isDeletingAccount && setShowDeleteDialog(open)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-red-600 flex items-center gap-2">
+                <Trash2 className="w-5 h-5" />
+                {locale === "de" ? "Konto wirklich löschen?" : "Delete Account"}
+              </DialogTitle>
+              <DialogDescription className="text-warm-gray-600 pt-2 pb-4">
+                {locale === "de"
+                  ? "Diese Aktion ist unwiderruflich. Alle Ihre Rezepte, Bilder und persönlichen Daten werden dauerhaft gelöscht."
+                  : "This action is irreversible. All your recipes, images, and personal data will be permanently deleted."}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(false)}
+                disabled={isDeletingAccount}
+              >
+                {t.common.cancel}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                disabled={isDeletingAccount}
+              >
+                {isDeletingAccount ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {locale === "de" ? "Wird gelöscht..." : "Deleting..."}
+                  </>
+                ) : (
+                  locale === "de" ? "Konto dauerhaft löschen" : "Permanently Delete Account"
+                )}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

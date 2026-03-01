@@ -55,6 +55,21 @@ export const de: Translations = {
     sessionExpired: "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
   },
   
+  onboarding: {
+    welcome: "Willkommen bei Recipe Keeper",
+    welcomeDesc: "Dein persönliches digitales Kochbuch. Lass uns loslegen!",
+    scan: "KI-Rezept-Scanner",
+    scanDesc: "Mache ein Foto von einem Rezept, und unsere KI extrahiert die Zutaten und Anleitungen für dich.",
+    credits: "Scan-Guthaben",
+    creditsDesc: "Du erhältst 5 kostenlose Scans zum Start! Du kannst später jederzeit weiteres Guthaben kaufen.",
+    organize: "Suchen & Organisieren",
+    organizeDesc: "Finde deine Rezepte ganz einfach mit der leistungsstarken Suche, Tags und eigenen Sammlungen.",
+    offline: "Offline-Speicher",
+    offlineDesc: "Aktiviere den Offline-Speicher in den Einstellungen, um auch ohne Internetverbindung auf alle deine Rezepte zuzugreifen.",
+    getStarted: "Lass uns kochen!",
+    next: "Weiter",
+  },
+  
   nav: {
     myRecipes: "Meine Rezepte",
     categories: "Kategorien",
@@ -304,6 +319,17 @@ export const de: Translations = {
     saveChanges: "Änderungen speichern",
     changesSaved: "Einstellungen gespeichert",
     changesSavedDesc: "Ihre Einstellungen wurden aktualisiert",
+    offlineStorage: "Offline-Rezeptspeicher",
+    offlineStorageDesc: "Alle Rezepte für die Offline-Nutzung herunterladen",
+    removeDownloads: "Downloads entfernen",
+    removeDownloadsDesc: "Alle offline zwischengespeicherten Rezeptdetails löschen",
+    confirmRemoveDownloadsTitle: "Downloads entfernen",
+    confirmRemoveDownloadsDesc: "Bist du sicher, dass du alle Offline-Rezeptdaten löschen möchtest? (Deine Rezepte bleiben sicher in der Cloud).",
+    downloadsRemoved: "Downloads entfernt",
+    deleteAccount: "Konto löschen",
+    deleteAccountDesc: "Konto und alle Daten dauerhaft löschen.",
+    deleteAccountConfirmTitle: "Konto löschen",
+    deleteAccountConfirmDesc: "Bist du sicher, dass du dein Konto löschen möchtest? Diese Aktion ist unwiderruflich.",
   },
   
   units: {

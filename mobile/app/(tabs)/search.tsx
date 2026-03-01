@@ -1,4 +1,5 @@
 import { View, Text, TextInput, FlatList, Pressable, ActivityIndicator } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import { Search as SearchIcon, Clock, Users } from "lucide-react-native";
@@ -29,17 +30,35 @@ export default function SearchScreen() {
 
         const searchTimer = setTimeout(async () => {
             setLoading(true);
-            const { data, error } = await supabase
-                .from("recipes")
-                .select(`*, images:recipe_images(*)`)
-                .eq("user_id", user.id)
-                .eq("is_archived", false)
-                .ilike("title", `%${query}%`)
-                .order("created_at", { ascending: false })
-                .limit(20);
+            try {
+                const { data, error } = await supabase
+                    .from("recipes")
+                    .select(`*, images:recipe_images(*)`)
+                    .eq("user_id", user.id)
+                    .eq("is_archived", false)
+                    .ilike("title", `%${query}%`)
+                    .order("created_at", { ascending: false })
+                    .limit(20);
 
-            if (data) setResults(data);
-            setLoading(false);
+                if (error) throw error;
+                if (data) setResults(data);
+            } catch (e) {
+                // Fallback to local cache
+                console.log("Search network error, falling back to local cache", e);
+                const cachedData = await AsyncStorage.getItem(`recipes_master_${user.id}`);
+                if (cachedData) {
+                    const allRecipes = JSON.parse(cachedData);
+                    const filtered = allRecipes.filter((r: any) =>
+                        r.title?.toLowerCase().includes(query.toLowerCase()) ||
+                        r.description?.toLowerCase().includes(query.toLowerCase())
+                    ).slice(0, 20);
+                    setResults(filtered);
+                } else {
+                    setResults([]);
+                }
+            } finally {
+                setLoading(false);
+            }
         }, 400); // 400ms debounce
 
         return () => clearTimeout(searchTimer);

@@ -164,7 +164,34 @@ export const en = {
         buyCredits: "Buy Credits",
         purchase: "Purchase {credits} Credits",
         confirmPurchase: "Are you sure you want to buy {credits} credits for {price}?",
-    }
+    },
+    onboarding: {
+        welcome: "Welcome to Recipe Keeper",
+        welcomeDesc: "Your personal digital cookbook. Let's get started!",
+        scan: "AI Recipe Scanner",
+        scanDesc: "Snap a photo of any recipe, and our AI will extract the ingredients and instructions for you.",
+        credits: "Scan Credits",
+        creditsDesc: "You get 5 free scans to start! You can always buy more credits later if you need them.",
+        organize: "Search & Organize",
+        organizeDesc: "Easily find your recipes with powerful search, tags, and custom collections.",
+        offline: "Offline Storage",
+        offlineDesc: "Enable offline storage in Settings to access all your recipes even without an internet connection.",
+        getStarted: "Let's Start Cooking!",
+        next: "Next",
+    },
+    settings: {
+        offlineStorage: "Offline Recipe Storage",
+        offlineStorageDesc: "Download all recipes for offline viewing",
+        removeDownloads: "Remove Downloads",
+        removeDownloadsDesc: "Clear all offline cached recipe details",
+        confirmRemoveDownloadsTitle: "Remove Downloads",
+        confirmRemoveDownloadsDesc: "Are you sure you want to remove all offline recipe data? (Your recipes remain safely in the cloud).",
+        downloadsRemoved: "Downloads Removed",
+        deleteAccount: "Delete Account",
+        deleteAccountConfirmTitle: "Delete Account?",
+        deleteAccountConfirmDesc: "Are you sure you want to delete your account? This action is irreversible and will remove all your data.",
+    },
+    pdf: {},
 };
 
 export type Translations = typeof en;
@@ -330,7 +357,34 @@ export const de: Translations = {
         buyCredits: "Guthaben kaufen",
         purchase: "{credits} Guthaben kaufen",
         confirmPurchase: "Möchtest du wirklich {credits} Guthaben für {price} kaufen?",
-    }
+    },
+    onboarding: {
+        welcome: "Willkommen bei Recipe Keeper",
+        welcomeDesc: "Dein persönliches digitales Kochbuch. Lass uns loslegen!",
+        scan: "KI-Rezept-Scanner",
+        scanDesc: "Mache ein Foto von einem Rezept, und unsere KI extrahiert die Zutaten und Anleitungen für dich.",
+        credits: "Scan-Guthaben",
+        creditsDesc: "Du erhältst 5 kostenlose Scans zum Start! Du kannst später jederzeit weiteres Guthaben kaufen.",
+        organize: "Suchen & Organisieren",
+        organizeDesc: "Finde deine Rezepte ganz einfach mit der leistungsstarken Suche, Tags und eigenen Sammlungen.",
+        offline: "Offline-Speicher",
+        offlineDesc: "Aktiviere den Offline-Speicher in den Einstellungen, um auch ohne Internetverbindung auf alle deine Rezepte zuzugreifen.",
+        getStarted: "Lass uns kochen!",
+        next: "Weiter",
+    },
+    settings: {
+        offlineStorage: "Offline-Rezeptspeicher",
+        offlineStorageDesc: "Alle Rezepte für die Offline-Nutzung herunterladen",
+        removeDownloads: "Downloads entfernen",
+        removeDownloadsDesc: "Alle offline zwischengespeicherten Rezeptdetails löschen",
+        confirmRemoveDownloadsTitle: "Downloads entfernen",
+        confirmRemoveDownloadsDesc: "Bist du sicher, dass du alle Offline-Rezeptdaten löschen möchtest? (Deine Rezepte bleiben sicher in der Cloud).",
+        downloadsRemoved: "Downloads entfernt",
+        deleteAccount: "Konto löschen",
+        deleteAccountConfirmTitle: "Konto löschen?",
+        deleteAccountConfirmDesc: "Bist du sicher, dass du dein Konto löschen möchtest? Diese Aktion ist unwiderruflich und alle deine Daten werden gelöscht.",
+    },
+    pdf: {},
 };
 
 // --- CONTEXT SETUP ---

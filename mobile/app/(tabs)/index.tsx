@@ -70,15 +70,27 @@ export default function Dashboard() {
                 console.log("Failed to load recipes cache", e);
             }
 
+            const offlineSettings = await AsyncStorage.getItem('settings_offline_storage');
+            const isOfflineEnabled = offlineSettings === 'true';
+
+            let selectQuery = `
+                *, 
+                images:recipe_images(*),
+                recipe_tags(
+                    tags(*)
+                )
+            `;
+
+            if (isOfflineEnabled) {
+                selectQuery += `,
+                ingredients:recipe_ingredients(*),
+                instructions:recipe_instructions(*)
+                `;
+            }
+
             const { data, error } = await supabase
                 .from("recipes")
-                .select(`
-                    *, 
-                    images:recipe_images(*),
-                    recipe_tags(
-                        tags(*)
-                    )
-                `)
+                .select(selectQuery)
                 .eq("user_id", user.id)
                 .eq("is_archived", false)
                 .order("created_at", { ascending: false });
@@ -92,6 +104,13 @@ export default function Dashboard() {
                 processRecipes(formattedRecipes, true);
                 AsyncStorage.setItem(`recipes_master_${user.id}`, JSON.stringify(formattedRecipes))
                     .catch(e => console.log("Failed to save recipes cache", e));
+
+                if (isOfflineEnabled) {
+                    formattedRecipes.forEach((recipe: any) => {
+                        AsyncStorage.setItem(`recipe_detail_${recipe.id}`, JSON.stringify(recipe))
+                            .catch(e => console.log("Failed to prepopulate detail cache", e));
+                    });
+                }
             } else {
                 setLoading(false);
             }
@@ -163,11 +182,11 @@ export default function Dashboard() {
                 </View>
 
                 <View className="flex-1 py-1 flex-col">
-                    <Text className="font-playfair text-lg font-bold text-warm-gray-700 mb-1" numberOfLines={2}>
+                    <Text className="font-playfair text-[17px] font-semibold text-warm-gray-700 mb-1" numberOfLines={2}>
                         {item.title}
                     </Text>
                     {item.description && (
-                        <Text style={{ fontFamily: 'DancingScript_700Bold' }} className="text-peach-500 text-[18px] leading-[22px] mb-2.5 whitespace-nowrap overflow-hidden" numberOfLines={1}>
+                        <Text className="text-peach-500 font-medium text-[14px] leading-[18px] mb-2.5 whitespace-nowrap overflow-hidden" numberOfLines={1}>
                             {item.description}
                         </Text>
                     )}
@@ -220,7 +239,7 @@ export default function Dashboard() {
                         <View className="pt-14 pb-4 flex-row justify-between items-start">
                             <View className="flex-row items-center gap-3">
                                 <View>
-                                    <Text style={{ fontFamily: 'DancingScript_500Medium' }} className="text-peach-500 text-[18px]">
+                                    <Text style={{ fontFamily: 'Playfair Display' }} className="font-semibold text-peach-500 text-[18px]">
                                         {t.nav.myCollection || "Meine Sammlung"}
                                     </Text>
                                     <Text className="font-playfair text-[32px] font-bold text-warm-gray-700 leading-tight mt-0.5">
@@ -235,14 +254,14 @@ export default function Dashboard() {
                         </View>
 
                         {/* Stats Row */}
-                        <View className="flex-row gap-6 mb-8 mt-2">
+                        <View className="flex-row gap-8 mb-8 mt-2 items-center">
                             <View>
-                                <Text className="font-playfair text-[26px] font-bold text-peach-500">{recipes.length}</Text>
-                                <Text className="text-warm-gray-400 text-sm font-medium">{t.recipes.recipes}</Text>
+                                <Text className="font-playfair text-[26px] font-bold text-peach-500" style={{ lineHeight: 30 }}>{recipes.length}</Text>
+                                <Text className="text-warm-gray-400 text-[14px] font-medium tracking-tight">{t.recipes.recipes}</Text>
                             </View>
                             <View>
-                                <Text className="font-playfair text-[26px] font-bold text-[#F0A830]">{tags.length}</Text>
-                                <Text className="text-warm-gray-400 text-sm font-medium">{t.categories.title}</Text>
+                                <Text className="font-playfair text-[26px] font-bold text-[#F0A830]" style={{ lineHeight: 30 }}>{tags.length}</Text>
+                                <Text className="text-warm-gray-400 text-[14px] font-medium tracking-tight">{t.categories.title}</Text>
                             </View>
                         </View>
 

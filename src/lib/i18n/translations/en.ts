@@ -53,6 +53,21 @@ export const en = {
     sessionExpired: "Your session has expired. Please sign in again.",
   },
   
+  onboarding: {
+    welcome: "Welcome to Recipe Keeper",
+    welcomeDesc: "Your personal digital cookbook. Let's get started!",
+    scan: "AI Recipe Scanner",
+    scanDesc: "Snap a photo of any recipe, and our AI will extract the ingredients and instructions for you.",
+    credits: "Scan Credits",
+    creditsDesc: "You get 5 free scans to start! You can always buy more credits later if you need them.",
+    organize: "Search & Organize",
+    organizeDesc: "Easily find your recipes with powerful search, tags, and custom collections.",
+    offline: "Offline Storage",
+    offlineDesc: "Enable offline storage in Settings to access all your recipes even without an internet connection.",
+    getStarted: "Let's Start Cooking!",
+    next: "Next",
+  },
+  
   nav: {
     myRecipes: "My Recipes",
     categories: "Categories",
@@ -302,6 +317,17 @@ export const en = {
     saveChanges: "Save Changes",
     changesSaved: "Settings saved",
     changesSavedDesc: "Your preferences have been updated",
+    offlineStorage: "Offline Recipe Storage",
+    offlineStorageDesc: "Download all recipes for offline viewing",
+    removeDownloads: "Remove Downloads",
+    removeDownloadsDesc: "Clear all offline cached recipe details",
+    confirmRemoveDownloadsTitle: "Remove Downloads",
+    confirmRemoveDownloadsDesc: "Are you sure you want to remove all offline recipe data? (Your recipes remain safely in the cloud).",
+    downloadsRemoved: "Downloads Removed",
+    deleteAccount: "Delete Account",
+    deleteAccountDesc: "Permanently delete your account and all data.",
+    deleteAccountConfirmTitle: "Delete Account",
+    deleteAccountConfirmDesc: "Are you sure you want to delete your account? This action is irreversible.",
   },
   
   units: {

@@ -23,9 +23,14 @@ module.exports = {
                     700: '#3d3632',
                 },
                 'warm-white': '#fbfaf9',
-                cream: '#faf9f6',
+                cream: '#FDF8F3',
                 'cream-dark': '#f5f3ef',
-            }
+            },
+            fontFamily: {
+                sans: ['Inter'],
+                playfair: ['Playfair Display'],
+                script: ['Dancing Script'],
+            },
         },
     },
     plugins: [],

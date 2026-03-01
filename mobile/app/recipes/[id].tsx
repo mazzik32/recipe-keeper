@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../../lib/supabase";
-import { ArrowLeft, Clock, Users, Flame, Heart, Pencil, Trash2 } from "lucide-react-native";
+import { ArrowLeft, Clock, Users, ChefHat, Heart, Pencil, Trash2 } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Image } from "expo-image";
@@ -194,7 +194,7 @@ export default function RecipeDetailScreen() {
 
                 {/* Content */}
                 <View className="px-6 py-8 pb-20">
-                    <Text className="font-playfair text-3xl text-warm-gray-700 mb-4">{recipe.title}</Text>
+                    <Text className="font-playfair font-semibold text-3xl text-warm-gray-700 mb-4">{recipe.title}</Text>
 
                     {recipe.description && (
                         <Text className="text-warm-gray-500 text-base leading-relaxed mb-6">{recipe.description}</Text>
@@ -216,33 +216,57 @@ export default function RecipeDetailScreen() {
                     )}
 
                     {/* Meta Info Bar */}
-                    <View className="flex-row border-y border-warm-gray-200 py-4 mb-8 justify-around">
-                        <View className="items-center">
-                            <Clock color="#eb6e3e" size={24} className="mb-1" />
-                            <Text className="text-warm-gray-600 font-semibold">{totalTime > 0 ? `${totalTime} min` : '-'}</Text>
-                            <Text className="text-warm-gray-400 text-xs uppercase tracking-wider">{t.recipes.totalTime || "Time"}</Text>
-                        </View>
-                        <View className="items-center">
-                            <Users color="#eb6e3e" size={24} className="mb-1" />
-                            <Text className="text-warm-gray-600 font-semibold">{recipe.servings || '-'}</Text>
-                            <Text className="text-warm-gray-400 text-xs uppercase tracking-wider">{t.recipes.servings || "Serves"}</Text>
-                        </View>
-                        <View className="items-center">
-                            <Flame color="#eb6e3e" size={24} className="mb-1" />
-                            <Text className="text-warm-gray-600 font-semibold">{recipe.difficulty || '-'}</Text>
-                            <Text className="text-warm-gray-400 text-xs uppercase tracking-wider">{t.recipes.difficulty || "Level"}</Text>
-                        </View>
+                    <View className="flex-row flex-wrap gap-x-6 gap-y-3 mb-8">
+                        {recipe.prep_time_minutes > 0 || recipe.cook_time_minutes > 0 ? (
+                            <View className="flex-row items-center gap-2">
+                                <Clock color="#f8a888" size={20} />
+                                <Text className="text-[14px] font-medium text-warm-gray-600">
+                                    <Text className="font-semibold">{t.recipes.totalTime || "Time"}:</Text> {totalTime} min
+                                </Text>
+                            </View>
+                        ) : null}
+
+                        {recipe.servings ? (
+                            <View className="flex-row items-center gap-2">
+                                <Users color="#f8a888" size={20} />
+                                <Text className="text-[14px] font-medium text-warm-gray-600">
+                                    <Text className="font-semibold">{t.recipes.servings || "Serves"}:</Text> {recipe.servings}
+                                </Text>
+                            </View>
+                        ) : null}
+
+                        {recipe.difficulty ? (
+                            <View className="flex-row items-center gap-2">
+                                <ChefHat color="#f8a888" size={20} />
+                                <Text className="text-[14px] font-medium text-warm-gray-600">
+                                    <Text className="font-semibold">{t.recipes.difficulty || "Level"}:</Text> {recipe.difficulty}
+                                </Text>
+                            </View>
+                        ) : null}
                     </View>
 
                     {/* Ingredients */}
                     {recipe.ingredients && recipe.ingredients.length > 0 && (
                         <View className="mb-8">
-                            <Text className="font-playfair text-2xl text-warm-gray-700 mb-4">{t.recipes.ingredients}</Text>
+                            <Text className="font-playfair font-medium text-2xl text-warm-gray-700 mb-4">{t.recipes.ingredients}</Text>
                             <View className="bg-white rounded-2xl p-4 shadow-sm border border-warm-gray-100">
                                 {recipe.ingredients.map((ing: any, i: number) => (
-                                    <View key={i} className="flex-row py-2 border-b border-warm-gray-50 last:border-0">
-                                        <Text className="w-24 font-semibold text-peach-600">{ing.quantity} {ing.unit}</Text>
-                                        <Text className="flex-1 text-warm-gray-700">{ing.name}</Text>
+                                    <View key={i} className="flex-row items-start py-1.5 px-1.5 gap-2">
+                                        <View className="w-1.5 h-1.5 rounded-full bg-peach-300 mt-2.5 flex-shrink-0" />
+                                        <Text className="flex-1 text-warm-gray-700 text-base leading-relaxed">
+                                            {ing.quantity && (
+                                                <Text className="font-bold text-warm-gray-700">
+                                                    {ing.quantity} {ing.unit}{" "}
+                                                </Text>
+                                            )}
+                                            {ing.name}
+                                            {ing.notes && (
+                                                <Text className="text-warm-gray-400">
+                                                    {" "}
+                                                    ({ing.notes})
+                                                </Text>
+                                            )}
+                                        </Text>
                                     </View>
                                 ))}
                             </View>
@@ -252,14 +276,14 @@ export default function RecipeDetailScreen() {
                     {/* Instructions */}
                     {recipe.instructions && recipe.instructions.length > 0 && (
                         <View>
-                            <Text className="font-playfair text-2xl text-warm-gray-700 mb-4">{t.recipes.instructions}</Text>
-                            <View className="space-y-6">
+                            <Text className="font-playfair font-medium text-2xl text-warm-gray-700 mb-4">{t.recipes.instructions}</Text>
+                            <View className="flex-col">
                                 {recipe.instructions.map((step: any, i: number) => (
-                                    <View key={i} className="flex-row">
-                                        <View className="w-8 h-8 rounded-full bg-peach-100 items-center justify-center mr-4 mt-1">
-                                            <Text className="text-peach-700 font-bold">{step.step_number}</Text>
+                                    <View key={i} className="flex-row mb-6">
+                                        <View className="w-8 h-8 rounded-full items-center justify-center mr-4" style={{ backgroundColor: '#FFCBA4' }}>
+                                            <Text className="text-warm-gray-700 font-bold">{step.step_number}</Text>
                                         </View>
-                                        <Text className="flex-1 text-warm-gray-600 text-base leading-relaxed pt-1">
+                                        <Text className="flex-1 text-warm-gray-700 text-base leading-relaxed">
                                             {step.instruction}
                                         </Text>
                                     </View>

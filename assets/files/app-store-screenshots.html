@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RecipeKeeper App Store Screenshots</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #1a1a1a;
+      padding: 40px;
+    }
+    
+    h1 {
+      color: white;
+      font-family: 'Playfair Display', serif;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .screenshots {
+      display: flex;
+      gap: 24px;
+      overflow-x: auto;
+      padding: 20px 0;
+    }
+    
+    .screenshot {
+      flex-shrink: 0;
+      width: 430px;
+      height: 932px;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 60px 32px 40px;
+    }
+    
+    /* Gradient backgrounds */
+    .screenshot-1 { background: linear-gradient(180deg, #FDF8F3 0%, #FFE8DD 100%); }
+    .screenshot-2 { background: linear-gradient(180deg, #FDF8F3 0%, #FFCDB2 100%); }
+    .screenshot-3 { background: linear-gradient(180deg, #F8A888 0%, #FFE8DD 100%); }
+    .screenshot-4 { background: linear-gradient(180deg, #FDF8F3 0%, #FFE8DD 100%); }
+    .screenshot-5 { background: linear-gradient(180deg, #FFE8DD 0%, #FDF8F3 100%); }
+    .screenshot-6 { background: linear-gradient(180deg, #3D3632 0%, #5D534D 100%); }
+    
+    .screenshot h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      font-weight: 600;
+      color: #3D3632;
+      text-align: center;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    
+    .screenshot-6 h2 {
+      color: #FFFFFF;
+    }
+    
+    .screenshot p {
+      font-size: 20px;
+      color: #6B6159;
+      text-align: center;
+      line-height: 1.4;
+      margin-bottom: 40px;
+    }
+    
+    .screenshot-6 p {
+      color: #B5ADA5;
+    }
+    
+    .phone-frame {
+      width: 280px;
+      height: 600px;
+      background: #000;
+      border-radius: 36px;
+      padding: 8px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+    }
+    
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: #FDF8F3;
+      border-radius: 28px;
+      overflow: hidden;
+    }
+    
+    .phone-screen img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+    }
+    
+    /* Screenshot 6 - No Subscription */
+    .features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      margin-top: 40px;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .feature-check {
+      width: 56px;
+      height: 56px;
+      background: #F8A888;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .feature-check svg {
+      width: 28px;
+      height: 28px;
+      fill: white;
+    }
+    
+    .feature-text {
+      font-size: 26px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+    
+    /* Badge */
+    .badge {
+      position: absolute;
+      top: 40px;
+      right: 32px;
+      background: #F8A888;
+      color: #3D3632;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 20px;
+    }
+    
+    /* Instructions */
+    .instructions {
+      background: #2a2a2a;
+      padding: 24px;
+      border-radius: 12px;
+      margin-top: 40px;
+      color: #ccc;
+    }
+    
+    .instructions h3 {
+      color: white;
+      margin-bottom: 12px;
+    }
+    
+    .instructions code {
+      background: #3a3a3a;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>RecipeKeeper — App Store Screenshots</h1>
+  
+  <div class="screenshots">
+    
+    <!-- Screenshot 1: Hero -->
+    <div class="screenshot screenshot-1">
+      <h2>Your Family Recipes.<br>Safe Forever.</h2>
+      <p>Scan, save, and share the recipes you love.</p>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <img src="hero-image.jpeg" alt="Hero" style="object-position: center center;">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Screenshot 2: Scan -->
+    <div class="screenshot screenshot-2">
+      <h2>Scan Any Recipe</h2>
+      <p>Handwritten cards, cookbooks, PDFs — we read them all.</p>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <img src="step-1-scan.jpeg" alt="Scan">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Screenshot 3: AI -->
+    <div class="screenshot screenshot-3">
+      <span class="badge">✨ AI Powered</span>
+      <h2>AI Does the Work</h2>
+      <p>Ingredients and instructions extracted automatically.</p>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <img src="step-2-review.jpeg" alt="AI Review">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Screenshot 4: Organized -->
+    <div class="screenshot screenshot-4">
+      <h2>Beautifully Organized</h2>
+      <p>Find any recipe in seconds.</p>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <img src="step-3-save.jpeg" alt="Saved Recipe">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Screenshot 5: Family -->
+    <div class="screenshot screenshot-5">
+      <h2>Remember Where It Came From</h2>
+      <p>Mom. Grandma. Aunt Maria. Tag every recipe.</p>
+      <div class="phone-frame">
+        <div class="phone-screen" style="background: #FDF8F3; display: flex; flex-direction: column; padding: 40px 20px; gap: 16px;">
+          <div style="font-family: 'Playfair Display', serif; font-size: 24px; color: #3D3632; margin-bottom: 8px;">Collections</div>
+          <div style="background: white; padding: 20px; border-radius: 16px; display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 32px;">👵</span>
+            <div>
+              <div style="font-weight: 600; color: #3D3632;">Grandma's Recipes</div>
+              <div style="color: #8C8279; font-size: 14px;">12 recipes</div>
+            </div>
+          </div>
+          <div style="background: white; padding: 20px; border-radius: 16px; display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 32px;">👩</span>
+            <div>
+              <div style="font-weight: 600; color: #3D3632;">Mom's Favorites</div>
+              <div style="color: #8C8279; font-size: 14px;">8 recipes</div>
+            </div>
+          </div>
+          <div style="background: white; padding: 20px; border-radius: 16px; display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 32px;">🎄</span>
+            <div>
+              <div style="font-weight: 600; color: #3D3632;">Holiday Baking</div>
+              <div style="color: #8C8279; font-size: 14px;">15 recipes</div>
+            </div>
+          </div>
+          <div style="background: white; padding: 20px; border-radius: 16px; display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 32px;">⚡</span>
+            <div>
+              <div style="font-weight: 600; color: #3D3632;">Quick Dinners</div>
+              <div style="color: #8C8279; font-size: 14px;">6 recipes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Screenshot 6: No Subscription -->
+    <div class="screenshot screenshot-6">
+      <h2>Honest & Simple</h2>
+      <p>The way apps should be.</p>
+      <div class="features-list">
+        <div class="feature-item">
+          <div class="feature-check">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <span class="feature-text">No Subscription</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <span class="feature-text">No Data Tracking</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <span class="feature-text">No Ads</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check">
+            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          </div>
+          <span class="feature-text">Pay Once, Use Forever</span>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <div class="instructions">
+    <h3>Export Instructions</h3>
+    <p>1. Open this file in Chrome/Safari</p>
+    <p>2. Use browser DevTools → Toggle device toolbar</p>
+    <p>3. Set custom size: <code>430 × 932</code> (iPhone 15 Pro Max ratio)</p>
+    <p>4. Screenshot each card individually</p>
+    <p>5. Scale up 3x for App Store resolution: <code>1290 × 2796</code></p>
+    <p style="margin-top: 12px; color: #F8A888;">Tip: For best quality, use a tool like Figma or Sketch to recreate at full resolution.</p>
+  </div>
+  
+</body>
+</html>
