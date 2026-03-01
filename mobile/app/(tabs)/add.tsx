@@ -94,14 +94,14 @@ export default function AddRecipeScreen() {
             // 1. Upload all images to Cloudflare R2
             for (const imageUri of images) {
                 // Get Presigned URL from Next.js Backend
-                const presignRes = await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'} /api/storage / presign`, {
+                const presignRes = await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'}/api/storage/presign`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${sessionData.session?.access_token} `,
+                        "Authorization": `Bearer ${sessionData.session?.access_token}`,
                     },
                     body: JSON.stringify({
-                        filename: `scan - ${Date.now()} -${Math.random().toString(36).slice(2, 7)}.jpg`,
+                        filename: `scan-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.jpg`,
                         contentType: "image/jpeg",
                     }),
                 });
@@ -133,12 +133,12 @@ export default function AddRecipeScreen() {
 
             // 2. Call Supabase Edge Function to analyze with all images
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_SUPABASE_URL} /functions/v1 / analyze - recipe`,
+                `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/analyze-recipe`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${sessionData.session?.access_token} `,
+                        "Authorization": `Bearer ${sessionData.session?.access_token}`,
                     },
                     body: JSON.stringify({
                         imageUrls: uploadedUrls,
@@ -194,12 +194,12 @@ export default function AddRecipeScreen() {
             const { data: sessionData } = await supabase.auth.getSession();
 
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_SUPABASE_URL} /functions/v1 / scrape - recipe`,
+                `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/scrape-recipe`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${sessionData.session?.access_token} `,
+                        "Authorization": `Bearer ${sessionData.session?.access_token}`,
                     },
                     body: JSON.stringify({
                         url: urlValue,
@@ -266,7 +266,7 @@ export default function AddRecipeScreen() {
                         contentContainerStyle={{ gap: 12, paddingHorizontal: 4 }}
                     >
                         {images.map((uri, index) => (
-                            <View key={`${uri} -${index} `} style={{ width: 120, height: 160, borderRadius: 12, overflow: 'hidden' }}>
+                            <View key={`${uri}-${index}`} style={{ width: 120, height: 160, borderRadius: 12, overflow: 'hidden' }}>
                                 <Image source={{ uri }} style={{ width: 120, height: 160, borderRadius: 12 }} />
                                 <TouchableOpacity
                                     onPress={() => removeImage(index)}
@@ -349,7 +349,7 @@ export default function AddRecipeScreen() {
                         <TouchableOpacity
                             onPress={uploadRecipe}
                             disabled={uploading}
-                            className={`bg - peach - 500 py - 3 px - 8 rounded - full flex - row items - center gap - 2 ${uploading ? 'opacity-70' : ''} `}
+                            className={`bg-peach-500 py-3 px-8 rounded-full flex-row items-center gap-2 ${uploading ? 'opacity-70' : ''}`}
                         >
                             {uploading ? (
                                 <ActivityIndicator color="#fff" />
@@ -389,7 +389,7 @@ export default function AddRecipeScreen() {
                         <TouchableOpacity
                             onPress={scrapeRecipe}
                             disabled={uploading || !urlValue.trim()}
-                            className={`bg - peach - 500 py - 4 rounded - xl flex - [2] flex - row items - center justify - center gap - 2 ${(uploading || !urlValue.trim()) ? 'opacity-70' : ''} `}
+                            className={`bg-peach-500 py-4 rounded-xl flex-[2] flex-row items-center justify-center gap-2 ${(uploading || !urlValue.trim()) ? 'opacity-70' : ''}`}
                         >
                             {uploading ? (
                                 <ActivityIndicator color="#fff" />
