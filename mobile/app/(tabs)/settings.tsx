@@ -328,23 +328,45 @@ export default function SettingsScreen() {
                     </View>
                 </View>
 
-                {/* Sign Out */}
+                {/* Account Actions */}
                 <View className="mt-12 px-4 pb-10">
-                    <TouchableOpacity
-                        onPress={handleSignOut}
-                        className="bg-white border border-warm-gray-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-warm-gray-50 mb-4"
-                    >
-                        <LogOut color="#737373" size={20} className="mr-2" />
-                        <Text className="text-warm-gray-500 font-semibold text-lg">{t.nav.signOut}</Text>
-                    </TouchableOpacity>
+                    {user?.is_anonymous ? (
+                        <>
+                            <TouchableOpacity
+                                onPress={() => router.push('/(auth)/signup')}
+                                className="bg-peach-500 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-peach-600 mb-4"
+                            >
+                                <UserIcon color="#ffffff" size={20} className="mr-2" />
+                                <Text className="text-white font-semibold text-lg">{t.auth.signup || "Create Account"}</Text>
+                            </TouchableOpacity>
 
-                    <TouchableOpacity
-                        onPress={handleDeleteAccount}
-                        className="bg-white border border-red-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-red-50"
-                    >
-                        <Trash2 color="#ef4444" size={20} className="mr-2" />
-                        <Text className="text-red-500 font-semibold text-lg">{t.settings?.deleteAccount || "Delete Account"}</Text>
-                    </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => router.push('/(auth)/login')}
+                                className="bg-white border border-warm-gray-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-warm-gray-50 mb-4"
+                            >
+                                <LogOut color="#737373" size={20} className="mr-2" />
+                                <Text className="text-warm-gray-500 font-semibold text-lg">{t.auth.login || "Log In"}</Text>
+                            </TouchableOpacity>
+                        </>
+                    ) : (
+                        <>
+                            <TouchableOpacity
+                                onPress={handleSignOut}
+                                className="bg-white border border-warm-gray-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-warm-gray-50 mb-4"
+                            >
+                                <LogOut color="#737373" size={20} className="mr-2" />
+                                <Text className="text-warm-gray-500 font-semibold text-lg">{t.nav.signOut}</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={handleDeleteAccount}
+                                className="bg-white border border-red-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-red-50"
+                            >
+                                <Trash2 color="#ef4444" size={20} className="mr-2" />
+                                <Text className="text-red-500 font-semibold text-lg">{t.settings?.deleteAccount || "Delete Account"}</Text>
+                            </TouchableOpacity>
+                        </>
+                    )}
 
                     <Text className="text-center mt-6 text-warm-gray-400 text-xs">RecipeKeeper v1.0.0</Text>
                 </View>

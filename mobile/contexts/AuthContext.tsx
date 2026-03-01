@@ -22,18 +22,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [initialized, setInitialized] = useState(false);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setInitialized(true);
+        let mounted = true;
+
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
+            if (!mounted) return;
+
+            if (!session) {
+                // If no session exists on startup, request an anonymous session via Edge Function
+                const { data, error } = await supabase.functions.invoke('create-anonymous-session');
+
+                if (error || !data?.session) {
+                    console.error('Failed to sign in anonymously during startup:', error || data?.error);
+
+                    // Specific handling for rate limiting
+                    if (data?.error?.includes('limit reached')) {
+                        console.warn("Anonymous rate limit reached.");
+                    }
+
+                    setSession(null);
+                    setUser(null);
+                    setInitialized(true);
+                } else {
+                    // Manually set the session retrieved from the Edge Function
+                    const { data: setSessionData, error: setSessionError } = await supabase.auth.setSession({
+                        access_token: data.session.access_token,
+                        refresh_token: data.session.refresh_token,
+                    });
+
+                    if (setSessionError) {
+                        console.error('Failed to set retrieved anonymous session:', setSessionError);
+                    } else {
+                        setSession(setSessionData.session);
+                        setUser(setSessionData.user);
+                    }
+                    setInitialized(true);
+                }
+            } else {
+                setSession(session);
+                setUser(session?.user ?? null);
+                setInitialized(true);
+            }
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (!mounted) return;
             setSession(session);
             setUser(session?.user ?? null);
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     const signOut = async () => {

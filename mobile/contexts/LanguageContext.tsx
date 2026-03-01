@@ -34,6 +34,7 @@ export const en = {
         login: "Sign In",
         signup: "Sign Up",
         logout: "Sign Out",
+        loginWarning: "Warning: Logging into an existing account will discard any recipes you have scanned anonymously.",
     },
     nav: {
         home: "Home",
@@ -171,7 +172,7 @@ export const en = {
         scan: "AI Recipe Scanner",
         scanDesc: "Snap a photo of any recipe, and our AI will extract the ingredients and instructions for you.",
         credits: "Scan Credits",
-        creditsDesc: "You get 5 free scans to start! You can always buy more credits later if you need them.",
+        creditsDesc: "You get 5 free scans to start without an account! You can always create an account and buy more credits later if you need them.",
         organize: "Search & Organize",
         organizeDesc: "Easily find your recipes with powerful search, tags, and custom collections.",
         offline: "Offline Storage",
@@ -227,6 +228,7 @@ export const de: Translations = {
         login: "Anmelden",
         signup: "Registrieren",
         logout: "Abmelden",
+        loginWarning: "Achtung: Wenn du dich in ein bestehendes Konto einloggst, gehen deine anonym gescannten Rezepte verloren.",
     },
     nav: {
         home: "Start",
@@ -364,7 +366,7 @@ export const de: Translations = {
         scan: "KI-Rezept-Scanner",
         scanDesc: "Mache ein Foto von einem Rezept, und unsere KI extrahiert die Zutaten und Anleitungen für dich.",
         credits: "Scan-Guthaben",
-        creditsDesc: "Du erhältst 5 kostenlose Scans zum Start! Du kannst später jederzeit weiteres Guthaben kaufen.",
+        creditsDesc: "Du erhältst 5 kostenlose Scans zum Start, ganz ohne Konto! Du kannst später jederzeit ein Konto erstellen und weiteres Guthaben kaufen.",
         organize: "Suchen & Organisieren",
         organizeDesc: "Finde deine Rezepte ganz einfach mit der leistungsstarken Suche, Tags und eigenen Sammlungen.",
         offline: "Offline-Speicher",

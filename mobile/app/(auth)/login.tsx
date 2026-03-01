@@ -3,12 +3,16 @@ import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const { t } = useLanguage();
+    const { user } = useAuth();
 
     async function signInWithEmail() {
         setLoading(true);
@@ -17,18 +21,24 @@ export default function LoginScreen() {
             password,
         });
 
-        if (error) Alert.alert("Login Failed", error.message);
+        if (error) Alert.alert(t.common.error, error.message);
         setLoading(false);
     }
 
     return (
         <SafeAreaView className="flex-1 bg-cream px-6 justify-center">
             <View className="mb-8">
-                <Text className="font-playfair text-4xl text-warm-gray-700 text-center mb-2">RecipeKeeper</Text>
-                <Text className="text-warm-gray-500 text-center">Sign in to your account</Text>
+                <Text className="font-playfair text-4xl text-warm-gray-700 text-center mb-2">{t.common.appName}</Text>
+                <Text className="text-warm-gray-500 text-center">{t.auth.login}</Text>
             </View>
 
             <View className="space-y-4">
+                {user?.is_anonymous && (
+                    <View className="bg-red-50 border border-red-100 p-3 rounded-xl mb-2">
+                        <Text className="text-red-600 text-sm font-medium">{t.auth.loginWarning}</Text>
+                    </View>
+                )}
+
                 <TextInput
                     className="bg-white border border-warm-gray-200 rounded-xl px-4 py-3 h-12 text-warm-gray-700"
                     placeholder="Email address"
@@ -47,21 +57,28 @@ export default function LoginScreen() {
                     secureTextEntry
                 />
 
-                <View className="items-end mt-2">
+                <View className="items-end mt-2 mb-2">
                     <TouchableOpacity onPress={() => router.push("/forgot-password")}>
                         <Text className="text-peach-600 font-medium text-sm">Forgot Password?</Text>
                     </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity
-                    className={`bg-peach-500 rounded-full h-12 items-center justify-center mt-6 ${loading ? 'opacity-50' : ''}`}
+                    className={`bg-peach-500 rounded-full h-12 items-center justify-center mt-2 ${loading ? 'opacity-50' : ''}`}
                     onPress={signInWithEmail}
                     disabled={loading}
                 >
                     <Text className="text-white font-semibold text-lg">
-                        {loading ? "Signing in..." : "Sign In"}
+                        {loading ? t.common.loading : t.auth.login}
                     </Text>
                 </TouchableOpacity>
+
+                <View className="flex-row justify-center items-center mt-6">
+                    <Text className="text-warm-gray-500 text-sm mr-1">Don't have an account?</Text>
+                    <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
+                        <Text className="text-peach-600 font-bold text-sm">{t.auth.signup}</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </SafeAreaView>
     );
