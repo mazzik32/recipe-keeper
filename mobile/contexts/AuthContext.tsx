@@ -29,7 +29,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (!session) {
                 // If no session exists on startup, request an anonymous session via Edge Function
-                const { data, error } = await supabase.functions.invoke('create-anonymous-session');
+                const { data, error } = await supabase.functions.invoke('create-anonymous-session', {
+                    headers: {
+                        'x-app-secret': process.env.EXPO_PUBLIC_APP_API_SECRET || '',
+                    }
+                });
 
                 if (error || !data?.session) {
                     console.error('Failed to sign in anonymously during startup:', error || data?.error);

@@ -12,6 +12,21 @@ Deno.serve(async (req) => {
         return new Response('ok', { headers: corsHeaders });
     }
 
+    // Verify custom API secret to prevent direct endpoint abuse
+    const requestSecret = req.headers.get('x-app-secret');
+    const expectedSecret = Deno.env.get('APP_API_SECRET');
+
+    console.log("RECEIVED SECRET:", requestSecret);
+    console.log("EXPECTED SECRET:", expectedSecret);
+
+    if (!expectedSecret || requestSecret !== expectedSecret) {
+        console.warn("Unauthorized request attempt (invalid or missing x-app-secret)");
+        return new Response(JSON.stringify({ error: "Unauthorized app client" }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+
     try {
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL') || '',
