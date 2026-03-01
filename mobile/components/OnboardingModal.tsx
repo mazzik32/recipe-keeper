@@ -3,12 +3,13 @@ import { View, Text, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Camera, Search, Gift, Download, ChevronRight } from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function OnboardingModal() {
     const [visible, setVisible] = useState(false);
     const [step, setStep] = useState(0);
     const { t } = useLanguage();
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         checkOnboarding();
@@ -64,8 +65,8 @@ export function OnboardingModal() {
 
     return (
         <Modal visible={visible} animationType="slide" presentationStyle="fullScreen">
-            <SafeAreaView className="flex-1 bg-cream">
-                <View className="flex-1 px-6 pt-10 pb-6 items-center justify-between">
+            <View className="flex-1 bg-cream" style={{ paddingTop: insets.top + 20 }}>
+                <View className="flex-1 px-6 pb-6 items-center justify-between">
                     <View className="items-center w-full">
                         <Text className="font-playfair text-3xl text-warm-gray-700 mb-2 text-center">
                             {t.onboarding?.welcome || "Welcome to Recipe Keeper"}
@@ -108,7 +109,7 @@ export function OnboardingModal() {
                         </TouchableOpacity>
                     </View>
                 </View>
-            </SafeAreaView>
+            </View>
         </Modal>
     );
 }

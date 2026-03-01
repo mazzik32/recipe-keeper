@@ -7,17 +7,22 @@ import { useFonts, DancingScript_400Regular, DancingScript_500Medium, DancingScr
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { PlayfairDisplay_400Regular, PlayfairDisplay_500Medium, PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import * as SplashScreen from 'expo-splash-screen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import "../global.css";
 
-SplashScreen.preventAutoHideAsync();
+try {
+    SplashScreen.preventAutoHideAsync();
+} catch (e) {
+    console.warn("Error preventing splash screen auto-hide:", e);
+}
 
-function RootLayoutNav() {
+function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
     const { session, initialized } = useAuth();
     const segments = useSegments();
     const router = useRouter();
 
     useEffect(() => {
-        if (!initialized) return;
+        if (!initialized || !fontsLoaded) return;
 
         const inAuthGroup = segments[0] === '(auth)';
 
@@ -26,7 +31,14 @@ function RootLayoutNav() {
         } else if (session && inAuthGroup) {
             router.replace('/(tabs)');
         }
-    }, [session, initialized, segments]);
+
+        // Hide splash screen only when everything is ready
+        try {
+            SplashScreen.hideAsync();
+        } catch (e) {
+            console.warn("Error hiding splash screen:", e);
+        }
+    }, [session, initialized, segments, fontsLoaded]);
 
     return (
         <LanguageProvider>
@@ -52,19 +64,15 @@ export default function RootLayout() {
         PlayfairDisplay_700Bold
     });
 
-    useEffect(() => {
-        if (fontsLoaded) {
-            SplashScreen.hideAsync();
-        }
-    }, [fontsLoaded]);
-
     if (!fontsLoaded) {
         return null;
     }
 
     return (
-        <AuthProvider>
-            <RootLayoutNav />
-        </AuthProvider>
+        <SafeAreaProvider>
+            <AuthProvider>
+                <RootLayoutNav fontsLoaded={fontsLoaded} />
+            </AuthProvider>
+        </SafeAreaProvider>
     );
 }
