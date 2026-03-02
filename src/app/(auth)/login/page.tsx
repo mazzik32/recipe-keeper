@@ -127,13 +127,18 @@ export default function LoginPage() {
             )}
           </div>
           <div className="flex justify-center pt-2">
-            <Turnstile
-              ref={turnstileRef}
-              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
-              onSuccess={(token) => setCaptchaToken(token)}
-              onError={() => setError("CAPTCHA error. Please try again.")}
-              onExpire={() => setCaptchaToken("")}
-            />
+            {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => setError("CAPTCHA error. Please try again.")}
+                onExpire={() => setCaptchaToken("")}
+              />
+            )}
+            {!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+              <p className="text-sm text-red-500">CAPTCHA configuration missing.</p>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
