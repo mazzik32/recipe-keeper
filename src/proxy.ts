@@ -1,10 +1,42 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { checkApiRateLimit } from "@/lib/rate-limit";
 
 export async function proxy(request: NextRequest) {
-  // Security Checks for API routes
+  const path = request.nextUrl.pathname;
+
+  // 1. Skip rate limiting and session updates for webhooks and oauth callbacks
+  if (
+    path.startsWith('/api/stripe/webhook') ||
+    path.startsWith('/api/paddle/webhook') ||
+    path.startsWith('/auth/callback')
+  ) {
+    return NextResponse.next();
+  }
+
+  // 2. Apply Rate Limiting for all other /api/* routes
+  if (path.startsWith('/api/')) {
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('cf-connecting-ip') || '127.0.0.1';
+    const isAuthRoute = path.startsWith('/api/auth/');
+    const routeGroup = isAuthRoute ? 'auth' : 'api';
+
+    const isAllowed = await checkApiRateLimit(ip, routeGroup);
+
+    if (!isAllowed) {
+      console.warn(`Rate limit exceeded for IP: ${ip} on route group: ${routeGroup}`);
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: { 'Retry-After': '60' }
+        }
+      );
+    }
+  }
+
+  // 3. Security Checks for API routes
   if (request.nextUrl.pathname.startsWith("/api") || request.nextUrl.pathname.startsWith("/supabase")) {
-    // 1. Origin Check for MUTATING requests (POST, PUT, DELETE, PATCH)
+    // Origin Check for MUTATING requests (POST, PUT, DELETE, PATCH)
     if (["POST", "PUT", "DELETE", "PATCH"].includes(request.method)) {
       const origin = request.headers.get("origin");
       const referer = request.headers.get("referer");
@@ -22,9 +54,10 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // 4. Update Supabase Session & Handle Page Redirects
   const response = await updateSession(request);
 
-  // Security Headers
+  // 5. Security Headers
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
