@@ -181,7 +181,7 @@ export default function Dashboard() {
         return (
             <Pressable
                 onPress={() => router.push(`/recipes/${item.id}`)}
-                className="bg-white rounded-[20px] mb-4 border border-warm-gray-100 flex-row p-4"
+                className="bg-white rounded-[20px] mb-4 border border-warm-gray-100 p-4"
                 style={({ pressed }) => [
                     {
                         shadowColor: "#e07030",
@@ -194,57 +194,65 @@ export default function Dashboard() {
                     }
                 ]}
             >
-                <View className="w-[96px] h-[96px] rounded-2xl bg-peach-50 items-center justify-center mr-5 shrink-0">
-                    {primaryImage ? (
-                        <Image
-                            source={primaryImage.image_url}
-                            style={{ width: '100%', height: '100%', borderRadius: 16 }}
-                            contentFit="cover"
-                            transition={200}
-                            cachePolicy="memory-disk"
-                        />
-                    ) : (
-                        <Text className="text-3xl">🍽️</Text>
+                {/* Row 1: meta — full width */}
+                <View className="flex-row items-center mb-2">
+                    {totalTime > 0 && (
+                        <View className="flex-row items-center gap-1 mr-3">
+                            <Clock color="#b8b5b2" size={13} />
+                            <Text className="text-warm-gray-400 text-xs font-semibold">{totalTime} min</Text>
+                        </View>
                     )}
+                    {item.servings && (
+                        <View className="flex-row items-center gap-1">
+                            <Users color="#b8b5b2" size={13} />
+                            <Text className="text-warm-gray-400 text-xs font-semibold">{item.servings} P.</Text>
+                        </View>
+                    )}
+                    <View className="ml-auto">
+                        <Heart fill={item.is_favorite ? "#e07030" : "none"} color={item.is_favorite ? "#e07030" : "#b8b5b2"} size={15} />
+                    </View>
                 </View>
 
-                <View className="flex-1 py-1 flex-col">
-                    <Text className="font-playfair text-[17px] font-semibold text-warm-gray-700 mb-1" numberOfLines={2}>
-                        {item.title}
-                    </Text>
-                    {item.description && (
-                        <Text className="text-peach-500 font-medium text-[14px] leading-[18px] mb-2.5 whitespace-nowrap overflow-hidden" numberOfLines={1}>
-                            {item.description}
+                {/* Row 2: image + title/description side-by-side */}
+                <View className="flex-row items-end">
+                    <View className="w-[88px] h-[88px] rounded-2xl bg-peach-50 items-center justify-center mr-4 shrink-0">
+                        {primaryImage ? (
+                            <Image
+                                source={primaryImage.image_url}
+                                style={{ width: '100%', height: '100%', borderRadius: 16 }}
+                                contentFit="cover"
+                                transition={200}
+                                cachePolicy="memory-disk"
+                            />
+                        ) : (
+                            <Text className="text-3xl">🍽️</Text>
+                        )}
+                    </View>
+                    <View className="flex-1">
+                        <Text className="font-playfair text-[17px] font-semibold text-warm-gray-700 mb-1" numberOfLines={2}>
+                            {item.title}
                         </Text>
-                    )}
+                        {item.description && (
+                            <Text className="text-peach-500 font-medium text-[13px] leading-[18px]" numberOfLines={2}>
+                                {item.description}
+                            </Text>
+                        )}
+                    </View>
+                </View>
 
-                    <View className="flex-row flex-wrap gap-2 mt-auto">
+                {/* Row 3: tags — full width */}
+                {item.tags.length > 0 && (
+                    <View className="flex-row flex-wrap gap-2 mt-2.5">
                         {item.tags.slice(0, 2).map((t: any) => (
                             <View key={t.id} className="bg-peach-50 px-2.5 py-1 rounded-md">
                                 <Text className="text-xs font-semibold text-peach-500">{t.name}</Text>
                             </View>
                         ))}
                     </View>
-                </View>
-
-                <View className="flex-col items-end py-1 ml-2 gap-2.5 shrink-0">
-                    {totalTime > 0 && (
-                        <View className="flex-row items-center gap-1.5 justify-end">
-                            <Clock color="#b8b5b2" size={14} />
-                            <Text className="text-warm-gray-400 text-xs font-semibold">{totalTime} min</Text>
-                        </View>
-                    )}
-                    {item.servings && (
-                        <View className="flex-row items-center gap-1.5 justify-end">
-                            <Users color="#b8b5b2" size={14} />
-                            <Text className="text-warm-gray-400 text-xs font-semibold">{item.servings} P.</Text>
-                        </View>
-                    )}
-                    <View className="mt-auto items-end">
-                        <Heart fill={item.is_favorite ? "#e07030" : "none"} color={item.is_favorite ? "#e07030" : "#b8b5b2"} size={16} />
-                    </View>
-                </View>
+                )}
             </Pressable>
+
+
         );
     };
 
