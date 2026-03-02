@@ -7,6 +7,8 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { RecipeTagsInput, Tag } from "../../components/RecipeTagsInput";
+import { ImageUpload, uploadImageToSupabase } from "../../components/ImageUpload";
+import { Picker } from '@react-native-picker/picker';
 
 export default function RecipeFormScreen() {
     const { mode, id, recipe: recipeParam } = useLocalSearchParams();
@@ -25,14 +27,28 @@ export default function RecipeFormScreen() {
     const [instructions, setInstructions] = useState<any[]>(scannedData?.steps || []);
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(isEdit);
-    const [originalImageUrls, setOriginalImageUrls] = useState<string[]>(
-        scannedData?.originalImageUrls || (scannedData?.originalImageUrl ? [scannedData.originalImageUrl] : [])
-    );
+    const [primaryImage, setPrimaryImage] = useState<string | null>(scannedData?.originalImageUrls?.[0] || scannedData?.originalImageUrl || null);
+    const [secondaryImage, setSecondaryImage] = useState<string | null>(scannedData?.originalImageUrls?.[1] || null);
+    const [categoryId, setCategoryId] = useState<string | null>(scannedData?.category_id || null);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [collectionId, setCollectionId] = useState<string | null>(scannedData?.collection_id || null);
+    const [collections, setCollections] = useState<any[]>([]);
     const [recipeMetadata, setRecipeMetadata] = useState<any>(null);
     const [tags, setTags] = useState<Tag[]>([]);
 
     // Load existing recipe data for edit mode
     useEffect(() => {
+        async function fetchDropdowns() {
+            const { data: cats } = await supabase.from("categories").select("*").order("name");
+            if (cats) setCategories(cats);
+
+            if (user) {
+                const { data: cols } = await supabase.from("collections").select("*").eq("user_id", user.id).order("name");
+                if (cols) setCollections(cols);
+            }
+        }
+        fetchDropdowns();
+
         if (!isEdit || !id) return;
 
         async function loadRecipe() {
@@ -43,7 +59,8 @@ export default function RecipeFormScreen() {
                     images:recipe_images(*),
                     ingredients:recipe_ingredients(*),
                     instructions:recipe_steps(*),
-                    recipe_tags(tag:tags(*))
+                    recipe_tags(tag:tags(*)),
+                    recipe_collections(collection_id)
                 `)
                 .eq("id", id)
                 .single();
@@ -67,7 +84,10 @@ export default function RecipeFormScreen() {
             setIngredients(data.ingredients || []);
             setInstructions(data.instructions || []);
             setRecipeMetadata(data);
-            setOriginalImageUrls(data.images?.map((img: any) => img.image_url) || []);
+            setPrimaryImage(data.images?.find((img: any) => img.is_primary)?.image_url || null);
+            setSecondaryImage(data.images?.find((img: any) => !img.is_primary)?.image_url || null);
+            setCategoryId(data.category_id || null);
+            setCollectionId(data.recipe_collections?.[0]?.collection_id || null);
             if (data.recipe_tags) {
                 const loadedTags = data.recipe_tags
                     .map((rt: any) => rt.tag)
@@ -97,13 +117,13 @@ export default function RecipeFormScreen() {
     };
 
     const addInstruction = () => {
-        setInstructions(prev => [...prev, { instruction: "" }]);
+        setInstructions(prev => [...prev, { instruction: "", image_url: null }]);
     };
 
-    const updateInstruction = (index: number, value: string) => {
+    const updateInstruction = (index: number, field: string, value: string | null) => {
         setInstructions(prev => {
             const updated = [...prev];
-            updated[index] = { ...updated[index], instruction: value };
+            updated[index] = { ...updated[index], [field]: value };
             return updated;
         });
     };
@@ -131,6 +151,7 @@ export default function RecipeFormScreen() {
                         cook_time_minutes: recipeMetadata?.cook_time_minutes || null,
                         servings: recipeMetadata?.servings || null,
                         difficulty: recipeMetadata?.difficulty || null,
+                        category_id: categoryId,
                     })
                     .eq("id", id);
 
@@ -153,18 +174,51 @@ export default function RecipeFormScreen() {
                     if (ingError) console.error("Error saving ingredients", ingError);
                 }
 
+
+                let finalPrimary = primaryImage;
+                let finalSecondary = secondaryImage;
+                if (primaryImage && !primaryImage.startsWith("http") && user?.id) {
+                    finalPrimary = await uploadImageToSupabase(primaryImage, "recipe-images", "primary", user.id);
+                }
+                if (secondaryImage && !secondaryImage.startsWith("http") && user?.id) {
+                    finalSecondary = await uploadImageToSupabase(secondaryImage, "recipe-images", "secondary", user.id);
+                }
+                const finalInstructions = await Promise.all(instructions.map(async (inst) => {
+                    let finalStepImg = inst.image_url;
+                    if (finalStepImg && !finalStepImg.startsWith("http") && user?.id) {
+                        finalStepImg = await uploadImageToSupabase(finalStepImg, "step-images", "steps", user.id);
+                    }
+                    return { ...inst, image_url: finalStepImg };
+                }));
+
                 // Delete old instructions and re-insert
                 await supabase.from("recipe_steps").delete().eq("recipe_id", id);
-                if (instructions.length > 0) {
-                    const mappedInstructions = instructions.map((inst, idx) => ({
+                if (finalInstructions.length > 0) {
+                    const mappedInstructions = finalInstructions.map((inst, idx) => ({
                         recipe_id: id,
                         step_number: idx + 1,
                         instruction: inst.instruction,
+                        image_url: inst.image_url,
                     }));
                     const { error: instError } = await supabase
                         .from("recipe_steps")
                         .insert(mappedInstructions);
                     if (instError) console.error("Error saving instructions", instError);
+                }
+
+                const recipeIdToLink = id;
+
+                // Link uploaded images
+                await supabase.from("recipe_images").delete().eq("recipe_id", recipeIdToLink);
+                const imagesToInsert = [];
+                if (finalPrimary) {
+                    imagesToInsert.push({ recipe_id: recipeIdToLink, image_url: finalPrimary, is_primary: true });
+                }
+                if (finalSecondary) {
+                    imagesToInsert.push({ recipe_id: recipeIdToLink, image_url: finalSecondary, is_primary: false });
+                }
+                if (imagesToInsert.length > 0) {
+                    await supabase.from("recipe_images").insert(imagesToInsert);
                 }
 
                 // Delete old tags and re-insert
@@ -176,6 +230,13 @@ export default function RecipeFormScreen() {
                     }));
                     const { error: tagsError } = await supabase.from("recipe_tags").insert(tagRows);
                     if (tagsError) console.error("Error saving tags", tagsError);
+                }
+
+                // Delete old collections and re-insert
+                await supabase.from("recipe_collections").delete().eq("recipe_id", recipeIdToLink);
+                if (collectionId) {
+                    const { error: colError } = await supabase.from("recipe_collections").insert([{ recipe_id: recipeIdToLink, collection_id: collectionId }]);
+                    if (colError) console.error("Error saving collection", colError);
                 }
 
                 // Clear AsyncStorage cache for this recipe
@@ -197,6 +258,7 @@ export default function RecipeFormScreen() {
                         cook_time_minutes: scannedData?.cookTimeMinutes || null,
                         servings: scannedData?.servings || null,
                         difficulty: scannedData?.difficulty || null,
+                        category_id: categoryId,
                         is_favorite: false,
                         is_archived: false,
                     })
@@ -221,12 +283,30 @@ export default function RecipeFormScreen() {
                     if (ingError) console.error("Error saving ingredients", ingError);
                 }
 
+
+                let finalPrimary = primaryImage;
+                let finalSecondary = secondaryImage;
+                if (primaryImage && !primaryImage.startsWith("http") && user?.id) {
+                    finalPrimary = await uploadImageToSupabase(primaryImage, "recipe-images", "primary", user.id);
+                }
+                if (secondaryImage && !secondaryImage.startsWith("http") && user?.id) {
+                    finalSecondary = await uploadImageToSupabase(secondaryImage, "recipe-images", "secondary", user.id);
+                }
+                const finalInstructions = await Promise.all(instructions.map(async (inst) => {
+                    let finalStepImg = inst.image_url;
+                    if (finalStepImg && !finalStepImg.startsWith("http") && user?.id) {
+                        finalStepImg = await uploadImageToSupabase(finalStepImg, "step-images", "steps", user.id);
+                    }
+                    return { ...inst, image_url: finalStepImg };
+                }));
+
                 // Insert instructions
-                if (instructions.length > 0) {
-                    const mappedInstructions = instructions.map((inst, idx) => ({
+                if (finalInstructions.length > 0) {
+                    const mappedInstructions = finalInstructions.map((inst, idx) => ({
                         recipe_id: newRecipe.id,
                         step_number: idx + 1,
                         instruction: inst.instruction,
+                        image_url: inst.image_url,
                     }));
                     const { error: instError } = await supabase
                         .from("recipe_steps")
@@ -234,15 +314,21 @@ export default function RecipeFormScreen() {
                     if (instError) console.error("Error saving instructions", instError);
                 }
 
-                // Link uploaded images if any
-                if (originalImageUrls.length > 0) {
-                    const imageRows = originalImageUrls.map((url: string, idx: number) => ({
-                        recipe_id: newRecipe.id,
-                        image_url: url,
-                        is_primary: idx === 0,
-                    }));
-                    await supabase.from("recipe_images").insert(imageRows);
+                const recipeIdToLink = newRecipe.id;
+
+                // Link uploaded images
+                await supabase.from("recipe_images").delete().eq("recipe_id", recipeIdToLink);
+                const imagesToInsert = [];
+                if (finalPrimary) {
+                    imagesToInsert.push({ recipe_id: recipeIdToLink, image_url: finalPrimary, is_primary: true });
                 }
+                if (finalSecondary) {
+                    imagesToInsert.push({ recipe_id: recipeIdToLink, image_url: finalSecondary, is_primary: false });
+                }
+                if (imagesToInsert.length > 0) {
+                    await supabase.from("recipe_images").insert(imagesToInsert);
+                }
+
 
                 // Link tags
                 if (tags.length > 0) {
@@ -252,6 +338,12 @@ export default function RecipeFormScreen() {
                     }));
                     const { error: tagsError } = await supabase.from("recipe_tags").insert(tagRows);
                     if (tagsError) console.error("Error saving tags", tagsError);
+                }
+
+                // Link collections
+                if (collectionId) {
+                    const { error: colError } = await supabase.from("recipe_collections").insert([{ recipe_id: recipeIdToLink, collection_id: collectionId }]);
+                    if (colError) console.error("Error saving collection", colError);
                 }
 
                 router.replace(`/(tabs)/`);
@@ -311,6 +403,68 @@ export default function RecipeFormScreen() {
                         className="bg-white border border-warm-gray-200 rounded-xl px-4 py-4 text-warm-gray-600 min-h-[100px] text-base leading-relaxed"
                         textAlignVertical="top"
                     />
+                </View>
+
+                {/* Collections */}
+                <View className="mb-6">
+                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{(t.recipes as any).collection || "Collection"}</Text>
+                    <View className="flex-row flex-wrap gap-2">
+                        <TouchableOpacity
+                            onPress={() => setCollectionId(null)}
+                            className={`px-4 py-2 rounded-full border ${collectionId === null ? 'bg-peach-50 border-peach-200' : 'bg-white border-warm-gray-200'}`}
+                        >
+                            <Text className={collectionId === null ? 'text-peach-700 font-medium' : 'text-warm-gray-600'}>None</Text>
+                        </TouchableOpacity>
+                        {collections.map((col) => (
+                            <TouchableOpacity
+                                key={col.id}
+                                onPress={() => setCollectionId(col.id)}
+                                className={`px-4 py-2 rounded-full border ${collectionId === col.id ? 'bg-peach-50 border-peach-200' : 'bg-white border-warm-gray-200'}`}
+                            >
+                                <Text className={collectionId === col.id ? 'text-peach-700 font-medium' : 'text-warm-gray-600'}>{col.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Categories */}
+                <View className="mb-6">
+                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.category || "Category"}</Text>
+                    <View className="flex-row flex-wrap gap-2">
+                        {categories.map((cat) => (
+                            <TouchableOpacity
+                                key={cat.id}
+                                onPress={() => setCategoryId(categoryId === cat.id ? null : cat.id)}
+                                className={`px-4 py-2 rounded-full border flex-row items-center gap-1.5 ${categoryId === cat.id ? 'bg-peach-50 border-peach-200' : 'bg-white border-warm-gray-200'}`}
+                            >
+                                <Text>{cat.icon}</Text>
+                                <Text className={categoryId === cat.id ? 'text-peach-700 font-medium' : 'text-warm-gray-600'}>{cat.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Photos */}
+                <View className="mb-6">
+                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{(t.recipes as any).recipePhotos || "Photos"}</Text>
+                    <View className="flex-row gap-4">
+                        <View className="flex-1">
+                            <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-[10px] tracking-wider h-8">Primary Photo</Text>
+                            <ImageUpload
+                                value={primaryImage}
+                                onChange={setPrimaryImage}
+                                aspectRatio="square"
+                            />
+                        </View>
+                        <View className="flex-1">
+                            <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-[10px] tracking-wider h-8">Secondary Photo (Optional)</Text>
+                            <ImageUpload
+                                value={secondaryImage}
+                                onChange={setSecondaryImage}
+                                aspectRatio="square"
+                            />
+                        </View>
+                    </View>
                 </View>
 
                 {/* Tags */}
@@ -382,13 +536,22 @@ export default function RecipeFormScreen() {
                                     <View className="w-8 h-8 rounded-full bg-peach-100 items-center justify-center mr-3 mt-1">
                                         <Text className="text-peach-700 font-bold">{idx + 1}</Text>
                                     </View>
-                                    <TextInput
-                                        value={step.instruction}
-                                        onChangeText={(v) => updateInstruction(idx, v)}
-                                        multiline
-                                        placeholder={t.add.instruction}
-                                        className="flex-1 text-warm-gray-600 text-base leading-relaxed min-h-[60px]"
-                                    />
+                                    <View className="flex-1">
+                                        <TextInput
+                                            value={step.instruction}
+                                            onChangeText={(v) => updateInstruction(idx, "instruction", v)}
+                                            multiline
+                                            placeholder={t.add.instruction}
+                                            className="text-warm-gray-600 text-base leading-relaxed min-h-[60px] mb-3"
+                                        />
+                                        <ImageUpload
+                                            value={step.image_url}
+                                            onChange={(url) => updateInstruction(idx, "image_url", url)}
+                                            aspectRatio="video"
+                                            label="Step Photo (Optional)"
+                                            size="small"
+                                        />
+                                    </View>
                                     <TouchableOpacity onPress={() => removeInstruction(idx)} className="p-2">
                                         <Trash2 color="#dfd8d3" size={18} />
                                     </TouchableOpacity>

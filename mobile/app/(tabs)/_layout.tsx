@@ -74,6 +74,12 @@ export default function TabLayout() {
                         href: null,
                     }}
                 />
+                <Tabs.Screen
+                    name="settings/collections"
+                    options={{
+                        href: null,
+                    }}
+                />
             </Tabs>
             <OnboardingModal />
         </>

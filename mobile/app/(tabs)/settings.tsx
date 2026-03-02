@@ -224,6 +224,18 @@ export default function SettingsScreen() {
 
                     <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
                         <TouchableOpacity
+                            onPress={() => router.push('/(tabs)/settings/collections')}
+                            className="flex-row items-center justify-between p-4 bg-white border-b border-warm-gray-50 active:opacity-70"
+                        >
+                            <View className="flex-row items-center gap-3">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                    <Globe color="#eb6e3e" size={18} />
+                                </View>
+                                <Text className="text-warm-gray-700 font-medium text-base">{(t as any).collections?.manageCollections || "Manage Collections"}</Text>
+                            </View>
+                            <ChevronRight color="#d4d4d8" size={20} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
                             onPress={() => router.push('/(tabs)/settings/tags')}
                             className="flex-row items-center justify-between p-4 bg-white active:opacity-70"
                         >

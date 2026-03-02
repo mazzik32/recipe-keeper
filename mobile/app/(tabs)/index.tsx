@@ -1,15 +1,15 @@
-import { View, Text, FlatList, ActivityIndicator, Pressable, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, Pressable, ScrollView, TouchableOpacity, TextInput, Modal } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Clock, Users, Search, Heart } from "lucide-react-native";
+import { Clock, Users, Search, Heart, ChevronDown, Check, X } from "lucide-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
-import Svg, { Path, Ellipse } from "react-native-svg";
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing, withDelay } from "react-native-reanimated";
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay } from "react-native-reanimated";
 import LottieView from 'lottie-react-native';
 
 const WhiskLoader = () => {
@@ -50,21 +50,35 @@ const WhiskLoader = () => {
 export default function Dashboard() {
     const { user } = useAuth();
     const { t } = useLanguage();
-    const [recipes, setRecipes] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [tags, setTags] = useState<any[]>([]);
     const router = useRouter();
 
+    const [recipes, setRecipes] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Collection State
+    const [collections, setCollections] = useState<any[]>([]);
+    const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+    const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+
+    // Filtering State
+    const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+
     useEffect(() => {
+        async function loadCollections() {
+            if (!user) return;
+            const { data } = await supabase.from('collections').select('*').eq('user_id', user.id).order('name');
+            if (data) setCollections(data);
+        }
+        loadCollections();
+
         async function loadRecipes() {
             if (!user) return;
 
             try {
                 const cachedData = await AsyncStorage.getItem(`recipes_master_${user.id}`);
                 if (cachedData) {
-                    processRecipes(JSON.parse(cachedData), false);
+                    setRecipes(JSON.parse(cachedData));
                 }
             } catch (e) {
                 console.log("Failed to load recipes cache", e);
@@ -78,6 +92,9 @@ export default function Dashboard() {
                 images:recipe_images(*),
                 recipe_tags(
                     tags(*)
+                ),
+                recipe_collections(
+                    collection_id
                 )
             `;
 
@@ -98,10 +115,11 @@ export default function Dashboard() {
             if (data) {
                 const formattedRecipes = data.map((recipe: any) => ({
                     ...recipe,
-                    tags: recipe.recipe_tags?.map((rt: any) => rt.tags).filter(Boolean) || []
+                    tags: recipe.recipe_tags?.map((rt: any) => rt.tags).filter(Boolean) || [],
+                    collection_id: recipe.recipe_collections?.[0]?.collection_id || null
                 }));
 
-                processRecipes(formattedRecipes, true);
+                setRecipes(formattedRecipes);
                 AsyncStorage.setItem(`recipes_master_${user.id}`, JSON.stringify(formattedRecipes))
                     .catch(e => console.log("Failed to save recipes cache", e));
 
@@ -111,29 +129,7 @@ export default function Dashboard() {
                             .catch(e => console.log("Failed to prepopulate detail cache", e));
                     });
                 }
-            } else {
-                setLoading(false);
             }
-        }
-
-        function processRecipes(formattedRecipes: any[], isFresh: boolean) {
-            setRecipes(formattedRecipes);
-            const counts = new Map<string, number>();
-            const tagObjects = new Map<string, any>();
-
-            formattedRecipes.forEach((recipe: any) => {
-                recipe.tags.forEach((tag: any) => {
-                    counts.set(tag.id, (counts.get(tag.id) || 0) + 1);
-                    tagObjects.set(tag.id, tag);
-                });
-            });
-
-            const tagsWithCounts = Array.from(tagObjects.values()).map(tag => ({
-                ...tag,
-                count: counts.get(tag.id) || 0
-            })).sort((a, b) => b.count - a.count);
-
-            setTags(tagsWithCounts);
             // Artificial delay to show the nice new animation for a bit
             setTimeout(() => setLoading(false), 800);
         }
@@ -141,11 +137,42 @@ export default function Dashboard() {
         loadRecipes();
     }, [user]);
 
-    const filteredRecipes = recipes.filter(r => {
-        const matchesTag = selectedTagId ? r.tags.some((t: any) => t.id === selectedTagId) : true;
-        const matchesSearch = r.title?.toLowerCase().includes(searchQuery.toLowerCase()) || r.description?.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesTag && matchesSearch;
-    });
+    // 1. Filter raw recipes down to the active collection (used for calculating tags accurately)
+    const collectionRecipes = useMemo(() => {
+        return recipes.filter(r => !selectedCollectionId || r.collection_id === selectedCollectionId);
+    }, [recipes, selectedCollectionId]);
+
+    // 2. Compute tags dynamically based on the active collection
+    const tags = useMemo(() => {
+        const counts = new Map<string, number>();
+        const tagObjects = new Map<string, any>();
+
+        collectionRecipes.forEach((recipe: any) => {
+            recipe.tags.forEach((tag: any) => {
+                counts.set(tag.id, (counts.get(tag.id) || 0) + 1);
+                tagObjects.set(tag.id, tag);
+            });
+        });
+
+        // Auto-deselect tag if it's no longer valid in the new collection
+        if (selectedTagId && !counts.has(selectedTagId)) {
+            setSelectedTagId(null);
+        }
+
+        return Array.from(tagObjects.values()).map(tag => ({
+            ...tag,
+            count: counts.get(tag.id) || 0
+        })).sort((a, b) => b.count - a.count);
+    }, [collectionRecipes]);
+
+    // 3. Final visual list filtered by tag and text search
+    const filteredRecipes = useMemo(() => {
+        return collectionRecipes.filter(r => {
+            const matchesTag = selectedTagId ? r.tags.some((t: any) => t.id === selectedTagId) : true;
+            const matchesSearch = r.title?.toLowerCase().includes(searchQuery.toLowerCase()) || r.description?.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesTag && matchesSearch;
+        });
+    }, [collectionRecipes, selectedTagId, searchQuery]);
 
     const renderRecipe = ({ item, index }: { item: any, index: number }) => {
         const primaryImage = item.images?.find((img: any) => img.is_primary) || item.images?.[0];
@@ -237,26 +264,32 @@ export default function Dashboard() {
                     <View className="mb-2">
                         {/* Header */}
                         <View className="pt-14 pb-4 flex-row justify-between items-start">
-                            <View className="flex-row items-center gap-3">
-                                <View>
+                            <View className="flex-1 flex-row items-center gap-3">
+                                <TouchableOpacity onPress={() => setShowCollectionPicker(true)} className="flex-1 active:opacity-70">
                                     <Text style={{ fontFamily: 'Playfair Display' }} className="font-semibold text-peach-500 text-[18px]">
                                         {t.nav.myCollection || "Meine Sammlung"}
                                     </Text>
-                                    <Text className="font-playfair text-[32px] font-bold text-warm-gray-700 leading-tight mt-0.5">
-                                        {t.nav.familyRecipes || "Familienrezepte"}
-                                    </Text>
-                                </View>
+                                    <View className="flex-row items-center gap-2 mt-0.5 max-w-full">
+                                        <Text className="font-playfair text-[32px] font-bold text-warm-gray-700 leading-tight flex-shrink" numberOfLines={1}>
+                                            {selectedCollectionId
+                                                ? collections.find(c => c.id === selectedCollectionId)?.name
+                                                : (t.nav.allRecipes || "All my recipes")
+                                            }
+                                        </Text>
+                                        <ChevronDown color="#3d3632" size={24} />
+                                    </View>
+                                </TouchableOpacity>
                             </View>
                             <Image
                                 source={require("../../assets/icon.png")}
-                                style={{ width: 44, height: 44, borderRadius: 10, borderWidth: 1, borderColor: '#f5f4f3' }}
+                                style={{ width: 44, height: 44, borderRadius: 10, borderWidth: 1, borderColor: '#f5f4f3', marginLeft: 16 }}
                             />
                         </View>
 
                         {/* Stats Row */}
                         <View className="flex-row gap-8 mb-8 mt-2 items-center">
                             <View>
-                                <Text className="font-playfair text-[26px] font-bold text-peach-500" style={{ lineHeight: 30 }}>{recipes.length}</Text>
+                                <Text className="font-playfair text-[26px] font-bold text-peach-500" style={{ lineHeight: 30 }}>{collectionRecipes.length}</Text>
                                 <Text className="text-warm-gray-400 text-[14px] font-medium tracking-tight">{t.recipes.recipes}</Text>
                             </View>
                             <View>
@@ -305,7 +338,7 @@ export default function Dashboard() {
                                         </Text>
                                         <View className={`px-2.5 py-1 rounded-md ${selectedTagId === null ? 'bg-white/20' : 'bg-warm-gray-100'}`}>
                                             <Text className={`text-[12px] font-bold ${selectedTagId === null ? 'text-white/80' : 'text-warm-gray-400'}`}>
-                                                {recipes.length}
+                                                {collectionRecipes.length}
                                             </Text>
                                         </View>
                                     </TouchableOpacity>
@@ -345,6 +378,49 @@ export default function Dashboard() {
                     </View>
                 }
             />
+
+            {/* Collection Picker Modal */}
+            <Modal visible={showCollectionPicker} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowCollectionPicker(false)}>
+                <SafeAreaView className="flex-1 bg-cream" edges={['top']}>
+                    <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-warm-gray-100 shadow-sm z-10">
+                        <View className="w-10" />
+                        <Text className="font-playfair text-xl text-warm-gray-700 font-semibold text-center flex-1">Select Collection</Text>
+                        <TouchableOpacity onPress={() => setShowCollectionPicker(false)} className="w-10 items-end pr-2 py-2">
+                            <X color="#75716d" size={24} />
+                        </TouchableOpacity>
+                    </View>
+                    <ScrollView className="flex-1 px-4 py-6" contentContainerStyle={{ paddingBottom: 40 }}>
+                        <TouchableOpacity
+                            onPress={() => { setSelectedCollectionId(null); setShowCollectionPicker(false); }}
+                            className={`p-5 rounded-2xl mb-3 flex-row items-center justify-between ${!selectedCollectionId ? 'bg-peach-100 border border-peach-200' : 'bg-white border border-warm-gray-100'}`}
+                            style={!selectedCollectionId ? { shadowColor: '#e07030', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 } : {}}
+                        >
+                            <Text className={`font-semibold text-[17px] ${!selectedCollectionId ? 'text-peach-700' : 'text-warm-gray-700'}`}>{t.nav.allRecipes || "All my recipes"}</Text>
+                            {!selectedCollectionId && <Check color="#eb6e3e" size={22} />}
+                        </TouchableOpacity>
+
+                        {collections.map(col => (
+                            <TouchableOpacity
+                                key={col.id}
+                                onPress={() => { setSelectedCollectionId(col.id); setShowCollectionPicker(false); }}
+                                className={`p-5 rounded-2xl mb-3 flex-row items-center justify-between ${selectedCollectionId === col.id ? 'bg-peach-100 border border-peach-200' : 'bg-white border border-warm-gray-100'}`}
+                                style={selectedCollectionId === col.id ? { shadowColor: '#e07030', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 } : {}}
+                            >
+                                <Text className={`font-semibold text-[17px] ${selectedCollectionId === col.id ? 'text-peach-700' : 'text-warm-gray-700'}`}>{col.name}</Text>
+                                {selectedCollectionId === col.id && <Check color="#eb6e3e" size={22} />}
+                            </TouchableOpacity>
+                        ))}
+
+                        <TouchableOpacity
+                            onPress={() => { setShowCollectionPicker(false); router.push('/(tabs)/settings/collections'); }}
+                            className="mt-6 p-4 items-center"
+                        >
+                            <Text className="text-peach-500 font-semibold">{(t as any).collections?.manageCollections || "Manage Collections"}...</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                </SafeAreaView>
+            </Modal>
+
             <StatusBar style="auto" />
         </View>
     );

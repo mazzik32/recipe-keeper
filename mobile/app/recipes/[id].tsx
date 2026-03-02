@@ -35,7 +35,8 @@ export default function RecipeDetailScreen() {
               images:recipe_images(*),
               ingredients:recipe_ingredients(*),
               instructions:recipe_steps(*),
-              recipe_tags(tag:tags(*))
+              recipe_tags(tag:tags(*)),
+              category:categories(*)
             `)
             .eq("id", id)
             .single();
@@ -137,6 +138,7 @@ export default function RecipeDetailScreen() {
     }
 
     const primaryImage = recipe.images?.find((img: any) => img.is_primary) || recipe.images?.[0];
+    const secondaryImage = recipe.images?.find((img: any) => !img.is_primary);
     const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
 
     return (
@@ -200,18 +202,33 @@ export default function RecipeDetailScreen() {
                         <Text className="text-warm-gray-500 text-base leading-relaxed mb-6">{recipe.description}</Text>
                     )}
 
-                    {/* Tags */}
-                    {recipe.recipe_tags && recipe.recipe_tags.length > 0 && (
-                        <View className="flex-row flex-wrap gap-2 mb-6">
-                            {recipe.recipe_tags.map((rt: any, i: number) => {
-                                const tag = rt.tag;
-                                if (!tag) return null;
-                                return (
-                                    <View key={i} className="bg-peach-100 px-3 py-1.5 rounded-full">
-                                        <Text className="text-peach-700 font-medium text-sm">{tag.name}</Text>
-                                    </View>
-                                );
-                            })}
+                    {/* Tags & Categories */}
+                    <View className="flex-row flex-wrap gap-2 mb-6">
+                        {recipe.category && (
+                            <View className="bg-peach-100 px-3 py-1.5 rounded-full flex-row items-center gap-1">
+                                <Text>{recipe.category.icon}</Text>
+                                <Text className="text-peach-700 font-medium text-sm">{recipe.category.name}</Text>
+                            </View>
+                        )}
+                        {recipe.recipe_tags && recipe.recipe_tags.map((rt: any, i: number) => {
+                            const tag = rt.tag;
+                            if (!tag) return null;
+                            return (
+                                <View key={i} className="bg-peach-100 px-3 py-1.5 rounded-full">
+                                    <Text className="text-peach-700 font-medium text-sm">{tag.name}</Text>
+                                </View>
+                            );
+                        })}
+                    </View>
+
+                    {/* Secondary Image */}
+                    {secondaryImage && (
+                        <View className="w-full aspect-video rounded-2xl overflow-hidden mb-6 bg-warm-gray-100">
+                            <Image
+                                source={secondaryImage.image_url}
+                                style={{ flex: 1, width: '100%', height: '100%' }}
+                                contentFit="cover"
+                            />
                         </View>
                     )}
 
@@ -283,9 +300,18 @@ export default function RecipeDetailScreen() {
                                         <View className="w-8 h-8 rounded-full items-center justify-center mr-4" style={{ backgroundColor: '#FFCBA4' }}>
                                             <Text className="text-warm-gray-700 font-bold">{step.step_number}</Text>
                                         </View>
-                                        <Text className="flex-1 text-warm-gray-700 text-base leading-relaxed">
-                                            {step.instruction}
-                                        </Text>
+                                        <View className="flex-1">
+                                            <Text className="text-warm-gray-700 text-base leading-relaxed">
+                                                {step.instruction}
+                                            </Text>
+                                            {step.image_url && (
+                                                <Image
+                                                    source={{ uri: step.image_url }}
+                                                    style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: 12, marginTop: 12 }}
+                                                    contentFit="cover"
+                                                />
+                                            )}
+                                        </View>
                                     </View>
                                 ))}
                             </View>

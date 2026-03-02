@@ -4,25 +4,28 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useLanguage } from "../../../contexts/LanguageContext";
 import { supabase } from "../../../lib/supabase";
-import { ArrowLeft, Tag as TagIcon, Trash2, Edit2, Plus, Save, X } from "lucide-react-native";
+import { ArrowLeft, FolderOpen, Trash2, Edit2, Plus, Save, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { Tag } from "../../../components/RecipeTagsInput";
 
-interface TagWithCount extends Tag {
+interface CollectionWithCount {
+    id: string;
+    name: string;
+    description: string | null;
+    created_at: string;
     recipe_count: number;
 }
 
-export default function TagsManagementScreen() {
+export default function CollectionsManagementScreen() {
     const { user } = useAuth();
     const router = useRouter();
     const { t } = useLanguage();
-    const [tags, setTags] = useState<TagWithCount[]>([]);
+    const [collections, setCollections] = useState<CollectionWithCount[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
     // Create State
-    const [newTagName, setNewTagName] = useState("");
+    const [newName, setNewName] = useState("");
     const [creating, setCreating] = useState(false);
 
     // Edit State
@@ -31,18 +34,18 @@ export default function TagsManagementScreen() {
     const [savingId, setSavingId] = useState<string | null>(null);
 
     useEffect(() => {
-        loadTags();
+        loadCollections();
     }, [user]);
 
-    const loadTags = async () => {
+    const loadCollections = async () => {
         if (!user) return;
         setLoading(true);
 
         const { data, error } = await supabase
-            .from('tags')
+            .from('collections')
             .select(`
                 *,
-                recipe_tags(id)
+                recipes(id)
             `)
             .eq('user_id', user.id)
             .order('name');
@@ -50,37 +53,34 @@ export default function TagsManagementScreen() {
         if (error) {
             Alert.alert(t.common.error, error.message);
         } else if (data) {
-            const formattedTags = data.map((tag: any) => ({
-                ...tag,
-                recipe_count: tag.recipe_tags?.length || 0
+            const formatted = data.map((col: any) => ({
+                ...col,
+                recipe_count: col.recipes?.length || 0
             }));
-            setTags(formattedTags);
+            setCollections(formatted);
         }
         setLoading(false);
     };
 
-    const handleDelete = async (tag: TagWithCount) => {
+    const handleDelete = async (collection: CollectionWithCount) => {
         Alert.alert(
-            t.tags?.tagDeleted || "Delete Tag",
-            (t.tags?.tagDeletedDesc || "{name} will be deleted").replace("{name}", tag.name),
+            "Delete Collection",
+            `Are you sure you want to delete "${collection.name}"? Recipes inside will NOT be deleted, but will be removed from this collection.`,
             [
                 { text: t.common.cancel, style: "cancel" },
                 {
                     text: t.common.delete || "Delete",
                     style: "destructive",
                     onPress: async () => {
-                        setDeletingId(tag.id);
+                        setDeletingId(collection.id);
 
-                        // Delete recipe_tags links first
-                        await supabase.from("recipe_tags").delete().eq("tag_id", tag.id);
-
-                        // Then delete the tag itself
-                        const { error } = await supabase.from("tags").delete().eq("id", tag.id);
+                        // Delete the collection (recipe_collections handles cascade)
+                        const { error } = await supabase.from("collections").delete().eq("id", collection.id);
 
                         if (error) {
                             Alert.alert(t.common.error, error.message);
                         } else {
-                            setTags(prev => prev.filter(t => t.id !== tag.id));
+                            setCollections(prev => prev.filter(c => c.id !== collection.id));
                         }
 
                         setDeletingId(null);
@@ -91,18 +91,18 @@ export default function TagsManagementScreen() {
     };
 
     const handleCreate = async () => {
-        const cleanName = newTagName.trim();
+        const cleanName = newName.trim();
         if (!cleanName || !user) return;
 
         // Check if exists
-        if (tags.some(t => t.name.toLowerCase() === cleanName.toLowerCase())) {
-            Alert.alert(t.common.error, t.tags?.tagExists || "A tag with this name already exists");
+        if (collections.some(c => c.name.toLowerCase() === cleanName.toLowerCase())) {
+            Alert.alert(t.common.error, "A collection with this name already exists");
             return;
         }
 
         setCreating(true);
         const { data, error } = await supabase
-            .from("tags")
+            .from("collections")
             .insert({ name: cleanName, user_id: user.id })
             .select()
             .single();
@@ -110,16 +110,16 @@ export default function TagsManagementScreen() {
         if (error) {
             Alert.alert(t.common.error, error.message);
         } else if (data) {
-            const newTag = { ...data, recipe_count: 0 } as TagWithCount;
-            setTags(prev => [newTag, ...prev].sort((a, b) => a.name.localeCompare(b.name)));
-            setNewTagName("");
+            const newCol = { ...data, recipe_count: 0 } as CollectionWithCount;
+            setCollections(prev => [newCol, ...prev].sort((a, b) => a.name.localeCompare(b.name)));
+            setNewName("");
         }
         setCreating(false);
     };
 
-    const startEditing = (tag: TagWithCount) => {
-        setEditingId(tag.id);
-        setEditName(tag.name);
+    const startEditing = (collection: CollectionWithCount) => {
+        setEditingId(collection.id);
+        setEditName(collection.name);
     };
 
     const cancelEditing = () => {
@@ -127,29 +127,28 @@ export default function TagsManagementScreen() {
         setEditName("");
     };
 
-    const handleEditSave = async (tag: TagWithCount) => {
+    const handleEditSave = async (collection: CollectionWithCount) => {
         const cleanName = editName.trim();
-        if (!cleanName || cleanName === tag.name) {
+        if (!cleanName || cleanName === collection.name) {
             cancelEditing();
             return;
         }
 
-        // Check if exists (excluding self)
-        if (tags.some(t => t.id !== tag.id && t.name.toLowerCase() === cleanName.toLowerCase())) {
-            Alert.alert(t.common.error, t.tags?.tagExists || "A tag with this name already exists");
+        if (collections.some(c => c.id !== collection.id && c.name.toLowerCase() === cleanName.toLowerCase())) {
+            Alert.alert(t.common.error, "A collection with this name already exists");
             return;
         }
 
-        setSavingId(tag.id);
+        setSavingId(collection.id);
         const { error } = await supabase
-            .from("tags")
+            .from("collections")
             .update({ name: cleanName })
-            .eq("id", tag.id);
+            .eq("id", collection.id);
 
         if (error) {
             Alert.alert(t.common.error, error.message);
         } else {
-            setTags(prev => prev.map(t => t.id === tag.id ? { ...t, name: cleanName } : t).sort((a, b) => a.name.localeCompare(b.name)));
+            setCollections(prev => prev.map(c => c.id === collection.id ? { ...c, name: cleanName } : c).sort((a, b) => a.name.localeCompare(b.name)));
             setEditingId(null);
         }
         setSavingId(null);
@@ -161,7 +160,7 @@ export default function TagsManagementScreen() {
                 <TouchableOpacity onPress={() => router.back()} className="p-2 mr-2">
                     <ArrowLeft color="#75716d" size={24} />
                 </TouchableOpacity>
-                <Text className="font-playfair text-xl text-warm-gray-700">{t.tags?.manageTags || "Manage Tags"}</Text>
+                <Text className="font-playfair text-xl text-warm-gray-700">Manage Collections</Text>
             </View>
 
             {loading ? (
@@ -170,48 +169,47 @@ export default function TagsManagementScreen() {
                 </View>
             ) : (
                 <ScrollView className="flex-1 px-4 py-6" keyboardShouldPersistTaps="handled">
-                    {/* Create New Tag Input */}
                     <View className="flex-row items-center bg-white rounded-2xl border border-warm-gray-200 px-4 py-3 mb-6 shadow-sm">
                         <TextInput
-                            value={newTagName}
-                            onChangeText={setNewTagName}
-                            placeholder={t.tags?.newTagName || "New tag name..."}
+                            value={newName}
+                            onChangeText={setNewName}
+                            placeholder="New collection name..."
                             className="flex-1 text-base text-warm-gray-700 h-8"
                             onSubmitEditing={handleCreate}
                             returnKeyType="done"
                         />
                         <TouchableOpacity
                             onPress={handleCreate}
-                            disabled={!newTagName.trim() || creating}
-                            className={`ml-3 p-2 rounded-full ${newTagName.trim() ? 'bg-peach-500' : 'bg-warm-gray-100'}`}
+                            disabled={!newName.trim() || creating}
+                            className={`ml-3 p-2 rounded-full ${newName.trim() ? 'bg-peach-500' : 'bg-warm-gray-100'}`}
                         >
                             {creating ? (
                                 <ActivityIndicator size="small" color="#fff" />
                             ) : (
-                                <Plus color={newTagName.trim() ? "#fff" : "#a8a29e"} size={20} />
+                                <Plus color={newName.trim() ? "#fff" : "#a8a29e"} size={20} />
                             )}
                         </TouchableOpacity>
                     </View>
 
-                    {tags.length === 0 ? (
+                    {collections.length === 0 ? (
                         <View className="py-8 items-center">
-                            <TagIcon color="#dfd8d3" size={64} className="mb-4" />
+                            <FolderOpen color="#dfd8d3" size={64} className="mb-4" />
                             <Text className="text-warm-gray-500 text-center px-8 text-lg">
-                                {t.tags?.noTags || "No tags yet. Create your first tag above."}
+                                No collections yet. Create your first collection above.
                             </Text>
                         </View>
                     ) : (
                         <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
-                            {tags.map((tag, index) => {
-                                const isEditing = editingId === tag.id;
+                            {collections.map((col, index) => {
+                                const isEditing = editingId === col.id;
                                 return (
                                     <View
-                                        key={tag.id}
-                                        className={`flex-row items-center justify-between p-4 bg-white ${index !== tags.length - 1 ? 'border-b border-warm-gray-50' : ''}`}
+                                        key={col.id}
+                                        className={`flex-row items-center justify-between p-4 bg-white ${index !== collections.length - 1 ? 'border-b border-warm-gray-50' : ''}`}
                                     >
                                         <View className="flex-1 flex-row items-center gap-3">
                                             <View className="w-10 h-10 rounded-full bg-peach-50 items-center justify-center">
-                                                <TagIcon color="#eb6e3e" size={20} />
+                                                <FolderOpen color="#eb6e3e" size={20} />
                                             </View>
                                             <View className="flex-1">
                                                 {isEditing ? (
@@ -220,14 +218,14 @@ export default function TagsManagementScreen() {
                                                         onChangeText={setEditName}
                                                         className="text-base text-warm-gray-700 font-medium py-1 px-2 -ml-2 bg-warm-gray-50 rounded border border-peach-200"
                                                         autoFocus
-                                                        onSubmitEditing={() => handleEditSave(tag)}
+                                                        onSubmitEditing={() => handleEditSave(col)}
                                                         returnKeyType="done"
                                                     />
                                                 ) : (
                                                     <>
-                                                        <Text className="text-warm-gray-700 font-medium text-base mb-0.5">{tag.name}</Text>
+                                                        <Text className="text-warm-gray-700 font-medium text-base mb-0.5">{col.name}</Text>
                                                         <Text className="text-warm-gray-500 text-sm">
-                                                            {(t.tags?.tagUsedBy || "Used by {count} recipe(s)").replace("{count}", tag.recipe_count.toString())}
+                                                            {col.recipe_count} recipe{col.recipe_count !== 1 && "s"}
                                                         </Text>
                                                     </>
                                                 )}
@@ -240,21 +238,21 @@ export default function TagsManagementScreen() {
                                                     <TouchableOpacity onPress={cancelEditing} className="p-2 mr-1">
                                                         <X color="#a8a29e" size={20} />
                                                     </TouchableOpacity>
-                                                    <TouchableOpacity onPress={() => handleEditSave(tag)} disabled={savingId === tag.id} className="p-2 bg-peach-100 rounded-full">
-                                                        {savingId === tag.id ? <ActivityIndicator size="small" color="#eb6e3e" /> : <Save color="#eb6e3e" size={18} />}
+                                                    <TouchableOpacity onPress={() => handleEditSave(col)} disabled={savingId === col.id} className="p-2 bg-peach-100 rounded-full">
+                                                        {savingId === col.id ? <ActivityIndicator size="small" color="#eb6e3e" /> : <Save color="#eb6e3e" size={18} />}
                                                     </TouchableOpacity>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <TouchableOpacity onPress={() => startEditing(tag)} className="p-2 mr-1">
+                                                    <TouchableOpacity onPress={() => startEditing(col)} className="p-2 mr-1">
                                                         <Edit2 color="#a8a29e" size={20} />
                                                     </TouchableOpacity>
                                                     <TouchableOpacity
-                                                        onPress={() => handleDelete(tag)}
-                                                        disabled={deletingId === tag.id}
+                                                        onPress={() => handleDelete(col)}
+                                                        disabled={deletingId === col.id}
                                                         className="p-2"
                                                     >
-                                                        {deletingId === tag.id ? (
+                                                        {deletingId === col.id ? (
                                                             <ActivityIndicator size="small" color="#ef4444" />
                                                         ) : (
                                                             <Trash2 color="#dfd8d3" size={20} />
