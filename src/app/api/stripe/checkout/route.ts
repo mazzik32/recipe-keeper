@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!; // Must use service role to update credits reliably or just to verify auth if needed
-// Actually validation of user usually uses the auth header, but for checkout creation we just need the user ID.
-// For server-side auth validation we should use createClient from @supabase/ssr if possible or just verifying the token.
-// But typically for route handlers in Next.js App Router we use:
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { Database } from '@/types/database.types';

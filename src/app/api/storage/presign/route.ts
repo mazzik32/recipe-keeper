@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     });
 
     // Create a safe, unique filename in the user's scan directory
-    const ext = filename.split('.').pop() || 'jpg';
+    const ext = filename.split('.').pop()?.replace(/[^a-zA-Z0-9]/g, '') || 'jpg';
     const uniqueId = crypto.randomUUID();
     const key = `${user.id}/scans/${uniqueId}.${ext}`;
 

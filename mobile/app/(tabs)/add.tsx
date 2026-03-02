@@ -162,12 +162,13 @@ export default function AddRecipeScreen() {
                 originalImageUrls: uploadedUrls,
             };
 
+            const imageCount = uploadedUrls.length;
             setImages([]);
             setUploading(false);
 
             router.push({
                 pathname: "/recipes/recipe-form",
-                params: { mode: "create", recipe: JSON.stringify(recipeToReview) }
+                params: { mode: "create", recipe: JSON.stringify(recipeToReview), scanImageCount: String(imageCount) }
             });
 
         } catch (error: any) {
@@ -239,7 +240,7 @@ export default function AddRecipeScreen() {
 
             router.push({
                 pathname: "/recipes/recipe-form",
-                params: { mode: "create", recipe: JSON.stringify(recipeToReview) }
+                params: { mode: "create", recipe: JSON.stringify(recipeToReview), scanImageCount: "0" }
             });
 
         } catch (error: any) {
@@ -260,11 +261,12 @@ export default function AddRecipeScreen() {
             />
 
             {uploading && (
-                <View className="absolute inset-0 z-50 bg-cream/95 flex-1 justify-center items-center" style={{ elevation: 10 }}>
+                <View className="absolute inset-0 z-50 bg-cream flex-1 justify-center items-center" style={{ elevation: 10 }}>
                     <WhiskLoader isAnalyzing={true} />
                 </View>
             )}
-            <Text className="font-playfair text-3xl text-warm-gray-700 mb-8 text-center">{t.add.addRecipeTitle}</Text>
+            <Text className="font-playfair text-3xl text-warm-gray-700 mb-2 text-center">{t.add.addRecipeTitle}</Text>
+            <Text className="text-warm-gray-500 text-sm text-center mb-6 leading-5 px-2">{t.add.subtitle}</Text>
 
             {images.length > 0 ? (
                 <View className="w-full items-center">

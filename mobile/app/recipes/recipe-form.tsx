@@ -2,7 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityInd
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Save, Trash2, Plus } from "lucide-react-native";
+import { ArrowLeft, Save, Trash2, Plus, Sparkles } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -11,10 +11,10 @@ import { ImageUpload, uploadImageToSupabase } from "../../components/ImageUpload
 import { Picker } from '@react-native-picker/picker';
 
 export default function RecipeFormScreen() {
-    const { mode, id, recipe: recipeParam } = useLocalSearchParams();
+    const { mode, id, recipe: recipeParam, scanImageCount } = useLocalSearchParams();
     const router = useRouter();
     const { user } = useAuth();
-    const { t } = useLanguage();
+    const { t, ti } = useLanguage();
 
     const isEdit = mode === "edit";
 
@@ -380,6 +380,31 @@ export default function RecipeFormScreen() {
             </View>
 
             <ScrollView className="flex-1 px-4 py-6" keyboardDismissMode="on-drag">
+
+                {/* Success banner from scan */}
+                {scanImageCount !== undefined && (
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 10,
+                            backgroundColor: '#dcfce7',
+                            borderWidth: 1,
+                            borderColor: '#86efac',
+                            borderRadius: 14,
+                            paddingHorizontal: 16,
+                            paddingVertical: 12,
+                            marginBottom: 20,
+                        }}
+                    >
+                        <Sparkles color="#16a34a" size={20} />
+                        <Text style={{ color: '#15803d', fontWeight: '600', fontSize: 14, flexShrink: 1 }}>
+                            {Number(scanImageCount) > 0
+                                ? ti('add.scanSuccessCount', { count: String(scanImageCount) })
+                                : t.add.scanSuccess}
+                        </Text>
+                    </View>
+                )}
 
                 {/* Title */}
                 <View className="mb-6">

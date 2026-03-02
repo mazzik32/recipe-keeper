@@ -111,6 +111,7 @@ export const en = {
     },
     add: {
         addRecipeTitle: "Add New Recipe",
+        subtitle: "Take a photo or pick images of a recipe and let the AI automatically extract all the details. You can upload multiple pages.",
         scanRecipe: "Scan Recipe Image",
         chooseFromLibrary: "Choose from Library",
         takePhoto: "Take Photo",
@@ -134,6 +135,8 @@ export const en = {
         maxReached: "Maximum of 5 images reached",
         images: "images",
         writeManually: "Write Manually",
+        scanSuccess: "Recipe successfully extracted!",
+        scanSuccessCount: "Recipe extracted from {count} image(s)!",
     },
     errors: {
         notFound: "Page not found",
@@ -321,6 +324,7 @@ export const de: Translations = {
     },
     add: {
         addRecipeTitle: "Neues Rezept hinzufügen",
+        subtitle: "Mache ein Foto oder wähle Bilder eines Rezepts aus – die KI extrahiert automatisch alle Details. Du kannst mehrere Seiten hochladen.",
         scanRecipe: "Rezeptbild scannen",
         chooseFromLibrary: "Aus Mediathek wählen",
         takePhoto: "Foto aufnehmen",
@@ -344,6 +348,8 @@ export const de: Translations = {
         maxReached: "Maximum von 5 Bildern erreicht",
         images: "Bilder",
         writeManually: "Manuell eingeben",
+        scanSuccess: "Rezept erfolgreich extrahiert!",
+        scanSuccessCount: "Rezept aus {count} Bild(ern) extrahiert!",
     },
     errors: {
         notFound: "Seite nicht gefunden",
