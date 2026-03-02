@@ -200,7 +200,7 @@ export default function Dashboard() {
                     </View>
                 </View>
 
-                <View className="flex-col items-end py-1 ml-2 gap-2.5 shrink-0 w-20">
+                <View className="flex-col items-end py-1 ml-2 gap-2.5 shrink-0">
                     {totalTime > 0 && (
                         <View className="flex-row items-center gap-1.5 justify-end">
                             <Clock color="#b8b5b2" size={14} />
