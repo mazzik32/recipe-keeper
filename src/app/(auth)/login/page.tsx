@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,8 @@ export default function LoginPage() {
   const { t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+  const [captchaToken, setCaptchaToken] = useState<string>("");
 
   const {
     register,
@@ -33,20 +36,39 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
-
-    if (error) {
-      setError(error.message);
+    if (!captchaToken) {
+      setError("Please complete the CAPTCHA by verifying you are human.");
       setIsLoading(false);
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          turnstileToken: captchaToken,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || "An error occurred during login.");
+        turnstileRef.current?.reset();
+        setIsLoading(false);
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+      turnstileRef.current?.reset();
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -103,6 +125,15 @@ export default function LoginPage() {
             {errors.password && (
               <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
+          </div>
+          <div className="flex justify-center pt-2">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => setError("CAPTCHA error. Please try again.")}
+              onExpire={() => setCaptchaToken("")}
+            />
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">

@@ -24,6 +24,7 @@
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
         "@hookform/resolvers": "^5.2.2",
+        "@marsidev/react-turnstile": "^1.4.2",
         "@paddle/paddle-js": "^1.6.1",
         "@paddle/paddle-node-sdk": "^3.5.0",
         "@radix-ui/react-avatar": "^1.1.11",

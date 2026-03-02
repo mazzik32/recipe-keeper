@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, ArrowLeft, Mail } from "lucide-react";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,8 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+  const [captchaToken, setCaptchaToken] = useState<string>("");
 
   const {
     register,
@@ -38,19 +41,39 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    if (error) {
-      setError(error.message);
+    if (!captchaToken) {
+      setError("Please complete the CAPTCHA by verifying you are human.");
       setIsLoading(false);
       return;
     }
 
-    setSuccess(true);
-    setIsLoading(false);
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          turnstileToken: captchaToken,
+          origin: window.location.origin,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || "An error occurred submitting the request.");
+        turnstileRef.current?.reset();
+        setIsLoading(false);
+        return;
+      }
+
+      setSuccess(true);
+      setIsLoading(false);
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+      turnstileRef.current?.reset();
+      setIsLoading(false);
+    }
   }
 
   if (success) {
@@ -118,6 +141,16 @@ export default function ForgotPasswordPage() {
             {errors.email && (
               <p className="text-sm text-red-500">{errors.email.message}</p>
             )}
+          </div>
+
+          <div className="flex justify-center pt-2 pb-2">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => setError("CAPTCHA error. Please try again.")}
+              onExpire={() => setCaptchaToken("")}
+            />
           </div>
 
           <Button
