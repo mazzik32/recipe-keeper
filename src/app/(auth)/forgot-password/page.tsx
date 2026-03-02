@@ -28,6 +28,7 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState(false);
   const turnstileRef = useRef<TurnstileInstance>(null);
   const [captchaToken, setCaptchaToken] = useState<string>("");
+  const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const {
     register,
@@ -144,16 +145,15 @@ export default function ForgotPasswordPage() {
           </div>
 
           <div className="flex justify-center pt-2 pb-2">
-            {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+            {TURNSTILE_SITE_KEY ? (
               <Turnstile
                 ref={turnstileRef}
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                siteKey={TURNSTILE_SITE_KEY}
                 onSuccess={(token) => setCaptchaToken(token)}
                 onError={() => setError("CAPTCHA error. Please try again.")}
                 onExpire={() => setCaptchaToken("")}
               />
-            )}
-            {!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+            ) : (
               <p className="text-sm text-red-500">CAPTCHA configuration missing.</p>
             )}
           </div>
