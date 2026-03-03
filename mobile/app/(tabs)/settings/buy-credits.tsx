@@ -6,6 +6,7 @@ import { useLanguage } from "../../../contexts/LanguageContext";
 import { ArrowLeft, Coins, Sparkles, Crown, Zap } from "lucide-react-native";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
+import WhiskLoader from "../../../components/WhiskLoader";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const PACKAGE_ICONS = [Coins, Sparkles, Zap, Crown];
@@ -237,7 +238,7 @@ export default function BuyCreditsScreen() {
 
                     {loadingProducts ? (
                         <View className="py-12 items-center">
-                            <ActivityIndicator size="large" color="#eb6e3e" />
+                            <WhiskLoader />
                             <Text className="text-warm-gray-400 mt-3 text-sm">{t.common.loading}</Text>
                         </View>
                     ) : iapError || products.length === 0 ? (

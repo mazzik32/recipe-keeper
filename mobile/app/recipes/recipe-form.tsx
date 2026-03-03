@@ -6,6 +6,7 @@ import { ArrowLeft, Save, Trash2, Plus, Sparkles } from "lucide-react-native";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import WhiskLoader from "../../components/WhiskLoader";
 import { RecipeTagsInput, Tag } from "../../components/RecipeTagsInput";
 import { ImageUpload, uploadImageToSupabase } from "../../components/ImageUpload";
 import { Picker } from '@react-native-picker/picker';
@@ -374,7 +375,7 @@ export default function RecipeFormScreen() {
     if (loading) {
         return (
             <View className="flex-1 bg-cream justify-center items-center">
-                <ActivityIndicator size="large" color="#eb6e3e" />
+                <WhiskLoader />
             </View>
         );
     }

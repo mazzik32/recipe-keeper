@@ -7,6 +7,7 @@ import { supabase } from "../../../lib/supabase";
 import { ArrowLeft, FolderOpen, Trash2, Edit2, Plus, Save, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
+import WhiskLoader from "../../../components/WhiskLoader";
 
 interface CollectionWithCount {
     id: string;
@@ -165,7 +166,7 @@ export default function CollectionsManagementScreen() {
 
             {loading ? (
                 <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color="#eb6e3e" />
+                    <WhiskLoader />
                 </View>
             ) : (
                 <ScrollView className="flex-1 px-4 py-6" keyboardShouldPersistTaps="handled">

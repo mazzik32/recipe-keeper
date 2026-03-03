@@ -8,6 +8,7 @@ import { ArrowLeft, Tag as TagIcon, Trash2, Edit2, Plus, Save, X } from "lucide-
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Tag } from "../../../components/RecipeTagsInput";
+import WhiskLoader from "../../../components/WhiskLoader";
 
 interface TagWithCount extends Tag {
     recipe_count: number;
@@ -42,7 +43,7 @@ export default function TagsManagementScreen() {
             .from('tags')
             .select(`
                 *,
-                recipe_tags(id)
+                recipe_tags(tag_id)
             `)
             .eq('user_id', user.id)
             .order('name');
@@ -166,7 +167,7 @@ export default function TagsManagementScreen() {
 
             {loading ? (
                 <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color="#eb6e3e" />
+                    <WhiskLoader />
                 </View>
             ) : (
                 <ScrollView className="flex-1 px-4 py-6" keyboardShouldPersistTaps="handled">

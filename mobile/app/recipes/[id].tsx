@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Image } from "expo-image";
 import { useLanguage } from "../../contexts/LanguageContext";
+import WhiskLoader from "../../components/WhiskLoader";
 import { useFocusEffect } from "@react-navigation/native";
 
 export default function RecipeDetailScreen() {
@@ -121,7 +122,7 @@ export default function RecipeDetailScreen() {
     if (loading) {
         return (
             <View className="flex-1 bg-cream justify-center items-center">
-                <ActivityIndicator size="large" color="#eb6e3e" />
+                <WhiskLoader />
             </View>
         );
     }

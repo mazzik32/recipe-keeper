@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState, useCallback } from "react";
@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
+import WhiskLoader from "../../components/WhiskLoader";
 
 export default function FavoritesScreen() {
     const { user } = useAuth();
@@ -125,7 +126,7 @@ export default function FavoritesScreen() {
 
             {loading ? (
                 <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color="#eb6e3e" />
+                    <WhiskLoader />
                 </View>
             ) : (
                 <FlatList

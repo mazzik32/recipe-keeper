@@ -33,6 +33,7 @@ export default function TabLayout() {
                     options={{
                         title: t.nav.search,
                         tabBarIcon: ({ color, size }) => <Search color={color} size={size} />,
+                        tabBarItemStyle: { paddingRight: 20 },
                     }}
                 />
                 {/* Hidden from tab bar — route kept alive for fallback navigation */}
@@ -42,6 +43,7 @@ export default function TabLayout() {
                     options={{
                         title: t.nav.favorites,
                         tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
+                        tabBarItemStyle: { paddingLeft: 20 },
                     }}
                 />
                 <Tabs.Screen
