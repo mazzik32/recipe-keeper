@@ -1,8 +1,8 @@
 import { Tabs } from "expo-router";
-import { Home, Search, Heart, Settings, Plus } from "lucide-react-native";
-import { View } from "react-native";
+import { Home, Search, Heart, Settings } from "lucide-react-native";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { OnboardingModal } from "../../components/OnboardingModal";
+import FABOverlay from "../../components/FABOverlay";
 
 export default function TabLayout() {
     const { t } = useLanguage();
@@ -35,18 +35,8 @@ export default function TabLayout() {
                         tabBarIcon: ({ color, size }) => <Search color={color} size={size} />,
                     }}
                 />
-                <Tabs.Screen
-                    name="add"
-                    options={{
-                        title: t.nav.add,
-                        tabBarIcon: ({ color, size }) => (
-                            <View className="bg-peach-300 w-12 h-12 rounded-full items-center justify-center -mt-4 shadow-sm">
-                                <Plus color="#3d3632" size={24} />
-                            </View>
-                        ),
-                    }}
-
-                />
+                {/* Hidden from tab bar — route kept alive for fallback navigation */}
+                <Tabs.Screen name="add" options={{ href: null }} />
                 <Tabs.Screen
                     name="favorites"
                     options={{
@@ -61,26 +51,12 @@ export default function TabLayout() {
                         tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
                     }}
                 />
-                {/* Hide nested screens from the tab bar */}
-                <Tabs.Screen
-                    name="settings/tags"
-                    options={{
-                        href: null,
-                    }}
-                />
-                <Tabs.Screen
-                    name="settings/buy-credits"
-                    options={{
-                        href: null,
-                    }}
-                />
-                <Tabs.Screen
-                    name="settings/collections"
-                    options={{
-                        href: null,
-                    }}
-                />
+                <Tabs.Screen name="settings/tags" options={{ href: null }} />
+                <Tabs.Screen name="settings/buy-credits" options={{ href: null }} />
+                <Tabs.Screen name="settings/collections" options={{ href: null }} />
             </Tabs>
+            {/* Custom animated FAB — floats above the tab bar */}
+            <FABOverlay />
             <OnboardingModal />
         </>
     );
