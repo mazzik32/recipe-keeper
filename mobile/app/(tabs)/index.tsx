@@ -1,15 +1,15 @@
-import { View, Text, FlatList, ActivityIndicator, Pressable, ScrollView, TouchableOpacity, TextInput, Modal } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, Pressable, ScrollView, TouchableOpacity, TextInput, Modal, RefreshControl } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { Clock, Users, Search, Heart, ChevronDown, Check, X } from "lucide-react-native";
+import { Clock, Users, Search, Heart, ChevronDown, Check, X, ChefHat } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay } from "react-native-reanimated";
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay, withSpring } from "react-native-reanimated";
 import LottieView from 'lottie-react-native';
 
 const WhiskLoader = () => {
@@ -54,6 +54,7 @@ export default function Dashboard() {
 
     const [recipes, setRecipes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
     // Collection State
     const [collections, setCollections] = useState<any[]>([]);
@@ -63,6 +64,133 @@ export default function Dashboard() {
     // Filtering State
     const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const persistReady = useRef(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const searchInputRef = useRef<any>(null);
+
+    // Animated search values
+    const titleOpacity = useSharedValue(1);
+    const titleTranslateX = useSharedValue(0);
+    const searchOpacity = useSharedValue(0);
+    const searchTranslateX = useSharedValue(40);
+
+    const titleAnimStyle = useAnimatedStyle(() => ({
+        opacity: titleOpacity.value,
+        transform: [{ translateX: titleTranslateX.value }],
+    }));
+    const searchAnimStyle = useAnimatedStyle(() => ({
+        opacity: searchOpacity.value,
+        transform: [{ translateX: searchTranslateX.value }],
+    }));
+
+    const openSearch = () => {
+        setIsSearchOpen(true);
+        titleOpacity.value = withTiming(0, { duration: 150 });
+        titleTranslateX.value = withTiming(-20, { duration: 150 });
+        searchOpacity.value = withTiming(1, { duration: 200 });
+        searchTranslateX.value = withSpring(0, { damping: 30, stiffness: 400 });
+        setTimeout(() => searchInputRef.current?.focus(), 100);
+    };
+
+    const closeSearch = () => {
+        setSearchQuery("");
+        searchInputRef.current?.blur();
+        titleOpacity.value = withTiming(1, { duration: 200 });
+        titleTranslateX.value = withSpring(0, { damping: 30, stiffness: 400 });
+        searchOpacity.value = withTiming(0, { duration: 150 });
+        searchTranslateX.value = withTiming(40, { duration: 150 });
+        setTimeout(() => setIsSearchOpen(false), 200);
+    };
+
+    // Load persisted selections on mount, then allow persist effects to run
+    useEffect(() => {
+        async function loadPersistedState() {
+            try {
+                const savedTag = await AsyncStorage.getItem('dashboard_selected_tag');
+                if (savedTag) setSelectedTagId(savedTag);
+
+                const savedCollection = await AsyncStorage.getItem('dashboard_selected_collection');
+                if (savedCollection) setSelectedCollectionId(savedCollection);
+            } catch (e) {
+                console.log("Failed to load dashboard state", e);
+            } finally {
+                persistReady.current = true;
+            }
+        }
+        loadPersistedState();
+    }, []);
+
+    // Persist selections on change — but only after initial load has completed
+    useEffect(() => {
+        if (!persistReady.current) return;
+        if (selectedTagId) AsyncStorage.setItem('dashboard_selected_tag', selectedTagId);
+        else AsyncStorage.removeItem('dashboard_selected_tag');
+    }, [selectedTagId]);
+
+    useEffect(() => {
+        if (!persistReady.current) return;
+        if (selectedCollectionId) AsyncStorage.setItem('dashboard_selected_collection', selectedCollectionId);
+        else AsyncStorage.removeItem('dashboard_selected_collection');
+    }, [selectedCollectionId]);
+
+    const loadRecipes = useCallback(async () => {
+        if (!user) return;
+
+        try {
+            const cachedData = await AsyncStorage.getItem(`recipes_master_${user.id}`);
+            if (cachedData) setRecipes(JSON.parse(cachedData));
+        } catch (e) {
+            console.log("Failed to load recipes cache", e);
+        }
+
+        const offlineSettings = await AsyncStorage.getItem('settings_offline_storage');
+        const isOfflineEnabled = offlineSettings === 'true';
+
+        let selectQuery = `
+            *, 
+            images:recipe_images(*),
+            recipe_tags(tags(*)),
+            recipe_collections(collection_id)
+        `;
+        if (isOfflineEnabled) {
+            selectQuery += `, ingredients:recipe_ingredients(*), instructions:recipe_instructions(*)`;
+        }
+
+        const { data, error } = await supabase
+            .from("recipes")
+            .select(selectQuery)
+            .eq("user_id", user.id)
+            .eq("is_archived", false)
+            .order("created_at", { ascending: false });
+
+        if (error) { console.error("Supabase Query Error:", error); return; }
+
+        if (data) {
+            const formattedRecipes = data.map((recipe: any) => ({
+                ...recipe,
+                tags: recipe.recipe_tags?.map((rt: any) => rt.tags).filter(Boolean) || [],
+                collection_id: recipe.recipe_collections?.[0]?.collection_id || null
+            }));
+
+            setRecipes(formattedRecipes);
+            AsyncStorage.setItem(`recipes_master_${user.id}`, JSON.stringify(formattedRecipes))
+                .catch(e => console.log("Failed to save recipes cache", e));
+
+            if (isOfflineEnabled) {
+                formattedRecipes.forEach((recipe: any) => {
+                    AsyncStorage.setItem(`recipe_detail_${recipe.id}`, JSON.stringify(recipe))
+                        .catch(e => console.log("Failed to prepopulate detail cache", e));
+                });
+            }
+        }
+        setTimeout(() => setLoading(false), 800);
+    }, [user]);
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await loadRecipes();
+        setRefreshing(false);
+    }, [loadRecipes]);
 
     useEffect(() => {
         async function loadCollections() {
@@ -71,71 +199,18 @@ export default function Dashboard() {
             if (data) setCollections(data);
         }
         loadCollections();
-
-        async function loadRecipes() {
-            if (!user) return;
-
-            try {
-                const cachedData = await AsyncStorage.getItem(`recipes_master_${user.id}`);
-                if (cachedData) {
-                    setRecipes(JSON.parse(cachedData));
-                }
-            } catch (e) {
-                console.log("Failed to load recipes cache", e);
-            }
-
-            const offlineSettings = await AsyncStorage.getItem('settings_offline_storage');
-            const isOfflineEnabled = offlineSettings === 'true';
-
-            let selectQuery = `
-                *, 
-                images:recipe_images(*),
-                recipe_tags(
-                    tags(*)
-                ),
-                recipe_collections(
-                    collection_id
-                )
-            `;
-
-            if (isOfflineEnabled) {
-                selectQuery += `,
-                ingredients:recipe_ingredients(*),
-                instructions:recipe_instructions(*)
-                `;
-            }
-
-            const { data, error } = await supabase
-                .from("recipes")
-                .select(selectQuery)
-                .eq("user_id", user.id)
-                .eq("is_archived", false)
-                .order("created_at", { ascending: false });
-
-            if (data) {
-                const formattedRecipes = data.map((recipe: any) => ({
-                    ...recipe,
-                    tags: recipe.recipe_tags?.map((rt: any) => rt.tags).filter(Boolean) || [],
-                    collection_id: recipe.recipe_collections?.[0]?.collection_id || null
-                }));
-
-                setRecipes(formattedRecipes);
-                AsyncStorage.setItem(`recipes_master_${user.id}`, JSON.stringify(formattedRecipes))
-                    .catch(e => console.log("Failed to save recipes cache", e));
-
-                if (isOfflineEnabled) {
-                    formattedRecipes.forEach((recipe: any) => {
-                        AsyncStorage.setItem(`recipe_detail_${recipe.id}`, JSON.stringify(recipe))
-                            .catch(e => console.log("Failed to prepopulate detail cache", e));
-                    });
-                }
-            }
-            // Artificial delay to show the nice new animation for a bit
-            setTimeout(() => setLoading(false), 800);
-        }
-
         loadRecipes();
-    }, [user]);
+
+        const channel = supabase
+            .channel('public:recipes')
+            .on('postgres_changes',
+                { event: '*', schema: 'public', table: 'recipes', filter: `user_id=eq.${user?.id}` },
+                () => { loadRecipes(); }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [user, loadRecipes]);
 
     // 1. Filter raw recipes down to the active collection (used for calculating tags accurately)
     const collectionRecipes = useMemo(() => {
@@ -176,7 +251,7 @@ export default function Dashboard() {
 
     const renderRecipe = ({ item, index }: { item: any, index: number }) => {
         const primaryImage = item.images?.find((img: any) => img.is_primary) || item.images?.[0];
-        const totalTime = (item.prep_time_minutes || 0) + (item.cook_time_minutes || 0);
+        const totalTime = item.total_time_minutes || ((item.prep_time_minutes || 0) + (item.cook_time_minutes || 0));
 
         return (
             <Pressable
@@ -203,9 +278,15 @@ export default function Dashboard() {
                         </View>
                     )}
                     {item.servings && (
-                        <View className="flex-row items-center gap-1">
+                        <View className="flex-row items-center gap-1 mr-3">
                             <Users color="#b8b5b2" size={13} />
                             <Text className="text-warm-gray-400 text-xs font-semibold">{item.servings} P.</Text>
+                        </View>
+                    )}
+                    {item.difficulty && (
+                        <View className="flex-row items-center gap-1">
+                            <ChefHat color="#b8b5b2" size={13} />
+                            <Text className="text-warm-gray-400 text-xs font-semibold capitalize">{item.difficulty}</Text>
                         </View>
                     )}
                     <View className="ml-auto">
@@ -267,69 +348,93 @@ export default function Dashboard() {
                 keyExtractor={(item) => item.id}
                 renderItem={renderRecipe}
                 showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#eb6e3e" />}
                 contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 110 }}
                 ListHeaderComponent={
                     <View className="mb-2">
-                        {/* Header */}
-                        <View className="pt-14 pb-4 flex-row justify-between items-start">
-                            <View className="flex-1 flex-row items-center gap-3">
-                                <TouchableOpacity onPress={() => setShowCollectionPicker(true)} className="flex-1 active:opacity-70">
-                                    <Text style={{ fontFamily: 'Playfair Display' }} className="font-semibold text-peach-500 text-[18px]">
-                                        {t.nav.myCollection || "Meine Sammlung"}
-                                    </Text>
-                                    <View className="flex-row items-center gap-2 mt-0.5 max-w-full">
-                                        <Text className="font-playfair text-[32px] font-bold text-warm-gray-700 leading-tight flex-shrink" numberOfLines={1}>
-                                            {selectedCollectionId
-                                                ? collections.find(c => c.id === selectedCollectionId)?.name
-                                                : (t.nav.allRecipes || "All my recipes")
-                                            }
-                                        </Text>
-                                        <ChevronDown color="#3d3632" size={24} />
+                        {/* Header: animated title ↔ search */}
+                        <SafeAreaView edges={['top']} className="bg-cream">
+                            {/* Fixed height container — must be tall enough for 3-line title block */}
+                            <View style={{ height: 112, marginBottom: 8 }}>
+                                {/* Title row — fades/slides out when search opens */}
+                                <Animated.View
+                                    style={[{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }, titleAnimStyle]}
+                                    pointerEvents={isSearchOpen ? 'none' : 'auto'}
+                                >
+                                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                                        {/* Left: title block */}
+                                        <TouchableOpacity onPress={() => setShowCollectionPicker(true)} style={{ flex: 1 }}>
+                                            <Text style={{ fontFamily: 'Playfair Display', fontWeight: '600', color: '#eb6e3e', fontSize: 16, marginBottom: 2 }}>
+                                                {t.nav.myCollection || "Meine Sammlung"}
+                                            </Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                                                <Text style={{ fontFamily: 'Playfair Display', fontSize: 30, fontWeight: '700', color: '#3d3632', lineHeight: 36 }} numberOfLines={1}>
+                                                    {selectedCollectionId
+                                                        ? collections.find(c => c.id === selectedCollectionId)?.name
+                                                        : (t.nav.allRecipes || "All my recipes")
+                                                    }
+                                                </Text>
+                                                <ChevronDown color="#3d3632" size={22} />
+                                            </View>
+                                            <Text style={{ color: '#a09b96', fontSize: 13, fontWeight: '500', marginTop: 4 }}>
+                                                {collectionRecipes.length} {t.recipes.recipes.toLowerCase()} · {tags.length} {t.categories.title.toLowerCase()}
+                                            </Text>
+                                        </TouchableOpacity>
+                                        {/* Right: icons — aligned to top, spaced from title */}
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 12, paddingTop: 4 }}>
+                                            <TouchableOpacity
+                                                onPress={openSearch}
+                                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                                style={{ padding: 8, borderRadius: 20, backgroundColor: '#fdf1ec' }}
+                                            >
+                                                <Search color="#eb6e3e" size={19} />
+                                            </TouchableOpacity>
+                                            <Image
+                                                source={require("../../assets/icon.png")}
+                                                style={{ width: 42, height: 42, borderRadius: 10, borderWidth: 1, borderColor: '#f0eeec' }}
+                                            />
+                                        </View>
                                     </View>
-                                </TouchableOpacity>
-                            </View>
-                            <Image
-                                source={require("../../assets/icon.png")}
-                                style={{ width: 44, height: 44, borderRadius: 10, borderWidth: 1, borderColor: '#f5f4f3', marginLeft: 16 }}
-                            />
-                        </View>
+                                </Animated.View>
 
-                        {/* Stats Row */}
-                        <View className="flex-row gap-8 mb-8 mt-2 items-center">
-                            <View>
-                                <Text className="font-playfair text-[26px] font-bold text-peach-500" style={{ lineHeight: 30 }}>{collectionRecipes.length}</Text>
-                                <Text className="text-warm-gray-400 text-[14px] font-medium tracking-tight">{t.recipes.recipes}</Text>
+                                {/* Search bar — springs in from the right when search opens */}
+                                <Animated.View
+                                    style={[{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, flexDirection: 'row', alignItems: 'center' }, searchAnimStyle]}
+                                    pointerEvents={isSearchOpen ? 'auto' : 'none'}
+                                >
+                                    <View
+                                        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#f5c8b4', borderRadius: 18, paddingHorizontal: 14, height: 50, shadowColor: '#e07030', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 8, elevation: 3 }}
+                                    >
+                                        <Search color="#eb6e3e" size={18} />
+                                        <TextInput
+                                            ref={searchInputRef}
+                                            style={{ flex: 1, marginLeft: 10, fontSize: 16, fontWeight: '500', color: '#3d3632' }}
+                                            placeholder={t.search.searchRecipes}
+                                            placeholderTextColor="#c4bfbb"
+                                            value={searchQuery}
+                                            onChangeText={setSearchQuery}
+                                            returnKeyType="search"
+                                            autoCorrect={false}
+                                        />
+                                        {searchQuery.length > 0 && (
+                                            <TouchableOpacity onPress={() => setSearchQuery("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                                                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#e8e4e0', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <X color="#75716d" size={12} />
+                                                </View>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                    <TouchableOpacity onPress={closeSearch} style={{ marginLeft: 12, paddingVertical: 8 }}>
+                                        <Text style={{ color: '#eb6e3e', fontWeight: '600', fontSize: 15 }}>Cancel</Text>
+                                    </TouchableOpacity>
+                                </Animated.View>
                             </View>
-                            <View>
-                                <Text className="font-playfair text-[26px] font-bold text-[#F0A830]" style={{ lineHeight: 30 }}>{tags.length}</Text>
-                                <Text className="text-warm-gray-400 text-[14px] font-medium tracking-tight">{t.categories.title}</Text>
-                            </View>
-                        </View>
+                        </SafeAreaView>
 
-                        {/* Real Live-Filter Search Bar */}
-                        <View className="flex-row items-center bg-peach-50 px-4 py-3.5 rounded-2xl border border-peach-100 mb-8 focus:border-peach-300">
-                            <Search color="#ddd" size={20} />
-                            <TextInput
-                                className="ml-3 text-warm-gray-600 font-medium text-[16px] flex-1"
-                                placeholder={t.search.searchRecipes}
-                                placeholderTextColor="#999591"
-                                value={searchQuery}
-                                onChangeText={setSearchQuery}
-                                returnKeyType="search"
-                                autoCorrect={false}
-                                clearButtonMode="while-editing"
-                            />
-                        </View>
 
                         {/* Collections / Tags */}
                         {tags.length > 0 && (
                             <View className="mb-6 -mx-5 px-5">
-                                <View className="flex-row justify-between items-center mb-4">
-                                    <Text className="font-playfair text-[22px] font-bold text-warm-gray-700">{t.categories.title}</Text>
-                                    <TouchableOpacity onPress={() => setSelectedTagId(null)}>
-                                        <Text className="text-peach-500 text-[14px] font-bold">{t.nav.allRecipes}</Text>
-                                    </TouchableOpacity>
-                                </View>
                                 <ScrollView
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
@@ -371,13 +476,6 @@ export default function Dashboard() {
                                 </ScrollView>
                             </View>
                         )}
-
-                        {/* List Header stats */}
-                        <View className="flex-row justify-between items-center mb-2 mt-3">
-                            <Text className="text-warm-gray-400 font-medium text-[15px]">
-                                {filteredRecipes.length} {t.recipes.recipes}
-                            </Text>
-                        </View>
                     </View>
                 }
                 ListEmptyComponent={

@@ -33,8 +33,14 @@ export default function RecipeFormScreen() {
     const [categories, setCategories] = useState<any[]>([]);
     const [collectionId, setCollectionId] = useState<string | null>(scannedData?.collection_id || null);
     const [collections, setCollections] = useState<any[]>([]);
-    const [recipeMetadata, setRecipeMetadata] = useState<any>(null);
     const [tags, setTags] = useState<Tag[]>([]);
+    // Metadata fields
+    const [servings, setServings] = useState<string>(scannedData?.servings ? String(scannedData.servings) : "");
+    const [prepTime, setPrepTime] = useState<string>(scannedData?.prepTimeMinutes ? String(scannedData.prepTimeMinutes) : "");
+    const [cookTime, setCookTime] = useState<string>(scannedData?.cookTimeMinutes ? String(scannedData.cookTimeMinutes) : "");
+    const [totalTime, setTotalTime] = useState<string>(scannedData?.totalTimeMinutes ? String(scannedData.totalTimeMinutes) : "");
+    const [difficulty, setDifficulty] = useState<string>(scannedData?.difficulty || "medium");
+    const [source, setSource] = useState<string>(scannedData?.source || "");
 
     // Load existing recipe data for edit mode
     useEffect(() => {
@@ -83,11 +89,16 @@ export default function RecipeFormScreen() {
             setDescription(data.description || "");
             setIngredients(data.ingredients || []);
             setInstructions(data.instructions || []);
-            setRecipeMetadata(data);
             setPrimaryImage(data.images?.find((img: any) => img.is_primary)?.image_url || null);
             setSecondaryImage(data.images?.find((img: any) => !img.is_primary)?.image_url || null);
             setCategoryId(data.category_id || null);
             setCollectionId(data.recipe_collections?.[0]?.collection_id || null);
+            setServings(data.servings ? String(data.servings) : "");
+            setPrepTime(data.prep_time_minutes ? String(data.prep_time_minutes) : "");
+            setCookTime(data.cook_time_minutes ? String(data.cook_time_minutes) : "");
+            setTotalTime(data.total_time_minutes ? String(data.total_time_minutes) : "");
+            setDifficulty(data.difficulty || "medium");
+            setSource(data.source || "");
             if (data.recipe_tags) {
                 const loadedTags = data.recipe_tags
                     .map((rt: any) => rt.tag)
@@ -147,10 +158,12 @@ export default function RecipeFormScreen() {
                     .update({
                         title,
                         description,
-                        prep_time_minutes: recipeMetadata?.prep_time_minutes || null,
-                        cook_time_minutes: recipeMetadata?.cook_time_minutes || null,
-                        servings: recipeMetadata?.servings || null,
-                        difficulty: recipeMetadata?.difficulty || null,
+                        servings: servings ? parseInt(servings) : null,
+                        prep_time_minutes: prepTime ? parseInt(prepTime) : null,
+                        cook_time_minutes: cookTime ? parseInt(cookTime) : null,
+                        total_time_minutes: totalTime ? parseInt(totalTime) : null,
+                        difficulty: difficulty || null,
+                        source: source || null,
                         category_id: categoryId,
                     })
                     .eq("id", id);
@@ -254,10 +267,12 @@ export default function RecipeFormScreen() {
                         user_id: user?.id,
                         title,
                         description,
-                        prep_time_minutes: scannedData?.prepTimeMinutes || null,
-                        cook_time_minutes: scannedData?.cookTimeMinutes || null,
-                        servings: scannedData?.servings || null,
-                        difficulty: scannedData?.difficulty || null,
+                        servings: servings ? parseInt(servings) : null,
+                        prep_time_minutes: prepTime ? parseInt(prepTime) : null,
+                        cook_time_minutes: cookTime ? parseInt(cookTime) : null,
+                        total_time_minutes: totalTime ? parseInt(totalTime) : null,
+                        difficulty: difficulty || null,
+                        source: source || null,
                         category_id: categoryId,
                         is_favorite: false,
                         is_archived: false,
@@ -427,6 +442,82 @@ export default function RecipeFormScreen() {
                         placeholder={t.recipes.description}
                         className="bg-white border border-warm-gray-200 rounded-xl px-4 py-4 text-warm-gray-600 min-h-[100px] text-base leading-relaxed"
                         textAlignVertical="top"
+                    />
+                </View>
+
+                {/* Time & Servings */}
+                <View className="mb-6">
+                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider">Time & Servings</Text>
+                    <View className="flex-row gap-3 mb-3">
+                        <View className="flex-1">
+                            <Text className="text-warm-gray-400 text-xs mb-1.5">Servings</Text>
+                            <TextInput
+                                value={servings}
+                                onChangeText={setServings}
+                                placeholder="4"
+                                keyboardType="number-pad"
+                                className="bg-white border border-warm-gray-200 rounded-xl px-3 py-3 text-warm-gray-700 text-center text-base"
+                            />
+                        </View>
+                        <View className="flex-1">
+                            <Text className="text-warm-gray-400 text-xs mb-1.5">Prep (min)</Text>
+                            <TextInput
+                                value={prepTime}
+                                onChangeText={setPrepTime}
+                                placeholder="15"
+                                keyboardType="number-pad"
+                                className="bg-white border border-warm-gray-200 rounded-xl px-3 py-3 text-warm-gray-700 text-center text-base"
+                            />
+                        </View>
+                        <View className="flex-1">
+                            <Text className="text-warm-gray-400 text-xs mb-1.5">Cook (min)</Text>
+                            <TextInput
+                                value={cookTime}
+                                onChangeText={setCookTime}
+                                placeholder="30"
+                                keyboardType="number-pad"
+                                className="bg-white border border-warm-gray-200 rounded-xl px-3 py-3 text-warm-gray-700 text-center text-base"
+                            />
+                        </View>
+                        <View className="flex-1">
+                            <Text className="text-warm-gray-400 text-xs mb-1.5">Total (min)</Text>
+                            <TextInput
+                                value={totalTime}
+                                onChangeText={setTotalTime}
+                                placeholder="45"
+                                keyboardType="number-pad"
+                                className="bg-white border border-warm-gray-200 rounded-xl px-3 py-3 text-warm-gray-700 text-center text-base"
+                            />
+                        </View>
+                    </View>
+                </View>
+
+                {/* Difficulty */}
+                <View className="mb-6">
+                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider">{t.recipes.difficulty || "Difficulty"}</Text>
+                    <View className="flex-row gap-3">
+                        {(["easy", "medium", "hard"] as const).map(level => (
+                            <TouchableOpacity
+                                key={level}
+                                onPress={() => setDifficulty(level)}
+                                className={`flex-1 py-3 rounded-xl border items-center ${difficulty === level ? 'bg-peach-50 border-peach-300' : 'bg-white border-warm-gray-200'}`}
+                            >
+                                <Text className={`font-semibold capitalize text-sm ${difficulty === level ? 'text-peach-700' : 'text-warm-gray-500'}`}>
+                                    {level === 'easy' ? (t.recipes.easy || 'Easy') : level === 'medium' ? (t.recipes.medium || 'Medium') : (t.recipes.hard || 'Hard')}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Source */}
+                <View className="mb-6">
+                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{(t.recipes as any)?.source || "Source"}</Text>
+                    <TextInput
+                        value={source}
+                        onChangeText={setSource}
+                        placeholder="e.g. Mum, Grandma, Betty Bossi"
+                        className="bg-white border border-warm-gray-200 rounded-xl px-4 py-3 text-warm-gray-700 text-base"
                     />
                 </View>
 
