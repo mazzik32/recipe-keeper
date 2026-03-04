@@ -1,7 +1,6 @@
 import { Tabs } from "expo-router";
 import { Home, Search, Heart, Settings } from "lucide-react-native";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { OnboardingModal } from "../../components/OnboardingModal";
 import FABOverlay from "../../components/FABOverlay";
 import { useTheme } from "../../contexts/ThemeContext";
 
@@ -61,7 +60,5 @@ export default function TabLayout() {
             </Tabs>
             {/* Custom animated FAB — floats above the tab bar */}
             <FABOverlay />
-            <OnboardingModal />
-        </>
-    );
+        </>);
 }
