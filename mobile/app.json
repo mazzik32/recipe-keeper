@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "RecipeKeeper",
-    "slug": "recipekeeper",
+    "slug": "mobile",
     "version": "1.0.2",
     "scheme": "recipekeeper",
     "orientation": "portrait",
