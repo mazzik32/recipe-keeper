@@ -12,11 +12,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import "../global.css";
 
-try {
-    SplashScreen.preventAutoHideAsync();
-} catch (e) {
+SplashScreen.preventAutoHideAsync().catch((e) => {
     console.warn("Error preventing splash screen auto-hide:", e);
-}
+});
 
 function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
     const { session, user, initialized } = useAuth();
@@ -52,7 +50,7 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
 function ThemeWrapper({ children }: { children: React.ReactNode }) {
     const { isDark } = useTheme();
     return (
-        <View className="flex-1 bg-cream dark:bg-dark-bg">
+        <View className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg">
             {children}
         </View>
     );

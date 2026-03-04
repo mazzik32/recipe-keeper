@@ -199,21 +199,21 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
     };
 
     return (
-        <View style={{ flex: 1, paddingHorizontal: 24, justifyContent: 'center', alignItems: 'center' }}>
+        <View className="flex-1 px-6 justify-center items-center">
             <CreditGateModal visible={showCreditModal} onClose={() => setShowCreditModal(false)} />
 
             {uploading && (
-                <View style={{ position: 'absolute', inset: 0, zIndex: 50, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fbfaf9' }}>
+                <View className="absolute inset-0 z-50 justify-center items-center bg-warm-white dark:bg-dark-bg">
                     <WhiskLoader isAnalyzing={true} />
                 </View>
             )}
 
-            <Text style={{ fontFamily: 'Playfair Display', fontSize: 28, color: '#3d3632', marginBottom: 6, textAlign: 'center' }}>{t.add.addRecipeTitle}</Text>
-            <Text style={{ color: '#75716d', fontSize: 14, textAlign: 'center', marginBottom: 32, lineHeight: 20, paddingHorizontal: 8 }}>{t.add.subtitle}</Text>
+            <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text mb-2 text-center">{t.add.addRecipeTitle}</Text>
+            <Text className="text-warm-gray-600 dark:text-dark-text dark:text-dark-muted text-sm text-center mb-8 px-2 leading-5">{t.add.subtitle}</Text>
 
             {images.length > 0 ? (
-                <View style={{ width: '100%', alignItems: 'center' }}>
-                    <Text style={{ color: '#75716d', fontWeight: '500', marginBottom: 12 }}>
+                <View className="w-full justify-center items-center">
+                    <Text className="text-warm-gray-600 dark:text-dark-text dark:text-dark-muted font-medium mb-3">
                         {images.length}/{MAX_IMAGES} {t.add.images}
                     </Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 12, paddingHorizontal: 4 }}>
@@ -244,75 +244,76 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
                         )}
                     </ScrollView>
                     {images.length < MAX_IMAGES && (
-                        <TouchableOpacity onPress={takePhoto} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }} disabled={uploading}>
+                        <TouchableOpacity onPress={takePhoto} className="flex-row items-center gap-2 mb-4" disabled={uploading}>
                             <Camera color="#eb6e3e" size={18} />
-                            <Text style={{ color: '#eb6e3e', fontWeight: '500' }}>{t.add.takePhoto}</Text>
+                            <Text className="text-peach-500 font-medium">{t.add.takePhoto}</Text>
                         </TouchableOpacity>
                     )}
-                    <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-                        <TouchableOpacity onPress={clearAllImages} style={{ backgroundColor: '#e8e4e0', padding: 16, borderRadius: 50, flexDirection: 'row', alignItems: 'center', gap: 8 }} disabled={uploading}>
+                    <View className="flex-row gap-4 mt-2">
+                        <TouchableOpacity onPress={clearAllImages} className="bg-warm-gray-200 dark:bg-dark-border p-4 rounded-full flex-row items-center gap-2" disabled={uploading}>
                             <Trash2 color={colors.text} size={20} />
-                            <Text style={{ color: '#75716d', fontWeight: '500' }}>{t.add.clearAll}</Text>
+                            <Text className="text-warm-gray-600 dark:text-dark-text dark:text-dark-text font-medium">{t.add.clearAll}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={uploadRecipe} disabled={uploading} style={{ backgroundColor: '#eb6e3e', paddingVertical: 12, paddingHorizontal: 32, borderRadius: 50, flexDirection: 'row', alignItems: 'center', gap: 8, opacity: uploading ? 0.7 : 1 }}>
+                        <TouchableOpacity onPress={uploadRecipe} disabled={uploading} className={`bg-peach-500 py-3 px-8 rounded-full flex-row items-center gap-2 ${uploading ? 'opacity-70' : ''}`}>
                             {uploading ? <ActivityIndicator color="#fff" /> : <UploadCloud color="#fff" size={20} />}
-                            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>{uploading ? t.common.loading : t.recipes.newRecipe}</Text>
+                            <Text className="text-white font-semibold text-lg">{uploading ? t.common.loading : t.recipes.newRecipe}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             ) : showUrlInput ? (
-                <View style={{ width: '100%', gap: 16 }}>
-                    <Text style={{ color: '#75716d', fontWeight: '500', marginLeft: 4 }}>{t.add.enterUrl}</Text>
+                <View className="w-full gap-4">
+                    <Text className="text-warm-gray-600 dark:text-dark-text dark:text-dark-muted font-medium ml-1">{t.add.enterUrl}</Text>
                     <TextInput
                         value={urlValue}
                         onChangeText={setUrlValue}
                         placeholder={t.add.urlPlaceholder}
+                        placeholderTextColor={colors.muted}
                         autoCapitalize="none"
                         autoCorrect={false}
                         keyboardType="url"
-                        style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#dfd8d3', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, color: '#3d3632', fontSize: 17 }}
+                        className="bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border dark:border-dark-border rounded-xl px-4 py-3 text-warm-gray-700 dark:text-dark-text dark:text-dark-text text-base"
                     />
-                    <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-                        <TouchableOpacity onPress={() => { setShowUrlInput(false); setUrlValue(""); }} style={{ backgroundColor: '#e8e4e0', padding: 16, borderRadius: 12, flex: 1, alignItems: 'center' }} disabled={uploading}>
-                            <Text style={{ color: '#75716d', fontWeight: '600' }}>{t.common.cancel}</Text>
+                    <View className="flex-row gap-4 mt-2">
+                        <TouchableOpacity onPress={() => { setShowUrlInput(false); setUrlValue(""); }} className="bg-warm-gray-200 dark:bg-dark-border py-4 rounded-xl flex-1 items-center" disabled={uploading}>
+                            <Text className="text-warm-gray-600 dark:text-dark-text dark:text-dark-text font-semibold">{t.common.cancel}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={scrapeRecipe} disabled={uploading || !urlValue.trim()} style={{ backgroundColor: '#eb6e3e', paddingVertical: 16, borderRadius: 12, flex: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: (uploading || !urlValue.trim()) ? 0.7 : 1 }}>
+                        <TouchableOpacity onPress={scrapeRecipe} disabled={uploading || !urlValue.trim()} className={`bg-peach-500 py-4 rounded-xl flex-[2] flex-row items-center justify-center gap-2 ${uploading || !urlValue.trim() ? 'opacity-70' : ''}`}>
                             {uploading ? <ActivityIndicator color="#fff" /> : <LinkIcon color="#fff" size={20} />}
-                            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 18 }}>{uploading ? t.common.loading : t.add.scrape}</Text>
+                            <Text className="text-white font-semibold text-lg">{uploading ? t.common.loading : t.add.scrape}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             ) : (
-                <View style={{ width: '100%', gap: 16 }}>
+                <View className="w-full gap-4">
                     <TouchableOpacity
                         onPress={() => { if (credits <= 0) { setShowCreditModal(true); } else { takePhoto(); } }}
-                        style={{ backgroundColor: '#eb6e3e', padding: 24, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 }}
+                        className="bg-peach-500 py-6 rounded-2xl flex-row items-center justify-center gap-4"
                     >
                         <Camera color="#fff" size={28} />
-                        <Text style={{ color: '#fff', fontWeight: '600', fontSize: 20 }}>{t.add.takePhoto}</Text>
+                        <Text className="text-white font-semibold text-xl">{t.add.takePhoto}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => { if (credits <= 0) { setShowCreditModal(true); } else { pickImage(); } }}
-                        style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#f5c8b4', padding: 24, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 }}
+                        className="bg-white dark:bg-dark-card dark:bg-dark-card border border-peach-200 dark:border-dark-border py-6 rounded-2xl flex-row items-center justify-center gap-4"
                     >
                         <UploadCloud color="#eb6e3e" size={28} />
-                        <Text style={{ color: '#eb6e3e', fontWeight: '600', fontSize: 20 }}>{t.add.chooseFromLibrary}</Text>
+                        <Text className="text-peach-500 font-semibold text-xl">{t.add.chooseFromLibrary}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => { if (credits <= 0) { setShowCreditModal(true); } else { setShowUrlInput(true); } }}
-                        style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#f5c8b4', padding: 24, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 }}
+                        className="bg-white dark:bg-dark-card dark:bg-dark-card border border-peach-200 dark:border-dark-border py-6 rounded-2xl flex-row items-center justify-center gap-4"
                     >
                         <LinkIcon color="#eb6e3e" size={28} />
-                        <Text style={{ color: '#eb6e3e', fontWeight: '600', fontSize: 20 }}>{t.add.addFromUrl}</Text>
+                        <Text className="text-peach-500 font-semibold text-xl">{t.add.addFromUrl}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => { onDismiss?.(); router.push({ pathname: "/recipes/recipe-form", params: { mode: "create" } }); }}
-                        style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#f5c8b4', padding: 24, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 }}
+                        className="bg-white dark:bg-dark-card dark:bg-dark-card border border-peach-200 dark:border-dark-border py-6 rounded-2xl flex-row items-center justify-center gap-4"
                     >
                         <PenLine color="#eb6e3e" size={28} />
-                        <Text style={{ color: '#eb6e3e', fontWeight: '600', fontSize: 20 }}>{t.add.writeManually}</Text>
+                        <Text className="text-peach-500 font-semibold text-xl">{t.add.writeManually}</Text>
                     </TouchableOpacity>
-                    <Text style={{ color: '#b8b5b2', textAlign: 'center', fontSize: 13, marginTop: 8 }}>{t.add.maxImages}</Text>
+                    <Text className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted text-center text-sm mb-2">{t.add.maxImages}</Text>
                 </View>
             )}
         </View>

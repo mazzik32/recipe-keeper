@@ -80,8 +80,8 @@ export function ImageUpload({ value, onChange, aspectRatio = "video", className 
 
     return (
         <View className={`w-full ${className}`}>
-            {label && <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{label}</Text>}
-            <View className={`relative border-2 border-dashed border-warm-gray-200 dark:border-dark-border rounded-xl overflow-hidden bg-warm-gray-50 dark:bg-dark-elevated ${aspectClass} ${size === 'small' && !value ? 'h-24' : ''}`}>
+            {label && <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{label}</Text>}
+            <View className={`relative border-2 border-dashed border-warm-gray-200 dark:border-dark-border dark:border-dark-border rounded-xl overflow-hidden bg-warm-gray-50 dark:bg-dark-elevated dark:bg-dark-elevated ${aspectClass} ${size === 'small' && !value ? 'h-24' : ''}`}>
                 {value ? (
                     <>
                         <Image source={{ uri: value }} style={{ flex: 1, width: '100%', height: '100%' }} contentFit="cover" />
@@ -103,7 +103,7 @@ export function ImageUpload({ value, onChange, aspectRatio = "video", className 
                         ) : (
                             <>
                                 <Upload color="#a8a29e" size={size === 'small' ? 24 : 32} className={size === 'small' ? 'mb-1' : 'mb-2'} />
-                                <Text className="text-warm-gray-500 dark:text-dark-muted text-xs font-medium">Upload photo</Text>
+                                <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-xs font-medium">Upload photo</Text>
                             </>
                         )}
                     </TouchableOpacity>

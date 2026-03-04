@@ -15,7 +15,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 
 const WhiskLoader = () => {
     return (
-        <View className="flex-1 bg-cream dark:bg-dark-bg items-center justify-center">
+        <View className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg items-center justify-center">
             <LottieView
                 autoPlay
                 loop
@@ -43,7 +43,7 @@ const WhiskLoader = () => {
                     );
                 })}
             </View>
-            <Text style={{ fontFamily: 'DancingScript_600SemiBold' }} className="text-warm-gray-400 dark:text-dark-muted mt-4 text-base">Rezepte werden geladen…</Text>
+            <Text style={{ fontFamily: 'DancingScript_600SemiBold' }} className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted mt-4 text-base">Rezepte werden geladen…</Text>
         </View>
     );
 };
@@ -155,7 +155,7 @@ export default function Dashboard() {
             recipe_collections(collection_id)
         `;
         if (isOfflineEnabled) {
-            selectQuery += `, ingredients:recipe_ingredients(*), instructions:recipe_instructions(*)`;
+            selectQuery += `, ingredients:recipe_ingredients(*), instructions:recipe_steps(*)`;
         }
 
         const { data, error } = await supabase
@@ -258,7 +258,7 @@ export default function Dashboard() {
         return (
             <Pressable
                 onPress={() => router.push(`/recipes/${item.id}`)}
-                className="bg-white dark:bg-dark-card rounded-[20px] mb-4 border border-warm-gray-100 dark:border-dark-border p-4"
+                className="bg-white dark:bg-dark-card dark:bg-dark-card rounded-[20px] mb-4 border border-warm-gray-100 dark:border-dark-border dark:border-dark-border p-4"
                 style={({ pressed }) => [
                     {
                         shadowColor: "#e07030",
@@ -276,19 +276,19 @@ export default function Dashboard() {
                     {totalTime > 0 && (
                         <View className="flex-row items-center gap-1 mr-3">
                             <Clock color={colors.muted} size={13} />
-                            <Text className="text-warm-gray-400 dark:text-dark-muted text-xs font-semibold">{totalTime} min</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted text-xs font-semibold">{totalTime} min</Text>
                         </View>
                     )}
                     {item.servings && (
                         <View className="flex-row items-center gap-1 mr-3">
                             <Users color={colors.muted} size={13} />
-                            <Text className="text-warm-gray-400 dark:text-dark-muted text-xs font-semibold">{item.servings} P.</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted text-xs font-semibold">{item.servings} P.</Text>
                         </View>
                     )}
                     {item.difficulty && (
                         <View className="flex-row items-center gap-1">
                             <ChefHat color={colors.muted} size={13} />
-                            <Text className="text-warm-gray-400 dark:text-dark-muted text-xs font-semibold capitalize">{item.difficulty}</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted text-xs font-semibold capitalize">{item.difficulty}</Text>
                         </View>
                     )}
                     <View className="ml-auto">
@@ -298,7 +298,7 @@ export default function Dashboard() {
 
                 {/* Row 2: image + title/description side-by-side */}
                 <View className="flex-row items-end">
-                    <View className="w-[88px] h-[88px] rounded-2xl bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center mr-4 shrink-0">
+                    <View className="w-[88px] h-[88px] rounded-2xl bg-peach-50 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle items-center justify-center mr-4 shrink-0">
                         {primaryImage ? (
                             <Image
                                 source={primaryImage.image_url}
@@ -312,7 +312,7 @@ export default function Dashboard() {
                         )}
                     </View>
                     <View className="flex-1">
-                        <Text className="font-playfair text-[17px] font-semibold text-warm-gray-700 dark:text-dark-text mb-1" numberOfLines={2}>
+                        <Text className="font-playfair text-[17px] font-semibold text-warm-gray-700 dark:text-dark-text dark:text-dark-text mb-1" numberOfLines={2}>
                             {item.title}
                         </Text>
                         {item.description && (
@@ -327,7 +327,7 @@ export default function Dashboard() {
                 {item.tags.length > 0 && (
                     <View className="flex-row flex-wrap gap-2 mt-2.5">
                         {item.tags.slice(0, 2).map((t: any) => (
-                            <View key={t.id} className="bg-peach-50 dark:bg-dark-peach-subtle px-2.5 py-1 rounded-md">
+                            <View key={t.id} className="bg-peach-50 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle px-2.5 py-1 rounded-md">
                                 <Text className="text-xs font-semibold text-peach-500">{t.name}</Text>
                             </View>
                         ))}
@@ -344,7 +344,7 @@ export default function Dashboard() {
     }
 
     return (
-        <View className="flex-1 bg-cream dark:bg-dark-bg">
+        <View className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg">
             <FlatList
                 data={filteredRecipes}
                 keyExtractor={(item) => item.id}
@@ -355,7 +355,7 @@ export default function Dashboard() {
                 ListHeaderComponent={
                     <View className="mb-2">
                         {/* Header: animated title ↔ search */}
-                        <SafeAreaView edges={['top']} className="bg-cream dark:bg-dark-bg">
+                        <SafeAreaView edges={['top']} className="bg-cream dark:bg-dark-bg dark:bg-dark-bg">
                             {/* Fixed height container — must be tall enough for 3-line title block */}
                             <View style={{ height: 112, marginBottom: 8 }}>
                                 {/* Title row — fades/slides out when search opens */}
@@ -387,13 +387,13 @@ export default function Dashboard() {
                                             <TouchableOpacity
                                                 onPress={openSearch}
                                                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                                                style={{ padding: 8, borderRadius: 20, backgroundColor: '#fdf1ec' }}
+                                                className="p-2 rounded-full bg-peach-50 dark:bg-dark-border"
                                             >
                                                 <Search color="#eb6e3e" size={19} />
                                             </TouchableOpacity>
                                             <Image
                                                 source={require("../../assets/icon.png")}
-                                                style={{ width: 42, height: 42, borderRadius: 10, borderWidth: 1, borderColor: '#f0eeec' }}
+                                                className="w-10 h-10 rounded-xl border border-warm-gray-200 dark:border-dark-border"
                                             />
                                         </View>
                                     </View>
@@ -405,7 +405,7 @@ export default function Dashboard() {
                                     pointerEvents={isSearchOpen ? 'auto' : 'none'}
                                 >
                                     <View
-                                        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#f5c8b4', borderRadius: 18, paddingHorizontal: 14, height: 50, shadowColor: '#e07030', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 8, elevation: 3 }}
+                                        className="flex-1 flex-row items-center bg-white dark:bg-dark-card border-2 border-peach-200 dark:border-dark-border rounded-2xl px-4 h-12 shadow-sm"
                                     >
                                         <Search color="#eb6e3e" size={18} />
                                         <TextInput
@@ -420,14 +420,14 @@ export default function Dashboard() {
                                         />
                                         {searchQuery.length > 0 && (
                                             <TouchableOpacity onPress={() => setSearchQuery("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                                                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#e8e4e0', alignItems: 'center', justifyContent: 'center' }}>
+                                                <View className="w-5 h-5 rounded-full bg-warm-gray-200 dark:bg-dark-border items-center justify-center">
                                                     <X color={colors.text} size={12} />
                                                 </View>
                                             </TouchableOpacity>
                                         )}
                                     </View>
-                                    <TouchableOpacity onPress={closeSearch} style={{ marginLeft: 12, paddingVertical: 8 }}>
-                                        <Text style={{ color: '#eb6e3e', fontWeight: '600', fontSize: 15 }}>Cancel</Text>
+                                    <TouchableOpacity onPress={closeSearch} className="ml-3 py-2">
+                                        <Text className="text-peach-500 font-semibold text-base">Cancel</Text>
                                     </TouchableOpacity>
                                 </Animated.View>
                             </View>
@@ -444,7 +444,7 @@ export default function Dashboard() {
                                 >
                                     <TouchableOpacity
                                         onPress={() => setSelectedTagId(null)}
-                                        className={`px-5 py-3 rounded-xl flex-row items-center gap-2.5 ${selectedTagId === null ? 'bg-peach-300' : 'bg-white dark:bg-dark-card border border-warm-gray-100'}`}
+                                        className={`px-5 py-3 rounded-xl flex-row items-center gap-2.5 ${selectedTagId === null ? 'bg-peach-300' : 'bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-100'}`}
                                         style={selectedTagId === null ? { shadowColor: "#f8a888", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 4 } : {}}
                                     >
                                         <Text className="text-base">📖</Text>
@@ -462,7 +462,7 @@ export default function Dashboard() {
                                         <TouchableOpacity
                                             key={tag.id}
                                             onPress={() => setSelectedTagId(selectedTagId === tag.id ? null : tag.id)}
-                                            className={`px-5 py-3 rounded-xl flex-row items-center gap-2.5 ${selectedTagId === tag.id ? 'bg-peach-300' : 'bg-white dark:bg-dark-card border border-warm-gray-100'}`}
+                                            className={`px-5 py-3 rounded-xl flex-row items-center gap-2.5 ${selectedTagId === tag.id ? 'bg-peach-300' : 'bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-100'}`}
                                             style={selectedTagId === tag.id ? { shadowColor: "#f8a888", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 4 } : {}}
                                         >
                                             <Text className={`font-semibold text-[15px] ${selectedTagId === tag.id ? 'text-white' : 'text-warm-gray-700'}`}>
@@ -482,17 +482,17 @@ export default function Dashboard() {
                 }
                 ListEmptyComponent={
                     <View className="items-center py-10">
-                        <Text className="text-warm-gray-500 dark:text-dark-muted text-center">{t.recipes.noRecipes}</Text>
+                        <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-center">{t.recipes.noRecipes}</Text>
                     </View>
                 }
             />
 
             {/* Collection Picker Modal */}
             <Modal visible={showCollectionPicker} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowCollectionPicker(false)}>
-                <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg" edges={['top']}>
-                    <View className="flex-row items-center justify-between px-4 py-3 bg-white dark:bg-dark-card border-b border-warm-gray-100 dark:border-dark-border shadow-sm z-10">
+                <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg" edges={['top']}>
+                    <View className="flex-row items-center justify-between px-4 py-3 bg-white dark:bg-dark-card dark:bg-dark-card border-b border-warm-gray-100 dark:border-dark-border dark:border-dark-border shadow-sm z-10">
                         <View className="w-10" />
-                        <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text font-semibold text-center flex-1">Select Collection</Text>
+                        <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text font-semibold text-center flex-1">Select Collection</Text>
                         <TouchableOpacity onPress={() => setShowCollectionPicker(false)} className="w-10 items-end pr-2 py-2">
                             <X color={colors.text} size={24} />
                         </TouchableOpacity>
@@ -500,7 +500,7 @@ export default function Dashboard() {
                     <ScrollView className="flex-1 px-4 py-6" contentContainerStyle={{ paddingBottom: 40 }}>
                         <TouchableOpacity
                             onPress={() => { setSelectedCollectionId(null); setShowCollectionPicker(false); }}
-                            className={`p-5 rounded-2xl mb-3 flex-row items-center justify-between ${!selectedCollectionId ? 'bg-peach-100 dark:bg-dark-peach-subtle border border-peach-200' : 'bg-white dark:bg-dark-card border border-warm-gray-100'}`}
+                            className={`p-5 rounded-2xl mb-3 flex-row items-center justify-between ${!selectedCollectionId ? 'bg-peach-100 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle border border-peach-200' : 'bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-100'}`}
                             style={!selectedCollectionId ? { shadowColor: '#e07030', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 } : {}}
                         >
                             <Text className={`font-semibold text-[17px] ${!selectedCollectionId ? 'text-peach-700' : 'text-warm-gray-700'}`}>{t.nav.allRecipes || "All my recipes"}</Text>
@@ -511,7 +511,7 @@ export default function Dashboard() {
                             <TouchableOpacity
                                 key={col.id}
                                 onPress={() => { setSelectedCollectionId(col.id); setShowCollectionPicker(false); }}
-                                className={`p-5 rounded-2xl mb-3 flex-row items-center justify-between ${selectedCollectionId === col.id ? 'bg-peach-100 dark:bg-dark-peach-subtle border border-peach-200' : 'bg-white dark:bg-dark-card border border-warm-gray-100'}`}
+                                className={`p-5 rounded-2xl mb-3 flex-row items-center justify-between ${selectedCollectionId === col.id ? 'bg-peach-100 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle border border-peach-200' : 'bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-100'}`}
                                 style={selectedCollectionId === col.id ? { shadowColor: '#e07030', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 } : {}}
                             >
                                 <Text className={`font-semibold text-[17px] ${selectedCollectionId === col.id ? 'text-peach-700' : 'text-warm-gray-700'}`}>{col.name}</Text>

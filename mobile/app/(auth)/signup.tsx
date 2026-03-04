@@ -78,17 +78,17 @@ export default function SignupScreen() {
 
     if (isSuccess) {
         return (
-            <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg px-6 justify-center">
-                <View className="bg-white dark:bg-dark-card p-6 rounded-3xl border border-warm-gray-200 dark:border-dark-border shadow-sm items-center">
-                    <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text text-center mb-4">
+            <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg px-6 justify-center">
+                <View className="bg-white dark:bg-dark-card dark:bg-dark-card p-6 rounded-3xl border border-warm-gray-200 dark:border-dark-border dark:border-dark-border shadow-sm items-center">
+                    <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text text-center mb-4">
                         {t.auth.checkEmail}
                     </Text>
-                    <Text className="text-warm-gray-500 dark:text-dark-muted text-center mb-8">
+                    <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-center mb-8">
                         {t.auth.checkEmailDesc}
                     </Text>
 
                     <TouchableOpacity
-                        className="bg-white dark:bg-dark-card border border-peach-200 rounded-full h-12 w-full flex-row items-center justify-center mb-2 active:bg-peach-50 dark:bg-dark-peach-subtle"
+                        className="bg-white dark:bg-dark-card dark:bg-dark-card border border-peach-200 rounded-full h-12 w-full flex-row items-center justify-center mb-2 active:bg-peach-50 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle"
                         onPress={() => user?.is_anonymous ? router.replace("/(tabs)") : router.replace("/(auth)/login")}
                     >
                         <Text className="text-peach-600 font-semibold text-base">
@@ -101,7 +101,7 @@ export default function SignupScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg px-6">
+        <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg px-6">
             <View className="mt-2 mb-2 z-10">
                 <TouchableOpacity
                     onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')}
@@ -112,24 +112,24 @@ export default function SignupScreen() {
             </View>
             <View className="flex-1 justify-center pb-20">
                 <View className="mb-8 mt-4">
-                    <Text className="font-playfair text-4xl text-warm-gray-700 dark:text-dark-text text-center mb-2">
+                    <Text className="font-playfair text-4xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text text-center mb-2">
                         {t.auth.signup}
                     </Text>
-                    <Text className="text-warm-gray-500 dark:text-dark-muted text-center">
+                    <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-center">
                         {t.auth.createAccountDesc}
                     </Text>
                 </View>
 
                 <View className="space-y-4">
                     <TextInput
-                        className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-3 h-12 text-warm-gray-700 dark:text-dark-text"
+                        className="bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border dark:border-dark-border rounded-xl px-4 py-3 h-12 text-warm-gray-700 dark:text-dark-text dark:text-dark-text"
                         placeholder={t.auth.displayNamePlaceholder}
                         placeholderTextColor={colors.muted}
                         value={displayName}
                         onChangeText={setDisplayName}
                     />
                     <TextInput
-                        className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-3 h-12 text-warm-gray-700 dark:text-dark-text mt-4"
+                        className="bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border dark:border-dark-border rounded-xl px-4 py-3 h-12 text-warm-gray-700 dark:text-dark-text dark:text-dark-text mt-4"
                         placeholder={t.auth.login.includes("Sign") ? "Email address" : "E-Mail-Adresse"}
                         placeholderTextColor={colors.muted}
                         value={email}
@@ -138,7 +138,7 @@ export default function SignupScreen() {
                         keyboardType="email-address"
                     />
                     <TextInput
-                        className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-3 h-12 text-warm-gray-700 dark:text-dark-text mt-4"
+                        className="bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border dark:border-dark-border rounded-xl px-4 py-3 h-12 text-warm-gray-700 dark:text-dark-text dark:text-dark-text mt-4"
                         placeholder={t.auth.login.includes("Sign") ? "Password" : "Passwort"}
                         placeholderTextColor={colors.muted}
                         value={password}
@@ -157,7 +157,7 @@ export default function SignupScreen() {
                     </TouchableOpacity>
 
                     <View className="flex-row justify-center items-center mt-6">
-                        <Text className="text-warm-gray-500 dark:text-dark-muted text-sm mr-1">
+                        <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-sm mr-1">
                             {t.auth.alreadyHaveAccount}
                         </Text>
                         <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>

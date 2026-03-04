@@ -38,25 +38,25 @@ export default function ForgotPasswordScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg px-6">
+        <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg px-6">
             <TouchableOpacity
                 className="mt-4 mb-8 flex-row items-center"
                 onPress={() => router.back()}
             >
                 <ArrowLeft color={colors.text} size={24} />
-                <Text className="text-warm-gray-500 dark:text-dark-muted ml-2 font-medium">Back to Login</Text>
+                <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted ml-2 font-medium">Back to Login</Text>
             </TouchableOpacity>
 
             <View className="mb-8">
-                <Text className="font-playfair text-4xl text-warm-gray-700 dark:text-dark-text text-center mb-2">Reset Password</Text>
-                <Text className="text-warm-gray-500 dark:text-dark-muted text-center px-4">
+                <Text className="font-playfair text-4xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text text-center mb-2">Reset Password</Text>
+                <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-center px-4">
                     Enter your email address and we'll send you a link to reset your password.
                 </Text>
             </View>
 
             <View className="space-y-4">
                 <TextInput
-                    className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-3 h-12 text-warm-gray-700 dark:text-dark-text mb-6"
+                    className="bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border dark:border-dark-border rounded-xl px-4 py-3 h-12 text-warm-gray-700 dark:text-dark-text dark:text-dark-text mb-6"
                     placeholder="Email address"
                     placeholderTextColor={colors.muted}
                     value={email}

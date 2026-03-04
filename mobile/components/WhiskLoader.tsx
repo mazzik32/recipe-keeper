@@ -24,7 +24,7 @@ export default function WhiskLoader({ isAnalyzing = false, fullScreen = false }:
             />
             {isAnalyzing ? (
                 <Animated.Text
-                    className="text-warm-gray-700 dark:text-dark-text font-medium text-center px-6 mt-4 text-base"
+                    className="text-warm-gray-700 dark:text-dark-text dark:text-dark-text font-medium text-center px-6 mt-4 text-base"
                     key={loadingMessage} // Changing key triggers the animation for the new text
                     entering={FadeIn.duration(400)}
                     exiting={FadeOut.duration(400)}
@@ -32,7 +32,7 @@ export default function WhiskLoader({ isAnalyzing = false, fullScreen = false }:
                     {loadingMessage}
                 </Animated.Text>
             ) : (
-                <Text className="text-warm-gray-700 dark:text-dark-text font-medium mt-4">
+                <Text className="text-warm-gray-700 dark:text-dark-text dark:text-dark-text font-medium mt-4">
                     {t.common.loading}
                 </Text>
             )}
@@ -41,7 +41,7 @@ export default function WhiskLoader({ isAnalyzing = false, fullScreen = false }:
 
     if (fullScreen) {
         return (
-            <View className="flex-1 bg-cream dark:bg-dark-bg items-center justify-center absolute inset-0 z-50 rounded-2xl">
+            <View className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg items-center justify-center absolute inset-0 z-50 rounded-2xl">
                 {content}
             </View>
         );

@@ -35,12 +35,12 @@ export default function CreditGateModal({ visible, onClose }: CreditGateModalPro
             onRequestClose={onClose}
         >
             <View className="flex-1 justify-end bg-black/40">
-                <View className="bg-cream dark:bg-dark-bg rounded-t-3xl p-6 pb-12 shadow-lg">
+                <View className="bg-cream dark:bg-dark-bg dark:bg-dark-bg rounded-t-3xl p-6 pb-12 shadow-lg">
                     <View className="items-center mb-6 mt-2">
                         <View className="w-12 h-1.5 bg-warm-gray-300 rounded-full mb-6" />
 
                         {isAnonymous ? (
-                            <View className="w-16 h-16 bg-peach-100 dark:bg-dark-peach-subtle rounded-full items-center justify-center mb-4">
+                            <View className="w-16 h-16 bg-peach-100 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle rounded-full items-center justify-center mb-4">
                                 <Coffee color="#eb6e3e" size={32} />
                             </View>
                         ) : (
@@ -49,12 +49,12 @@ export default function CreditGateModal({ visible, onClose }: CreditGateModalPro
                             </View>
                         )}
 
-                        <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text text-center mb-2">
+                        <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text text-center mb-2">
                             {isAnonymous
                                 ? t.creditGate.freeScansUsedUp
                                 : t.creditGate.outOfCredits}
                         </Text>
-                        <Text className="text-warm-gray-500 dark:text-dark-muted text-center text-base px-2 leading-relaxed">
+                        <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-center text-base px-2 leading-relaxed">
                             {isAnonymous
                                 ? t.creditGate.freeScansDesc
                                 : t.creditGate.outOfCreditsDesc}
@@ -90,9 +90,9 @@ export default function CreditGateModal({ visible, onClose }: CreditGateModalPro
 
                         <TouchableOpacity
                             onPress={onClose}
-                            className="py-4 rounded-xl items-center justify-center bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border"
+                            className="py-4 rounded-xl items-center justify-center bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border dark:border-dark-border"
                         >
-                            <Text className="text-warm-gray-600 dark:text-dark-text font-medium text-base">
+                            <Text className="text-warm-gray-600 dark:text-dark-text dark:text-dark-text font-medium text-base">
                                 {t.common.cancel}
                             </Text>
                         </TouchableOpacity>

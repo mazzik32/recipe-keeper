@@ -74,9 +74,9 @@ export default function FavoritesScreen() {
         return (
             <Pressable
                 onPress={() => router.push(`/recipes/${item.id}`)}
-                className="bg-white dark:bg-dark-card rounded-2xl mb-4 overflow-hidden border border-warm-gray-100 dark:border-dark-border shadow-sm active:opacity-80"
+                className="bg-white dark:bg-dark-card dark:bg-dark-card rounded-2xl mb-4 overflow-hidden border border-warm-gray-100 dark:border-dark-border dark:border-dark-border shadow-sm active:opacity-80"
             >
-                <View className="aspect-[4/3] w-full relative bg-peach-100 dark:bg-dark-peach-subtle">
+                <View className="aspect-[4/3] w-full relative bg-peach-100 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle">
                     {primaryImage ? (
                         <Image
                             source={primaryImage.image_url}
@@ -100,18 +100,18 @@ export default function FavoritesScreen() {
                 </View>
 
                 <View className="p-4">
-                    <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text mb-2 truncate">{item.title}</Text>
+                    <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text mb-2 truncate">{item.title}</Text>
                     <View className="flex-row items-center gap-4">
                         {totalTime > 0 && (
                             <View className="flex-row items-center gap-1.5">
                                 <Clock color={colors.muted} size={14} />
-                                <Text className="text-warm-gray-500 dark:text-dark-muted text-sm">{totalTime} min</Text>
+                                <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-sm">{totalTime} min</Text>
                             </View>
                         )}
                         {item.servings && (
                             <View className="flex-row items-center gap-1.5">
                                 <Users color={colors.muted} size={14} />
-                                <Text className="text-warm-gray-500 dark:text-dark-muted text-sm">{item.servings}</Text>
+                                <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-sm">{item.servings}</Text>
                             </View>
                         )}
                     </View>
@@ -121,9 +121,9 @@ export default function FavoritesScreen() {
     };
 
     return (
-        <SafeAreaView edges={['top']} className="flex-1 bg-cream dark:bg-dark-bg">
-            <View className="px-4 py-4 border-b border-warm-gray-100 dark:border-dark-border bg-white dark:bg-dark-card">
-                <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text">{t.nav.favorites}</Text>
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg">
+            <View className="px-4 py-4 border-b border-warm-gray-100 dark:border-dark-border dark:border-dark-border bg-white dark:bg-dark-card dark:bg-dark-card">
+                <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text">{t.nav.favorites}</Text>
             </View>
 
             {loading ? (
@@ -140,8 +140,8 @@ export default function FavoritesScreen() {
                     ListEmptyComponent={
                         <View className="items-center py-20">
                             <Heart color={colors.border} size={64} className="mb-4" />
-                            <Text className="text-warm-gray-400 dark:text-dark-muted text-lg text-center">No favorites yet.</Text>
-                            <Text className="text-warm-gray-400 dark:text-dark-muted text-sm mt-2 text-center">Tap the heart on a recipe to save it here.</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted text-lg text-center">No favorites yet.</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted text-sm mt-2 text-center">Tap the heart on a recipe to save it here.</Text>
                         </View>
                     }
                 />

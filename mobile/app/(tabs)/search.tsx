@@ -73,9 +73,9 @@ export default function SearchScreen() {
         return (
             <Pressable
                 onPress={() => router.push(`/recipes/${item.id}`)}
-                className="flex-row bg-white dark:bg-dark-card rounded-xl mb-3 overflow-hidden border border-warm-gray-100 dark:border-dark-border shadow-sm active:opacity-80 p-2"
+                className="flex-row bg-white dark:bg-dark-card dark:bg-dark-card rounded-xl mb-3 overflow-hidden border border-warm-gray-100 dark:border-dark-border dark:border-dark-border shadow-sm active:opacity-80 p-2"
             >
-                <View className="w-20 h-20 bg-peach-100 dark:bg-dark-peach-subtle rounded-lg overflow-hidden">
+                <View className="w-20 h-20 bg-peach-100 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle rounded-lg overflow-hidden">
                     {primaryImage ? (
                         <Image
                             source={primaryImage.image_url}
@@ -91,18 +91,18 @@ export default function SearchScreen() {
                     )}
                 </View>
                 <View className="flex-1 ml-3 justify-center">
-                    <Text className="font-playfair text-lg text-warm-gray-700 dark:text-dark-text mb-1" numberOfLines={1}>{item.title}</Text>
+                    <Text className="font-playfair text-lg text-warm-gray-700 dark:text-dark-text dark:text-dark-text mb-1" numberOfLines={1}>{item.title}</Text>
                     <View className="flex-row items-center gap-3">
                         {totalTime > 0 && (
                             <View className="flex-row items-center gap-1">
                                 <Clock color={colors.muted} size={12} />
-                                <Text className="text-warm-gray-400 dark:text-dark-muted text-xs">{totalTime} min</Text>
+                                <Text className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted text-xs">{totalTime} min</Text>
                             </View>
                         )}
                         {item.servings && (
                             <View className="flex-row items-center gap-1">
                                 <Users color={colors.muted} size={12} />
-                                <Text className="text-warm-gray-400 dark:text-dark-muted text-xs">{item.servings}</Text>
+                                <Text className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted text-xs">{item.servings}</Text>
                             </View>
                         )}
                     </View>
@@ -112,11 +112,11 @@ export default function SearchScreen() {
     };
 
     return (
-        <SafeAreaView edges={['top']} className="flex-1 bg-cream dark:bg-dark-bg px-4">
-            <View className="flex-row items-center bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-1 h-12 mb-6 mt-4">
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg px-4">
+            <View className="flex-row items-center bg-white dark:bg-dark-card dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border dark:border-dark-border rounded-xl px-4 py-1 h-12 mb-6 mt-4">
                 <SearchIcon color={colors.muted} size={20} />
                 <TextInput
-                    className="flex-1 ml-2 text-warm-gray-700 dark:text-dark-text h-full"
+                    className="flex-1 ml-2 text-warm-gray-700 dark:text-dark-text dark:text-dark-text h-full"
                     placeholder={t.search.searchRecipes}
                     placeholderTextColor={colors.muted}
                     value={query}
@@ -129,7 +129,7 @@ export default function SearchScreen() {
             </View>
 
             {query.length > 0 && (
-                <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-4 uppercase text-xs tracking-wider">
+                <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted font-semibold mb-4 uppercase text-xs tracking-wider">
                     {results.length} Results
                 </Text>
             )}
@@ -147,12 +147,12 @@ export default function SearchScreen() {
                     ListEmptyComponent={
                         query.length > 0 ? (
                             <View className="items-center py-10">
-                                <Text className="text-warm-gray-500 dark:text-dark-muted text-center">No recipes found for "{query}".</Text>
+                                <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-center">No recipes found for "{query}".</Text>
                             </View>
                         ) : (
                             <View className="items-center py-10 mt-10">
                                 <SearchIcon color={colors.border} size={48} className="mb-4" />
-                                <Text className="text-warm-gray-400 dark:text-dark-muted text-center text-lg">Type above to find a recipe</Text>
+                                <Text className="text-warm-gray-400 dark:text-dark-muted dark:text-dark-muted text-center text-lg">Type above to find a recipe</Text>
                             </View>
                         )
                     }

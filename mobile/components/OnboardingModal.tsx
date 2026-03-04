@@ -65,24 +65,24 @@ export function OnboardingModal() {
 
     return (
         <Modal visible={visible} animationType="slide" presentationStyle="fullScreen">
-            <View className="flex-1 bg-cream dark:bg-dark-bg" style={{ paddingTop: insets.top + 20 }}>
+            <View className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg" style={{ paddingTop: insets.top + 20 }}>
                 <View className="flex-1 px-6 pb-6 items-center justify-between">
                     <View className="items-center w-full">
-                        <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text mb-2 text-center">
+                        <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text mb-2 text-center">
                             {t.onboarding?.welcome || "Welcome to Recipe Keeper"}
                         </Text>
-                        <Text className="text-warm-gray-500 dark:text-dark-muted text-center mb-12">
+                        <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-center mb-12">
                             {t.onboarding?.welcomeDesc || "Your personal digital cookbook. Let's get started!"}
                         </Text>
 
-                        <View className="w-40 h-40 bg-peach-100 dark:bg-dark-peach-subtle rounded-full items-center justify-center shadow-sm mb-10">
+                        <View className="w-40 h-40 bg-peach-100 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle rounded-full items-center justify-center shadow-sm mb-10">
                             {slides[step].icon}
                         </View>
 
-                        <Text className="font-playfair text-2xl text-warm-gray-700 dark:text-dark-text mb-4 text-center">
+                        <Text className="font-playfair text-2xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text mb-4 text-center">
                             {slides[step].title}
                         </Text>
-                        <Text className="text-warm-gray-500 dark:text-dark-muted text-base text-center leading-relaxed px-4">
+                        <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-base text-center leading-relaxed px-4">
                             {slides[step].description}
                         </Text>
                     </View>

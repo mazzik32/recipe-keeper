@@ -3,7 +3,7 @@ import AddRecipeScreen from "../../components/AddRecipeScreen";
 
 export default function AddTab() {
     return (
-        <View style={{ flex: 1, backgroundColor: '#fbfaf9' }}>
+        <View className="flex-1 bg-warm-white dark:bg-dark-bg">
             <AddRecipeScreen />
         </View>
     );
