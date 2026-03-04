@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
-    "version": "1.0.1",
+    "name": "RecipeKeeper",
+    "slug": "recipekeeper",
+    "version": "1.0.2",
     "scheme": "recipekeeper",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
