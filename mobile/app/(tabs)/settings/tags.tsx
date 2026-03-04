@@ -157,12 +157,12 @@ export default function TagsManagementScreen() {
     };
 
     return (
-        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
-            <View className="flex-row items-center px-4 py-3 bg-white border-b border-warm-gray-100">
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream dark:bg-dark-bg">
+            <View className="flex-row items-center px-4 py-3 bg-white dark:bg-dark-card border-b border-warm-gray-100 dark:border-dark-border">
                 <TouchableOpacity onPress={() => router.back()} className="p-2 mr-2">
                     <ArrowLeft color="#75716d" size={24} />
                 </TouchableOpacity>
-                <Text className="font-playfair text-xl text-warm-gray-700">{t.tags?.manageTags || "Manage Tags"}</Text>
+                <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text">{t.tags?.manageTags || "Manage Tags"}</Text>
             </View>
 
             {loading ? (
@@ -172,12 +172,12 @@ export default function TagsManagementScreen() {
             ) : (
                 <ScrollView className="flex-1 px-4 py-6" keyboardShouldPersistTaps="handled">
                     {/* Create New Tag Input */}
-                    <View className="flex-row items-center bg-white rounded-2xl border border-warm-gray-200 px-4 py-3 mb-6 shadow-sm">
+                    <View className="flex-row items-center bg-white dark:bg-dark-card rounded-2xl border border-warm-gray-200 dark:border-dark-border px-4 py-3 mb-6 shadow-sm">
                         <TextInput
                             value={newTagName}
                             onChangeText={setNewTagName}
                             placeholder={t.tags?.newTagName || "New tag name..."}
-                            className="flex-1 text-base text-warm-gray-700 h-8"
+                            className="flex-1 text-base text-warm-gray-700 dark:text-dark-text h-8"
                             onSubmitEditing={handleCreate}
                             returnKeyType="done"
                         />
@@ -197,21 +197,21 @@ export default function TagsManagementScreen() {
                     {tags.length === 0 ? (
                         <View className="py-8 items-center">
                             <TagIcon color="#dfd8d3" size={64} className="mb-4" />
-                            <Text className="text-warm-gray-500 text-center px-8 text-lg">
+                            <Text className="text-warm-gray-500 dark:text-dark-muted text-center px-8 text-lg">
                                 {t.tags?.noTags || "No tags yet. Create your first tag above."}
                             </Text>
                         </View>
                     ) : (
-                        <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
+                        <View className="bg-white dark:bg-dark-card rounded-2xl border border-warm-gray-100 dark:border-dark-border overflow-hidden shadow-sm">
                             {tags.map((tag, index) => {
                                 const isEditing = editingId === tag.id;
                                 return (
                                     <View
                                         key={tag.id}
-                                        className={`flex-row items-center justify-between p-4 bg-white ${index !== tags.length - 1 ? 'border-b border-warm-gray-50' : ''}`}
+                                        className={`flex-row items-center justify-between p-4 bg-white dark:bg-dark-card ${index !== tags.length - 1 ? 'border-b border-warm-gray-50' : ''}`}
                                     >
                                         <View className="flex-1 flex-row items-center gap-3">
-                                            <View className="w-10 h-10 rounded-full bg-peach-50 items-center justify-center">
+                                            <View className="w-10 h-10 rounded-full bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center">
                                                 <TagIcon color="#eb6e3e" size={20} />
                                             </View>
                                             <View className="flex-1">
@@ -219,15 +219,15 @@ export default function TagsManagementScreen() {
                                                     <TextInput
                                                         value={editName}
                                                         onChangeText={setEditName}
-                                                        className="text-base text-warm-gray-700 font-medium py-1 px-2 -ml-2 bg-warm-gray-50 rounded border border-peach-200"
+                                                        className="text-base text-warm-gray-700 dark:text-dark-text font-medium py-1 px-2 -ml-2 bg-warm-gray-50 dark:bg-dark-elevated rounded border border-peach-200"
                                                         autoFocus
                                                         onSubmitEditing={() => handleEditSave(tag)}
                                                         returnKeyType="done"
                                                     />
                                                 ) : (
                                                     <>
-                                                        <Text className="text-warm-gray-700 font-medium text-base mb-0.5">{tag.name}</Text>
-                                                        <Text className="text-warm-gray-500 text-sm">
+                                                        <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base mb-0.5">{tag.name}</Text>
+                                                        <Text className="text-warm-gray-500 dark:text-dark-muted text-sm">
                                                             {(t.tags?.tagUsedBy || "Used by {count} recipe(s)").replace("{count}", tag.recipe_count.toString())}
                                                         </Text>
                                                     </>
@@ -241,7 +241,7 @@ export default function TagsManagementScreen() {
                                                     <TouchableOpacity onPress={cancelEditing} className="p-2 mr-1">
                                                         <X color="#a8a29e" size={20} />
                                                     </TouchableOpacity>
-                                                    <TouchableOpacity onPress={() => handleEditSave(tag)} disabled={savingId === tag.id} className="p-2 bg-peach-100 rounded-full">
+                                                    <TouchableOpacity onPress={() => handleEditSave(tag)} disabled={savingId === tag.id} className="p-2 bg-peach-100 dark:bg-dark-peach-subtle rounded-full">
                                                         {savingId === tag.id ? <ActivityIndicator size="small" color="#eb6e3e" /> : <Save color="#eb6e3e" size={18} />}
                                                     </TouchableOpacity>
                                                 </>

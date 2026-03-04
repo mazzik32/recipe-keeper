@@ -21,6 +21,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Plus, X } from "lucide-react-native";
 import AddRecipeScreen from "./AddRecipeScreen";
+import { useTheme } from "../contexts/ThemeContext";
 
 const FAB_SIZE = 56;
 
@@ -33,6 +34,7 @@ export default function FABOverlay() {
     const { width, height } = useWindowDimensions();
     const insets = useSafeAreaInsets();
     const reduceMotion = useReducedMotion();
+    const { colors, isDark } = useTheme();
 
     const [isOpen, setIsOpen] = useState(false);
     const isAnimating = useRef(false);
@@ -144,13 +146,13 @@ export default function FABOverlay() {
                             position: "absolute",
                             top: 0, left: 0, right: 0, bottom: 0,
                             zIndex: 91,
-                            backgroundColor: CONTENT_BG,
+                            backgroundColor: colors.background,
                         },
                         contentAnimStyle,
                     ]}
                 >
                     <Pressable style={{ flex: 1 }}>
-                        <StatusBar barStyle="dark-content" />
+                        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
                         <SafeAreaView style={{ flex: 1 }}>
                             {/* Close */}
                             <View style={{ flexDirection: "row", justifyContent: "flex-end", paddingHorizontal: 16, paddingTop: 8 }}>
@@ -164,7 +166,7 @@ export default function FABOverlay() {
                                     accessibilityLabel="Close add recipe"
                                     accessibilityRole="button"
                                 >
-                                    <X color="#3d3632" size={20} />
+                                    <X color={colors.text} size={20} />
                                 </TouchableOpacity>
                             </View>
                             <KeyboardAvoidingView

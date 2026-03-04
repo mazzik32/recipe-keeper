@@ -112,7 +112,7 @@ export default function ReviewScannedRecipeScreen() {
 
     if (!initialData) {
         return (
-            <View className="flex-1 bg-cream items-center justify-center">
+            <View className="flex-1 bg-cream dark:bg-dark-bg items-center justify-center">
                 <Text>{t.errors?.notFound || "No recipe data found to review."}</Text>
                 <TouchableOpacity onPress={() => router.back()} className="mt-4 p-4">
                     <Text className="text-peach-600">{t.common.back}</Text>
@@ -122,13 +122,13 @@ export default function ReviewScannedRecipeScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-cream">
+        <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg">
             {/* Header */}
-            <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-warm-gray-100">
+            <View className="flex-row items-center justify-between px-4 py-3 bg-white dark:bg-dark-card border-b border-warm-gray-100 dark:border-dark-border">
                 <TouchableOpacity onPress={() => router.back()} className="p-2">
                     <ArrowLeft color="#75716d" size={24} />
                 </TouchableOpacity>
-                <Text className="font-playfair text-xl text-warm-gray-700">{t.add.reviewSave}</Text>
+                <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text">{t.add.reviewSave}</Text>
                 <TouchableOpacity onPress={handleSave} disabled={saving} className="bg-peach-500 px-4 py-2 rounded-full">
                     {saving ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-semibold">{t.common.save}</Text>}
                 </TouchableOpacity>
@@ -137,21 +137,21 @@ export default function ReviewScannedRecipeScreen() {
             <ScrollView className="flex-1 px-4 py-6" keyboardDismissMode="on-drag">
 
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.recipeTitle || "Title"}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.recipeTitle || "Title"}</Text>
                     <TextInput
                         value={title}
                         onChangeText={setTitle}
-                        className="bg-white border border-warm-gray-200 rounded-xl px-4 py-4 font-display text-xl text-warm-gray-700"
+                        className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-4 font-display text-xl text-warm-gray-700 dark:text-dark-text"
                     />
                 </View>
 
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.description}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.description}</Text>
                     <TextInput
                         value={description}
                         onChangeText={setDescription}
                         multiline
-                        className="bg-white border border-warm-gray-200 rounded-xl px-4 py-4 text-warm-gray-600 min-h-[100px] text-base leading-relaxed"
+                        className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-4 text-warm-gray-600 dark:text-dark-text min-h-[100px] text-base leading-relaxed"
                         textAlignVertical="top"
                     />
                 </View>
@@ -159,21 +159,21 @@ export default function ReviewScannedRecipeScreen() {
                 {/* Ingredients Preview */}
                 <View className="mb-8">
                     <View className="flex-row items-center justify-between mb-3">
-                        <Text className="font-playfair text-2xl text-warm-gray-700">Ingredients</Text>
-                        <TouchableOpacity className="p-2 bg-peach-100 rounded-full">
+                        <Text className="font-playfair text-2xl text-warm-gray-700 dark:text-dark-text">Ingredients</Text>
+                        <TouchableOpacity className="p-2 bg-peach-100 dark:bg-dark-peach-subtle rounded-full">
                             <Plus color="#eb6e3e" size={20} />
                         </TouchableOpacity>
                     </View>
-                    <View className="bg-white rounded-2xl p-4 shadow-sm border border-warm-gray-100">
+                    <View className="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-warm-gray-100 dark:border-dark-border">
                         {ingredients.map((ing, idx) => (
-                            <View key={idx} className="flex-row items-center py-2 border-b border-warm-gray-50 last:border-0">
+                            <View key={idx} className="flex-row items-center py-2 border-b border-warm-gray-50 dark:border-dark-border last:border-0">
                                 <TextInput
                                     value={`${ing.quantity || ''} ${ing.unit || ''}`.trim()}
-                                    className="w-24 font-semibold text-peach-600 border-r border-warm-gray-100 mr-3"
+                                    className="w-24 font-semibold text-peach-600 border-r border-warm-gray-100 dark:border-dark-border mr-3"
                                 />
                                 <TextInput
                                     value={ing.name}
-                                    className="flex-1 text-warm-gray-700"
+                                    className="flex-1 text-warm-gray-700 dark:text-dark-text"
                                 />
                                 <TouchableOpacity className="p-2">
                                     <Trash2 color="#dfd8d3" size={18} />
@@ -186,21 +186,21 @@ export default function ReviewScannedRecipeScreen() {
                 {/* Steps Preview */}
                 <View className="mb-12">
                     <View className="flex-row items-center justify-between mb-3">
-                        <Text className="font-playfair text-2xl text-warm-gray-700">Instructions</Text>
-                        <TouchableOpacity className="p-2 bg-peach-100 rounded-full">
+                        <Text className="font-playfair text-2xl text-warm-gray-700 dark:text-dark-text">Instructions</Text>
+                        <TouchableOpacity className="p-2 bg-peach-100 dark:bg-dark-peach-subtle rounded-full">
                             <Plus color="#eb6e3e" size={20} />
                         </TouchableOpacity>
                     </View>
                     <View className="space-y-4">
                         {instructions.map((step, idx) => (
-                            <View key={idx} className="bg-white rounded-2xl p-4 shadow-sm border border-warm-gray-100 flex-row">
-                                <View className="w-8 h-8 rounded-full bg-peach-100 items-center justify-center mr-3 mt-1">
+                            <View key={idx} className="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-warm-gray-100 dark:border-dark-border flex-row">
+                                <View className="w-8 h-8 rounded-full bg-peach-100 dark:bg-dark-peach-subtle items-center justify-center mr-3 mt-1">
                                     <Text className="text-peach-700 font-bold">{idx + 1}</Text>
                                 </View>
                                 <TextInput
                                     value={step.instruction}
                                     multiline
-                                    className="flex-1 text-warm-gray-600 text-base leading-relaxed min-h-[60px]"
+                                    className="flex-1 text-warm-gray-600 dark:text-dark-text text-base leading-relaxed min-h-[60px]"
                                 />
                             </View>
                         ))}

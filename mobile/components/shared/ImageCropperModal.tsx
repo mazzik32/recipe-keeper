@@ -133,13 +133,13 @@ export function ImageCropperModal({
 
     return (
         <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-            <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
+            <SafeAreaView className="flex-1 bg-white dark:bg-dark-card" edges={["top", "bottom"]}>
                 {/* Header */}
-                <View className="flex-row items-center justify-between px-4 py-3 border-b border-warm-gray-100">
+                <View className="flex-row items-center justify-between px-4 py-3 border-b border-warm-gray-100 dark:border-dark-border">
                     <TouchableOpacity onPress={onClose} className="p-2" disabled={isProcessing}>
                         <X color="#75716d" size={24} />
                     </TouchableOpacity>
-                    <Text className="font-playfair text-xl text-warm-gray-700">Edit Image</Text>
+                    <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text">Edit Image</Text>
                     <TouchableOpacity onPress={handleConfirm} className="p-2" disabled={isProcessing}>
                         {isProcessing ? <ActivityIndicator size="small" color="#eb6e3e" /> : <Check color="#eb6e3e" size={24} />}
                     </TouchableOpacity>
@@ -174,7 +174,7 @@ export function ImageCropperModal({
                 </View>
 
                 {/* Controls Area */}
-                <View className="px-6 py-6 pb-12 bg-white space-y-6">
+                <View className="px-6 py-6 pb-12 bg-white dark:bg-dark-card space-y-6">
                     {/* Aspect Ratio Tabs */}
                     <View className="flex-row justify-center gap-2">
                         {tabs.map((tab) => (
@@ -192,7 +192,7 @@ export function ImageCropperModal({
 
                     {/* Zoom Slider */}
                     <View className="flex-row items-center gap-4 mt-4">
-                        <Text className="text-sm font-medium text-warm-gray-600 w-12">Zoom</Text>
+                        <Text className="text-sm font-medium text-warm-gray-600 dark:text-dark-text w-12">Zoom</Text>
                         <Slider
                             style={{ flex: 1, height: 40 }}
                             minimumValue={1}
@@ -209,7 +209,7 @@ export function ImageCropperModal({
                     {/* Rotate Slider */}
                     <View className="flex-row items-center gap-4">
                         <RotateCw color="#75716d" size={20} className="w-6" />
-                        <Text className="text-sm font-medium text-warm-gray-600 w-10">Rotate</Text>
+                        <Text className="text-sm font-medium text-warm-gray-600 dark:text-dark-text w-10">Rotate</Text>
                         <Slider
                             style={{ flex: 1, height: 40 }}
                             minimumValue={0}
@@ -225,7 +225,7 @@ export function ImageCropperModal({
 
                     {/* Skip Button */}
                     <TouchableOpacity onPress={onSkip} className="mt-4 py-3 items-center border border-warm-gray-300 rounded-xl" disabled={isProcessing}>
-                        <Text className="text-warm-gray-600 font-semibold">Skip (Use Original)</Text>
+                        <Text className="text-warm-gray-600 dark:text-dark-text font-semibold">Skip (Use Original)</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>

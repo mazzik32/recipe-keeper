@@ -4,11 +4,14 @@ import { supabase } from "../../lib/supabase";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
+import { StatusBar } from "expo-status-bar";
+import { useTheme } from "../../contexts/ThemeContext";
 
 export default function ForgotPasswordScreen() {
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const { colors, isDark } = useTheme();
 
     async function handleResetPassword() {
         if (!email.trim()) {
@@ -35,27 +38,27 @@ export default function ForgotPasswordScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-cream px-6">
+        <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg px-6">
             <TouchableOpacity
                 className="mt-4 mb-8 flex-row items-center"
                 onPress={() => router.back()}
             >
-                <ArrowLeft color="#75716d" size={24} />
-                <Text className="text-warm-gray-500 ml-2 font-medium">Back to Login</Text>
+                <ArrowLeft color={colors.text} size={24} />
+                <Text className="text-warm-gray-500 dark:text-dark-muted ml-2 font-medium">Back to Login</Text>
             </TouchableOpacity>
 
             <View className="mb-8">
-                <Text className="font-playfair text-4xl text-warm-gray-700 text-center mb-2">Reset Password</Text>
-                <Text className="text-warm-gray-500 text-center px-4">
+                <Text className="font-playfair text-4xl text-warm-gray-700 dark:text-dark-text text-center mb-2">Reset Password</Text>
+                <Text className="text-warm-gray-500 dark:text-dark-muted text-center px-4">
                     Enter your email address and we'll send you a link to reset your password.
                 </Text>
             </View>
 
             <View className="space-y-4">
                 <TextInput
-                    className="bg-white border border-warm-gray-200 rounded-xl px-4 py-3 h-12 text-warm-gray-700 mb-6"
+                    className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-3 h-12 text-warm-gray-700 dark:text-dark-text mb-6"
                     placeholder="Email address"
-                    placeholderTextColor="#b8b5b2"
+                    placeholderTextColor={colors.muted}
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
@@ -72,6 +75,7 @@ export default function ForgotPasswordScreen() {
                     </Text>
                 </TouchableOpacity>
             </View>
+            <StatusBar style={isDark ? "light" : "dark"} />
         </SafeAreaView>
     );
 }

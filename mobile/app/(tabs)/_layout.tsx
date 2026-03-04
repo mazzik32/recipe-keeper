@@ -3,9 +3,11 @@ import { Home, Search, Heart, Settings } from "lucide-react-native";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { OnboardingModal } from "../../components/OnboardingModal";
 import FABOverlay from "../../components/FABOverlay";
+import { useTheme } from "../../contexts/ThemeContext";
 
 export default function TabLayout() {
     const { t } = useLanguage();
+    const { colors } = useTheme();
 
     return (
         <>
@@ -13,12 +15,12 @@ export default function TabLayout() {
                 screenOptions={{
                     headerShown: false,
                     tabBarStyle: {
-                        backgroundColor: '#fbfaf9',
-                        borderTopColor: '#f5f4f3',
+                        backgroundColor: colors.tabBar,
+                        borderTopColor: colors.border,
                         borderTopWidth: 1,
                     },
                     tabBarActiveTintColor: '#eb6e3e',
-                    tabBarInactiveTintColor: '#b8b5b2',
+                    tabBarInactiveTintColor: colors.muted,
                 }}
             >
                 <Tabs.Screen

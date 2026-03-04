@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useCredits } from "../../../contexts/CreditsContext";
 import { useLanguage } from "../../../contexts/LanguageContext";
+import { useTheme } from "../../../contexts/ThemeContext";
 import { ArrowLeft, Coins, Sparkles, Crown, Zap } from "lucide-react-native";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
@@ -68,6 +69,7 @@ function getProductPrice(product: any): string {
 export default function BuyCreditsScreen() {
     const router = useRouter();
     const { t, ti } = useLanguage();
+    const { colors, isDark } = useTheme();
     const { credits, refreshCredits } = useCredits();
 
     // Local IAP state — all IAP logic is self-contained in this screen
@@ -211,39 +213,39 @@ export default function BuyCreditsScreen() {
     }, [t]);
 
     return (
-        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream dark:bg-dark-bg">
             {/* Header */}
-            <View className="px-4 py-4 border-b border-warm-gray-100 bg-white flex-row items-center">
+            <View className="px-4 py-4 border-b border-warm-gray-100 dark:border-dark-border bg-white dark:bg-dark-card flex-row items-center">
                 <TouchableOpacity onPress={() => router.back()} className="mr-3 p-1">
-                    <ArrowLeft color="#75716d" size={24} />
+                    <ArrowLeft color={colors.text} size={24} />
                 </TouchableOpacity>
-                <Text className="font-playfair text-2xl text-warm-gray-700">{t.nav.credits}</Text>
+                <Text className="font-playfair text-2xl text-warm-gray-700 dark:text-dark-text">{t.nav.credits}</Text>
             </View>
 
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 {/* Current Balance */}
-                <View className="bg-white mx-4 mt-6 p-6 rounded-2xl border border-warm-gray-100 shadow-sm items-center">
-                    <View className="w-16 h-16 bg-peach-100 rounded-full items-center justify-center mb-3">
+                <View className="bg-white dark:bg-dark-card mx-4 mt-6 p-6 rounded-2xl border border-warm-gray-100 dark:border-dark-border shadow-sm items-center">
+                    <View className="w-16 h-16 bg-peach-100 dark:bg-dark-peach-subtle rounded-full items-center justify-center mb-3">
                         <Zap color="#eb6e3e" size={32} />
                     </View>
-                    <Text className="text-warm-gray-500 text-sm mb-1">{t.nav.credits}</Text>
-                    <Text className="font-playfair text-4xl text-warm-gray-700">{credits}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted text-sm mb-1">{t.nav.credits}</Text>
+                    <Text className="font-playfair text-4xl text-warm-gray-700 dark:text-dark-text">{credits}</Text>
                 </View>
 
                 {/* Packages */}
                 <View className="mt-8 px-4">
-                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-3 uppercase text-xs tracking-wider px-2">
                         {t.nav.credits}
                     </Text>
 
                     {loadingProducts ? (
                         <View className="py-12 items-center">
                             <WhiskLoader />
-                            <Text className="text-warm-gray-400 mt-3 text-sm">{t.common.loading}</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted mt-3 text-sm">{t.common.loading}</Text>
                         </View>
                     ) : iapError || products.length === 0 ? (
-                        <View className="bg-white rounded-2xl border border-warm-gray-100 p-6 items-center">
-                            <Text className="text-warm-gray-500 text-center">
+                        <View className="bg-white dark:bg-dark-card rounded-2xl border border-warm-gray-100 dark:border-dark-border p-6 items-center">
+                            <Text className="text-warm-gray-500 dark:text-dark-muted text-center">
                                 {iapError || (Platform.OS === 'ios'
                                     ? 'In-App Purchases are not available in the simulator. Please use a physical device.'
                                     : 'In-App Purchases are currently unavailable. Please try again later.')}
@@ -261,7 +263,7 @@ export default function BuyCreditsScreen() {
                                         key={getProductId(product)}
                                         onPress={() => handlePurchase(product)}
                                         disabled={purchasing}
-                                        className="bg-white rounded-2xl border border-warm-gray-100 shadow-sm p-5 flex-row items-center active:opacity-70"
+                                        className="bg-white dark:bg-dark-card rounded-2xl border border-warm-gray-100 dark:border-dark-border shadow-sm p-5 flex-row items-center active:opacity-70"
                                         style={{ opacity: purchasing ? 0.6 : 1 }}
                                     >
                                         <View
@@ -272,10 +274,10 @@ export default function BuyCreditsScreen() {
                                         </View>
 
                                         <View className="flex-1">
-                                            <Text className="font-playfair text-xl text-warm-gray-700">
+                                            <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text">
                                                 {creditAmount} Credits
                                             </Text>
-                                            <Text className="text-warm-gray-400 text-sm mt-0.5" numberOfLines={2}>
+                                            <Text className="text-warm-gray-400 dark:text-dark-muted text-sm mt-0.5" numberOfLines={2}>
                                                 {product.description || `${creditAmount} Scan Credits`}
                                             </Text>
                                         </View>
@@ -294,7 +296,7 @@ export default function BuyCreditsScreen() {
 
                 {/* Info */}
                 <View className="mt-8 px-6 pb-10">
-                    <Text className="text-warm-gray-400 text-xs text-center leading-5">
+                    <Text className="text-warm-gray-400 dark:text-dark-muted text-xs text-center leading-5">
                         {Platform.OS === 'ios'
                             ? 'Payment will be charged to your Apple ID account. Credits are non-refundable and do not expire.'
                             : 'Payment will be processed through Google Play. Credits are non-refundable and do not expire.'}
@@ -305,14 +307,14 @@ export default function BuyCreditsScreen() {
             {/* Purchasing overlay */}
             {purchasing && (
                 <View className="absolute inset-0 bg-black/30 items-center justify-center">
-                    <View className="bg-white rounded-2xl p-8 items-center mx-8 shadow-lg">
+                    <View className="bg-white dark:bg-dark-card rounded-2xl p-8 items-center mx-8 shadow-lg">
                         <ActivityIndicator size="large" color="#eb6e3e" />
-                        <Text className="text-warm-gray-700 font-semibold mt-4 text-lg">{t.common.loading}</Text>
+                        <Text className="text-warm-gray-700 dark:text-dark-text font-semibold mt-4 text-lg">{t.common.loading}</Text>
                     </View>
                 </View>
             )}
 
-            <StatusBar style="auto" />
+            <StatusBar style={isDark ? "light" : "dark"} />
         </SafeAreaView>
     );
 }

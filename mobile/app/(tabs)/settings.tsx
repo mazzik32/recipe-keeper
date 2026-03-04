@@ -5,6 +5,7 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useCredits } from "../../contexts/CreditsContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
 import { LogOut, User as UserIcon, CreditCard, ChevronRight, Plus, Globe, Bell, Moon, Tag as TagIcon, Download, Trash2 } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -20,7 +21,7 @@ export default function SettingsScreen() {
 
     // Mock states for UI
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+    const { isDark, toggleTheme, colors } = useTheme();
     const [offlineStorageEnabled, setOfflineStorageEnabled] = useState(false);
 
     const { locale, setLanguage } = useLanguage();
@@ -144,30 +145,30 @@ export default function SettingsScreen() {
     };
 
     return (
-        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
-            <View className="px-4 py-4 border-b border-warm-gray-100 bg-white">
-                <Text className="font-playfair text-3xl text-warm-gray-700">{t.nav.settings}</Text>
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream dark:bg-dark-bg">
+            <View className="px-4 py-4 border-b border-warm-gray-100 dark:border-dark-border bg-white dark:bg-dark-card">
+                <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text">{t.nav.settings}</Text>
             </View>
 
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
 
                 {/* Profile Header */}
-                <View className="bg-white p-6 mt-6 mx-4 rounded-2xl border border-warm-gray-100 shadow-sm flex-row items-center">
-                    <View className="w-16 h-16 bg-peach-100 rounded-full items-center justify-center mr-4">
+                <View className="bg-white dark:bg-dark-card p-6 mt-6 mx-4 rounded-2xl border border-warm-gray-100 dark:border-dark-border shadow-sm flex-row items-center">
+                    <View className="w-16 h-16 bg-peach-100 dark:bg-dark-peach-subtle rounded-full items-center justify-center mr-4">
                         <UserIcon color="#eb6e3e" size={32} />
                     </View>
                     <View className="flex-1 justify-center">
                         <View className="flex-row items-center gap-2 mb-1">
-                            <Text className="font-playfair text-xl text-warm-gray-700" numberOfLines={1}>
+                            <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text" numberOfLines={1}>
                                 {profile?.display_name || profile?.full_name || "Chef"}
                             </Text>
                             {user?.is_anonymous && user?.new_email && (
-                                <View className="bg-peach-100 px-2 py-0.5 rounded mb-1 max-w-[150px]">
+                                <View className="bg-peach-100 dark:bg-dark-peach-subtle px-2 py-0.5 rounded mb-1 max-w-[150px]">
                                     <Text className="text-peach-700 text-[10px] font-medium uppercase tracking-wider" numberOfLines={1}>{t.auth.pendingVerification}</Text>
                                 </View>
                             )}
                         </View>
-                        <Text className="text-warm-gray-500 text-sm" numberOfLines={1}>
+                        <Text className="text-warm-gray-500 dark:text-dark-muted text-sm" numberOfLines={1}>
                             {user?.email || user?.new_email || (user?.is_anonymous ? "Anonymous User" : "")}
                         </Text>
                     </View>
@@ -175,44 +176,44 @@ export default function SettingsScreen() {
 
                 {/* Account Details */}
                 <View className="mt-8 px-4">
-                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.nav.account}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.nav.account}</Text>
 
-                    <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
-                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50">
+                    <View className="bg-white dark:bg-dark-card rounded-2xl border border-warm-gray-100 dark:border-dark-border overflow-hidden shadow-sm">
+                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 dark:border-dark-border">
                             <View className="flex-row items-center gap-3">
-                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center">
                                     <CreditCard color="#eb6e3e" size={18} />
                                 </View>
-                                <Text className="text-warm-gray-700 font-medium text-base">{t.nav.credits}</Text>
+                                <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base">{t.nav.credits}</Text>
                             </View>
                             <Text className="text-peach-600 font-bold text-lg">{credits}</Text>
                         </View>
 
                         <TouchableOpacity
                             onPress={() => router.push('/(tabs)/settings/buy-credits')}
-                            className="flex-row items-center justify-between p-4 bg-white active:opacity-70"
+                            className="flex-row items-center justify-between p-4 bg-white dark:bg-dark-card active:opacity-70"
                         >
                             <View className="flex-row items-center gap-3">
-                                <View className="w-8 h-8 rounded-full bg-green-50 items-center justify-center">
+                                <View className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-900/20 items-center justify-center">
                                     <Plus color="#22c55e" size={18} />
                                 </View>
-                                <Text className="text-warm-gray-700 font-medium text-base">{t.iap.buyCredits}</Text>
+                                <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base">{t.iap.buyCredits}</Text>
                             </View>
-                            <ChevronRight color="#d4d4d8" size={20} />
+                            <ChevronRight color={colors.muted} size={20} />
                         </TouchableOpacity>
 
                         {user?.is_anonymous && !user?.new_email && (
                             <TouchableOpacity
                                 onPress={() => router.push('/(auth)/signup')}
-                                className="flex-row items-center justify-between p-4 border-t border-warm-gray-50 bg-white active:opacity-70"
+                                className="flex-row items-center justify-between p-4 border-t border-warm-gray-50 dark:border-dark-border bg-white dark:bg-dark-card active:opacity-70"
                             >
                                 <View className="flex-row items-center gap-3">
-                                    <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                    <View className="w-8 h-8 rounded-full bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center">
                                         <UserIcon color="#eb6e3e" size={18} />
                                     </View>
-                                    <Text className="text-warm-gray-700 font-medium text-base">{t.auth.signup || "Create Account"}</Text>
+                                    <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base">{t.auth.signup || "Create Account"}</Text>
                                 </View>
-                                <ChevronRight color="#d4d4d8" size={20} />
+                                <ChevronRight color={colors.muted} size={20} />
                             </TouchableOpacity>
                         )}
                     </View>
@@ -220,64 +221,64 @@ export default function SettingsScreen() {
 
                 {/* Content & Organization */}
                 <View className="mt-8 px-4">
-                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">Content</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-3 uppercase text-xs tracking-wider px-2">Content</Text>
 
-                    <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
+                    <View className="bg-white dark:bg-dark-card rounded-2xl border border-warm-gray-100 dark:border-dark-border overflow-hidden shadow-sm">
                         <TouchableOpacity
                             onPress={() => router.push('/(tabs)/settings/collections')}
-                            className="flex-row items-center justify-between p-4 bg-white border-b border-warm-gray-50 active:opacity-70"
+                            className="flex-row items-center justify-between p-4 bg-white dark:bg-dark-card border-b border-warm-gray-50 dark:border-dark-border active:opacity-70"
                         >
                             <View className="flex-row items-center gap-3">
-                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center">
                                     <Globe color="#eb6e3e" size={18} />
                                 </View>
-                                <Text className="text-warm-gray-700 font-medium text-base">{(t as any).collections?.manageCollections || "Manage Collections"}</Text>
+                                <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base">{(t as any).collections?.manageCollections || "Manage Collections"}</Text>
                             </View>
-                            <ChevronRight color="#d4d4d8" size={20} />
+                            <ChevronRight color={colors.muted} size={20} />
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => router.push('/(tabs)/settings/tags')}
-                            className="flex-row items-center justify-between p-4 bg-white active:opacity-70"
+                            className="flex-row items-center justify-between p-4 bg-white dark:bg-dark-card active:opacity-70"
                         >
                             <View className="flex-row items-center gap-3">
-                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center">
                                     <TagIcon color="#eb6e3e" size={18} />
                                 </View>
-                                <Text className="text-warm-gray-700 font-medium text-base">{t.tags?.manageTags || "Manage Tags"}</Text>
+                                <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base">{t.tags?.manageTags || "Manage Tags"}</Text>
                             </View>
-                            <ChevronRight color="#d4d4d8" size={20} />
+                            <ChevronRight color={colors.muted} size={20} />
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* Preferences Elements */}
                 <View className="mt-8 px-4">
-                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.nav.preferences}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.nav.preferences}</Text>
 
-                    <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
+                    <View className="bg-white dark:bg-dark-card rounded-2xl border border-warm-gray-100 dark:border-dark-border overflow-hidden shadow-sm">
                         {/* Language */}
-                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 bg-white">
+                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 dark:border-dark-border bg-white dark:bg-dark-card">
                             <View className="flex-row items-center gap-3">
-                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center">
                                     <Globe color="#eb6e3e" size={18} />
                                 </View>
-                                <Text className="text-warm-gray-700 font-medium text-base">{t.nav.appLanguage}</Text>
+                                <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base">{t.nav.appLanguage}</Text>
                             </View>
                             <TouchableOpacity
                                 onPress={toggleLanguage}
-                                className="bg-peach-100 px-4 py-2 rounded-full"
+                                className="bg-peach-100 dark:bg-dark-peach-subtle px-4 py-2 rounded-full"
                             >
                                 <Text className="text-peach-700 font-semibold">{locale === 'en' ? 'English' : 'Deutsch'}</Text>
                             </TouchableOpacity>
                         </View>
 
                         {/* Notifications */}
-                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 bg-white">
+                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 dark:border-dark-border bg-white dark:bg-dark-card">
                             <View className="flex-row items-center gap-3">
-                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center">
                                     <Bell color="#eb6e3e" size={18} />
                                 </View>
-                                <Text className="text-warm-gray-700 font-medium text-base">{t.nav.pushNotifications}</Text>
+                                <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base">{t.nav.pushNotifications}</Text>
                             </View>
                             <Switch
                                 value={notificationsEnabled}
@@ -288,16 +289,16 @@ export default function SettingsScreen() {
                         </View>
 
                         {/* Appearance */}
-                        <View className="flex-row items-center justify-between p-4 bg-white">
+                        <View className="flex-row items-center justify-between p-4 bg-white dark:bg-dark-card">
                             <View className="flex-row items-center gap-3">
-                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center">
                                     <Moon color="#eb6e3e" size={18} />
                                 </View>
-                                <Text className="text-warm-gray-700 font-medium text-base">{t.nav.darkMode}</Text>
+                                <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base">{t.nav.darkMode}</Text>
                             </View>
                             <Switch
-                                value={darkModeEnabled}
-                                onValueChange={setDarkModeEnabled}
+                                value={isDark}
+                                onValueChange={() => toggleTheme()}
                                 trackColor={{ false: "#dfd8d3", true: "#eb6e3e" }}
                                 thumbColor="#ffffff"
                             />
@@ -307,18 +308,18 @@ export default function SettingsScreen() {
 
                 {/* Offline Storage */}
                 <View className="mt-8 px-4">
-                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.settings?.offlineStorage || "Offline Storage"}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.settings?.offlineStorage || "Offline Storage"}</Text>
 
-                    <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
+                    <View className="bg-white dark:bg-dark-card rounded-2xl border border-warm-gray-100 dark:border-dark-border overflow-hidden shadow-sm">
 
-                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 bg-white">
+                        <View className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 dark:border-dark-border bg-white dark:bg-dark-card">
                             <View className="flex-1 flex-row items-center gap-3 mr-4">
-                                <View className="w-8 h-8 rounded-full bg-peach-50 items-center justify-center">
+                                <View className="w-8 h-8 rounded-full bg-peach-50 dark:bg-dark-peach-subtle items-center justify-center">
                                     <Download color="#eb6e3e" size={18} />
                                 </View>
                                 <View className="flex-1">
-                                    <Text className="text-warm-gray-700 font-medium text-base mb-0.5">{t.settings?.offlineStorage || "Offline Storage"}</Text>
-                                    <Text className="text-warm-gray-400 text-xs" numberOfLines={2}>{t.settings?.offlineStorageDesc || "Download all recipes for offline viewing"}</Text>
+                                    <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base mb-0.5">{t.settings?.offlineStorage || "Offline Storage"}</Text>
+                                    <Text className="text-warm-gray-400 dark:text-dark-muted text-xs" numberOfLines={2}>{t.settings?.offlineStorageDesc || "Download all recipes for offline viewing"}</Text>
                                 </View>
                             </View>
                             <Switch
@@ -331,10 +332,10 @@ export default function SettingsScreen() {
 
                         <TouchableOpacity
                             onPress={handleClearDownloads}
-                            className="flex-row items-center justify-between p-4 bg-white active:opacity-70"
+                            className="flex-row items-center justify-between p-4 bg-white dark:bg-dark-card active:opacity-70"
                         >
                             <View className="flex-1 flex-row items-center gap-3 mr-4">
-                                <View className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
+                                <View className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
                                     <Trash2 color="#ef4444" size={18} />
                                 </View>
                                 <View className="flex-1">
@@ -349,21 +350,21 @@ export default function SettingsScreen() {
 
                 {/* Legal & Help */}
                 <View className="mt-8 px-4">
-                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.nav.supportLegal}</Text>
-                    <View className="bg-white rounded-2xl border border-warm-gray-100 overflow-hidden shadow-sm">
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-3 uppercase text-xs tracking-wider px-2">{t.nav.supportLegal}</Text>
+                    <View className="bg-white dark:bg-dark-card rounded-2xl border border-warm-gray-100 dark:border-dark-border overflow-hidden shadow-sm">
                         <TouchableOpacity
                             onPress={() => Linking.openURL('https://www.recipekeeper.org/privacy')}
-                            className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 active:opacity-70"
+                            className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 dark:border-dark-border active:opacity-70"
                         >
-                            <Text className="text-warm-gray-700 font-medium text-base ml-11">{t.nav.privacyPolicy}</Text>
-                            <ChevronRight color="#d4d4d8" size={20} />
+                            <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base ml-11">{t.nav.privacyPolicy}</Text>
+                            <ChevronRight color={colors.muted} size={20} />
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => Linking.openURL('https://www.recipekeeper.org/terms')}
                             className="flex-row items-center justify-between p-4 active:opacity-70"
                         >
-                            <Text className="text-warm-gray-700 font-medium text-base ml-11">{t.nav.termsOfService}</Text>
-                            <ChevronRight color="#d4d4d8" size={20} />
+                            <Text className="text-warm-gray-700 dark:text-dark-text font-medium text-base ml-11">{t.nav.termsOfService}</Text>
+                            <ChevronRight color={colors.muted} size={20} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -382,25 +383,25 @@ export default function SettingsScreen() {
 
                             <TouchableOpacity
                                 onPress={() => router.push('/(auth)/login')}
-                                className="bg-white border border-warm-gray-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-warm-gray-50 mb-4"
+                                className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-warm-gray-50 dark:bg-dark-elevated mb-4"
                             >
-                                <LogOut color="#737373" size={20} className="mr-2" />
-                                <Text className="text-warm-gray-500 font-semibold text-lg">{t.auth.login || "Log In"}</Text>
+                                <LogOut color={colors.muted} size={20} className="mr-2" />
+                                <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold text-lg">{t.auth.login || "Log In"}</Text>
                             </TouchableOpacity>
                         </>
                     ) : (
                         <>
                             <TouchableOpacity
                                 onPress={handleSignOut}
-                                className="bg-white border border-warm-gray-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-warm-gray-50 mb-4"
+                                className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-warm-gray-50 dark:bg-dark-elevated mb-4"
                             >
-                                <LogOut color="#737373" size={20} className="mr-2" />
-                                <Text className="text-warm-gray-500 font-semibold text-lg">{t.nav.signOut}</Text>
+                                <LogOut color={colors.muted} size={20} className="mr-2" />
+                                <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold text-lg">{t.nav.signOut}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={handleDeleteAccount}
-                                className="bg-white border border-red-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-red-50"
+                                className="bg-white dark:bg-dark-card border border-red-200 rounded-2xl p-4 flex-row items-center justify-center shadow-sm active:bg-red-50 dark:bg-red-900/20"
                             >
                                 <Trash2 color="#ef4444" size={20} className="mr-2" />
                                 <Text className="text-red-500 font-semibold text-lg">{t.settings?.deleteAccount || "Delete Account"}</Text>
@@ -408,10 +409,10 @@ export default function SettingsScreen() {
                         </>
                     )}
 
-                    <Text className="text-center mt-6 text-warm-gray-400 text-xs">RecipeKeeper v1.0.0</Text>
+                    <Text className="text-center mt-6 text-warm-gray-400 dark:text-dark-muted text-xs">RecipeKeeper v1.0.0</Text>
                 </View>
             </ScrollView>
-            <StatusBar style="auto" />
+            <StatusBar style={isDark ? "light" : "dark"} />
         </SafeAreaView >
     );
 }

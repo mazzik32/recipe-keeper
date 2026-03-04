@@ -2,6 +2,7 @@
 module.exports = {
     content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
     presets: [require("nativewind/preset")],
+    darkMode: "class",
     theme: {
         extend: {
             colors: {
@@ -25,6 +26,13 @@ module.exports = {
                 'warm-white': '#fbfaf9',
                 cream: '#FDF8F3',
                 'cream-dark': '#f5f3ef',
+                'dark-bg': '#1A1614',
+                'dark-card': '#262220',
+                'dark-elevated': '#302C2A',
+                'dark-text': '#EDE8E3',
+                'dark-muted': '#9A9490',
+                'dark-border': '#3A3533',
+                'dark-peach-subtle': '#2D201A',
             },
             fontFamily: {
                 sans: ['Inter'],

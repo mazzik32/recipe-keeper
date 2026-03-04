@@ -9,6 +9,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useCredits } from "../contexts/CreditsContext";
 import WhiskLoader from "./WhiskLoader";
 import CreditGateModal from "./CreditGateModal";
+import { useTheme } from "../contexts/ThemeContext";
 
 const MAX_IMAGES = 5;
 
@@ -19,6 +20,7 @@ interface AddRecipeScreenProps {
 export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
     const [images, setImages] = useState<string[]>([]);
     const [uploading, setUploading] = useState(false);
+    const { colors } = useTheme();
     const [showUrlInput, setShowUrlInput] = useState(false);
     const [urlValue, setUrlValue] = useState("");
     const [showCreditModal, setShowCreditModal] = useState(false);
@@ -249,7 +251,7 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
                     )}
                     <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
                         <TouchableOpacity onPress={clearAllImages} style={{ backgroundColor: '#e8e4e0', padding: 16, borderRadius: 50, flexDirection: 'row', alignItems: 'center', gap: 8 }} disabled={uploading}>
-                            <Trash2 color="#75716d" size={20} />
+                            <Trash2 color={colors.text} size={20} />
                             <Text style={{ color: '#75716d', fontWeight: '500' }}>{t.add.clearAll}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={uploadRecipe} disabled={uploading} style={{ backgroundColor: '#eb6e3e', paddingVertical: 12, paddingHorizontal: 32, borderRadius: 50, flexDirection: 'row', alignItems: 'center', gap: 8, opacity: uploading ? 0.7 : 1 }}>

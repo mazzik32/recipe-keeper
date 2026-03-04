@@ -11,6 +11,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import WhiskLoader from "../../components/WhiskLoader";
+import { useTheme } from "../../contexts/ThemeContext";
 
 export default function FavoritesScreen() {
     const { user } = useAuth();
@@ -18,6 +19,7 @@ export default function FavoritesScreen() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const { t } = useLanguage();
+    const { colors, isDark } = useTheme();
 
     const loadFavorites = async () => {
         if (!user) return;
@@ -72,9 +74,9 @@ export default function FavoritesScreen() {
         return (
             <Pressable
                 onPress={() => router.push(`/recipes/${item.id}`)}
-                className="bg-white rounded-2xl mb-4 overflow-hidden border border-warm-gray-100 shadow-sm active:opacity-80"
+                className="bg-white dark:bg-dark-card rounded-2xl mb-4 overflow-hidden border border-warm-gray-100 dark:border-dark-border shadow-sm active:opacity-80"
             >
-                <View className="aspect-[4/3] w-full relative bg-peach-100">
+                <View className="aspect-[4/3] w-full relative bg-peach-100 dark:bg-dark-peach-subtle">
                     {primaryImage ? (
                         <Image
                             source={primaryImage.image_url}
@@ -98,18 +100,18 @@ export default function FavoritesScreen() {
                 </View>
 
                 <View className="p-4">
-                    <Text className="font-playfair text-xl text-warm-gray-700 mb-2 truncate">{item.title}</Text>
+                    <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text mb-2 truncate">{item.title}</Text>
                     <View className="flex-row items-center gap-4">
                         {totalTime > 0 && (
                             <View className="flex-row items-center gap-1.5">
-                                <Clock color="#b8b5b2" size={14} />
-                                <Text className="text-warm-gray-500 text-sm">{totalTime} min</Text>
+                                <Clock color={colors.muted} size={14} />
+                                <Text className="text-warm-gray-500 dark:text-dark-muted text-sm">{totalTime} min</Text>
                             </View>
                         )}
                         {item.servings && (
                             <View className="flex-row items-center gap-1.5">
-                                <Users color="#b8b5b2" size={14} />
-                                <Text className="text-warm-gray-500 text-sm">{item.servings}</Text>
+                                <Users color={colors.muted} size={14} />
+                                <Text className="text-warm-gray-500 dark:text-dark-muted text-sm">{item.servings}</Text>
                             </View>
                         )}
                     </View>
@@ -119,9 +121,9 @@ export default function FavoritesScreen() {
     };
 
     return (
-        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
-            <View className="px-4 py-4 border-b border-warm-gray-100 bg-white">
-                <Text className="font-playfair text-3xl text-warm-gray-700">{t.nav.favorites}</Text>
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream dark:bg-dark-bg">
+            <View className="px-4 py-4 border-b border-warm-gray-100 dark:border-dark-border bg-white dark:bg-dark-card">
+                <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text">{t.nav.favorites}</Text>
             </View>
 
             {loading ? (
@@ -137,14 +139,14 @@ export default function FavoritesScreen() {
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={
                         <View className="items-center py-20">
-                            <Heart color="#e4dfdb" size={64} className="mb-4" />
-                            <Text className="text-warm-gray-400 text-lg text-center">No favorites yet.</Text>
-                            <Text className="text-warm-gray-400 text-sm mt-2 text-center">Tap the heart on a recipe to save it here.</Text>
+                            <Heart color={colors.border} size={64} className="mb-4" />
+                            <Text className="text-warm-gray-400 dark:text-dark-muted text-lg text-center">No favorites yet.</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted text-sm mt-2 text-center">Tap the heart on a recipe to save it here.</Text>
                         </View>
                     }
                 />
             )}
-            <StatusBar style="auto" />
+            <StatusBar style={isDark ? "light" : "dark"} />
         </SafeAreaView>
     );
 }

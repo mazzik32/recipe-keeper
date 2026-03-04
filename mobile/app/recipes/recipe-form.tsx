@@ -10,6 +10,7 @@ import WhiskLoader from "../../components/WhiskLoader";
 import { RecipeTagsInput, Tag } from "../../components/RecipeTagsInput";
 import { ImageUpload, uploadImageToSupabase } from "../../components/ImageUpload";
 import { Picker } from '@react-native-picker/picker';
+import { useTheme } from "../../contexts/ThemeContext";
 
 export default function RecipeFormScreen() {
     const { mode, id, recipe: recipeParam, scanImageCount } = useLocalSearchParams();
@@ -18,6 +19,7 @@ export default function RecipeFormScreen() {
     const { t, ti } = useLanguage();
 
     const isEdit = mode === "edit";
+    const { colors } = useTheme();
 
     // Parse pre-filled data from scan flow if provided
     const scannedData = recipeParam ? JSON.parse(recipeParam as string) : null;
@@ -374,20 +376,20 @@ export default function RecipeFormScreen() {
 
     if (loading) {
         return (
-            <View className="flex-1 bg-cream justify-center items-center">
+            <View className="flex-1 bg-cream dark:bg-dark-bg justify-center items-center">
                 <WhiskLoader />
             </View>
         );
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-cream">
+        <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg">
             {/* Header */}
-            <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-warm-gray-100">
+            <View className="flex-row items-center justify-between px-4 py-3 bg-white dark:bg-dark-card border-b border-warm-gray-100 dark:border-dark-border">
                 <TouchableOpacity onPress={() => router.back()} className="p-2">
-                    <ArrowLeft color="#75716d" size={24} />
+                    <ArrowLeft color={colors.text} size={24} />
                 </TouchableOpacity>
-                <Text className="font-playfair text-xl text-warm-gray-700">
+                <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text">
                     {isEdit ? t.recipes.editRecipe : t.add.addRecipeTitle}
                 </Text>
                 <TouchableOpacity onPress={handleSave} disabled={saving} className="bg-peach-500 px-4 py-2 rounded-full">
@@ -424,70 +426,70 @@ export default function RecipeFormScreen() {
 
                 {/* Title */}
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.recipeTitle || "Title"}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.recipeTitle || "Title"}</Text>
                     <TextInput
                         value={title}
                         onChangeText={setTitle}
                         placeholder={t.add.recipeTitle}
-                        className="bg-white border border-warm-gray-200 rounded-xl px-4 py-4 font-display text-xl text-warm-gray-700"
+                        className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-4 font-display text-xl text-warm-gray-700 dark:text-dark-text"
                     />
                 </View>
 
                 {/* Description */}
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.description}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.description}</Text>
                     <TextInput
                         value={description}
                         onChangeText={setDescription}
                         multiline
                         placeholder={t.recipes.description}
-                        className="bg-white border border-warm-gray-200 rounded-xl px-4 py-4 text-warm-gray-600 min-h-[100px] text-base leading-relaxed"
+                        className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-4 text-warm-gray-600 dark:text-dark-text min-h-[100px] text-base leading-relaxed"
                         textAlignVertical="top"
                     />
                 </View>
 
                 {/* Time & Servings */}
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider">Time & Servings</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-3 uppercase text-xs tracking-wider">Time & Servings</Text>
                     <View className="flex-row gap-3 mb-3">
                         <View className="flex-1">
-                            <Text className="text-warm-gray-400 text-xs mb-1.5">Servings</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted text-xs mb-1.5">Servings</Text>
                             <TextInput
                                 value={servings}
                                 onChangeText={setServings}
                                 placeholder="4"
                                 keyboardType="number-pad"
-                                className="bg-white border border-warm-gray-200 rounded-xl px-3 py-3 text-warm-gray-700 text-center text-base"
+                                className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-3 py-3 text-warm-gray-700 dark:text-dark-text text-center text-base"
                             />
                         </View>
                         <View className="flex-1">
-                            <Text className="text-warm-gray-400 text-xs mb-1.5">Prep (min)</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted text-xs mb-1.5">Prep (min)</Text>
                             <TextInput
                                 value={prepTime}
                                 onChangeText={setPrepTime}
                                 placeholder="15"
                                 keyboardType="number-pad"
-                                className="bg-white border border-warm-gray-200 rounded-xl px-3 py-3 text-warm-gray-700 text-center text-base"
+                                className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-3 py-3 text-warm-gray-700 dark:text-dark-text text-center text-base"
                             />
                         </View>
                         <View className="flex-1">
-                            <Text className="text-warm-gray-400 text-xs mb-1.5">Cook (min)</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted text-xs mb-1.5">Cook (min)</Text>
                             <TextInput
                                 value={cookTime}
                                 onChangeText={setCookTime}
                                 placeholder="30"
                                 keyboardType="number-pad"
-                                className="bg-white border border-warm-gray-200 rounded-xl px-3 py-3 text-warm-gray-700 text-center text-base"
+                                className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-3 py-3 text-warm-gray-700 dark:text-dark-text text-center text-base"
                             />
                         </View>
                         <View className="flex-1">
-                            <Text className="text-warm-gray-400 text-xs mb-1.5">Total (min)</Text>
+                            <Text className="text-warm-gray-400 dark:text-dark-muted text-xs mb-1.5">Total (min)</Text>
                             <TextInput
                                 value={totalTime}
                                 onChangeText={setTotalTime}
                                 placeholder="45"
                                 keyboardType="number-pad"
-                                className="bg-white border border-warm-gray-200 rounded-xl px-3 py-3 text-warm-gray-700 text-center text-base"
+                                className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-3 py-3 text-warm-gray-700 dark:text-dark-text text-center text-base"
                             />
                         </View>
                     </View>
@@ -495,13 +497,13 @@ export default function RecipeFormScreen() {
 
                 {/* Difficulty */}
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-3 uppercase text-xs tracking-wider">{t.recipes.difficulty || "Difficulty"}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-3 uppercase text-xs tracking-wider">{t.recipes.difficulty || "Difficulty"}</Text>
                     <View className="flex-row gap-3">
                         {(["easy", "medium", "hard"] as const).map(level => (
                             <TouchableOpacity
                                 key={level}
                                 onPress={() => setDifficulty(level)}
-                                className={`flex-1 py-3 rounded-xl border items-center ${difficulty === level ? 'bg-peach-50 border-peach-300' : 'bg-white border-warm-gray-200'}`}
+                                className={`flex-1 py-3 rounded-xl border items-center ${difficulty === level ? 'bg-peach-50 dark:bg-dark-peach-subtle border-peach-300' : 'bg-white dark:bg-dark-card border-warm-gray-200'}`}
                             >
                                 <Text className={`font-semibold capitalize text-sm ${difficulty === level ? 'text-peach-700' : 'text-warm-gray-500'}`}>
                                     {level === 'easy' ? (t.recipes.easy || 'Easy') : level === 'medium' ? (t.recipes.medium || 'Medium') : (t.recipes.hard || 'Hard')}
@@ -513,22 +515,22 @@ export default function RecipeFormScreen() {
 
                 {/* Source */}
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{(t.recipes as any)?.source || "Source"}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{(t.recipes as any)?.source || "Source"}</Text>
                     <TextInput
                         value={source}
                         onChangeText={setSource}
                         placeholder="e.g. Mum, Grandma, Betty Bossi"
-                        className="bg-white border border-warm-gray-200 rounded-xl px-4 py-3 text-warm-gray-700 text-base"
+                        className="bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-3 text-warm-gray-700 dark:text-dark-text text-base"
                     />
                 </View>
 
                 {/* Collections */}
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{(t.recipes as any).collection || "Collection"}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{(t.recipes as any).collection || "Collection"}</Text>
                     <View className="flex-row flex-wrap gap-2">
                         <TouchableOpacity
                             onPress={() => setCollectionId(null)}
-                            className={`px-4 py-2 rounded-full border ${collectionId === null ? 'bg-peach-50 border-peach-200' : 'bg-white border-warm-gray-200'}`}
+                            className={`px-4 py-2 rounded-full border ${collectionId === null ? 'bg-peach-50 dark:bg-dark-peach-subtle border-peach-200' : 'bg-white dark:bg-dark-card border-warm-gray-200'}`}
                         >
                             <Text className={collectionId === null ? 'text-peach-700 font-medium' : 'text-warm-gray-600'}>None</Text>
                         </TouchableOpacity>
@@ -536,7 +538,7 @@ export default function RecipeFormScreen() {
                             <TouchableOpacity
                                 key={col.id}
                                 onPress={() => setCollectionId(col.id)}
-                                className={`px-4 py-2 rounded-full border ${collectionId === col.id ? 'bg-peach-50 border-peach-200' : 'bg-white border-warm-gray-200'}`}
+                                className={`px-4 py-2 rounded-full border ${collectionId === col.id ? 'bg-peach-50 dark:bg-dark-peach-subtle border-peach-200' : 'bg-white dark:bg-dark-card border-warm-gray-200'}`}
                             >
                                 <Text className={collectionId === col.id ? 'text-peach-700 font-medium' : 'text-warm-gray-600'}>{col.name}</Text>
                             </TouchableOpacity>
@@ -546,13 +548,13 @@ export default function RecipeFormScreen() {
 
                 {/* Categories */}
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.category || "Category"}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{t.recipes.category || "Category"}</Text>
                     <View className="flex-row flex-wrap gap-2">
                         {categories.map((cat) => (
                             <TouchableOpacity
                                 key={cat.id}
                                 onPress={() => setCategoryId(categoryId === cat.id ? null : cat.id)}
-                                className={`px-4 py-2 rounded-full border flex-row items-center gap-1.5 ${categoryId === cat.id ? 'bg-peach-50 border-peach-200' : 'bg-white border-warm-gray-200'}`}
+                                className={`px-4 py-2 rounded-full border flex-row items-center gap-1.5 ${categoryId === cat.id ? 'bg-peach-50 dark:bg-dark-peach-subtle border-peach-200' : 'bg-white dark:bg-dark-card border-warm-gray-200'}`}
                             >
                                 <Text>{cat.icon}</Text>
                                 <Text className={categoryId === cat.id ? 'text-peach-700 font-medium' : 'text-warm-gray-600'}>{cat.name}</Text>
@@ -563,10 +565,10 @@ export default function RecipeFormScreen() {
 
                 {/* Photos */}
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{(t.recipes as any).recipePhotos || "Photos"}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{(t.recipes as any).recipePhotos || "Photos"}</Text>
                     <View className="flex-row gap-4">
                         <View className="flex-1">
-                            <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-[10px] tracking-wider h-8">Primary Photo</Text>
+                            <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-[10px] tracking-wider h-8">Primary Photo</Text>
                             <ImageUpload
                                 value={primaryImage}
                                 onChange={setPrimaryImage}
@@ -574,7 +576,7 @@ export default function RecipeFormScreen() {
                             />
                         </View>
                         <View className="flex-1">
-                            <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-[10px] tracking-wider h-8">Secondary Photo (Optional)</Text>
+                            <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-[10px] tracking-wider h-8">Secondary Photo (Optional)</Text>
                             <ImageUpload
                                 value={secondaryImage}
                                 onChange={setSecondaryImage}
@@ -586,26 +588,26 @@ export default function RecipeFormScreen() {
 
                 {/* Tags */}
                 <View className="mb-6">
-                    <Text className="text-warm-gray-500 font-semibold mb-2 uppercase text-xs tracking-wider">{t.tags?.tags || "Tags"}</Text>
+                    <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-2 uppercase text-xs tracking-wider">{t.tags?.tags || "Tags"}</Text>
                     <RecipeTagsInput value={tags} onChange={setTags} />
                 </View>
 
                 {/* Ingredients */}
                 <View className="mb-8">
                     <View className="flex-row items-center justify-between mb-3">
-                        <Text className="font-playfair text-2xl text-warm-gray-700">{t.recipes.ingredients}</Text>
-                        <TouchableOpacity onPress={addIngredient} className="p-2 bg-peach-100 rounded-full">
+                        <Text className="font-playfair text-2xl text-warm-gray-700 dark:text-dark-text">{t.recipes.ingredients}</Text>
+                        <TouchableOpacity onPress={addIngredient} className="p-2 bg-peach-100 dark:bg-dark-peach-subtle rounded-full">
                             <Plus color="#eb6e3e" size={20} />
                         </TouchableOpacity>
                     </View>
-                    <View className="bg-white rounded-2xl p-4 shadow-sm border border-warm-gray-100">
+                    <View className="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-warm-gray-100 dark:border-dark-border">
                         {ingredients.length === 0 ? (
                             <TouchableOpacity onPress={addIngredient} className="py-4 items-center">
-                                <Text className="text-warm-gray-400">{t.common.add} {t.recipes.ingredients.toLowerCase()}</Text>
+                                <Text className="text-warm-gray-400 dark:text-dark-muted">{t.common.add} {t.recipes.ingredients.toLowerCase()}</Text>
                             </TouchableOpacity>
                         ) : (
                             ingredients.map((ing, idx) => (
-                                <View key={idx} className="flex-row items-center py-2 border-b border-warm-gray-50">
+                                <View key={idx} className="flex-row items-center py-2 border-b border-warm-gray-50 dark:border-dark-border">
                                     <TextInput
                                         value={`${ing.quantity || ''}`}
                                         onChangeText={(v) => updateIngredient(idx, "quantity", v)}
@@ -617,16 +619,16 @@ export default function RecipeFormScreen() {
                                         value={ing.unit || ''}
                                         onChangeText={(v) => updateIngredient(idx, "unit", v)}
                                         placeholder={t.add.unit}
-                                        className="w-14 text-warm-gray-500 border-r border-warm-gray-100 mr-3"
+                                        className="w-14 text-warm-gray-500 dark:text-dark-muted border-r border-warm-gray-100 dark:border-dark-border mr-3"
                                     />
                                     <TextInput
                                         value={ing.name}
                                         onChangeText={(v) => updateIngredient(idx, "name", v)}
                                         placeholder={t.add.ingredientName}
-                                        className="flex-1 text-warm-gray-700"
+                                        className="flex-1 text-warm-gray-700 dark:text-dark-text"
                                     />
                                     <TouchableOpacity onPress={() => removeIngredient(idx)} className="p-2">
-                                        <Trash2 color="#dfd8d3" size={18} />
+                                        <Trash2 color={colors.border} size={18} />
                                     </TouchableOpacity>
                                 </View>
                             ))
@@ -637,20 +639,20 @@ export default function RecipeFormScreen() {
                 {/* Instructions */}
                 <View className="mb-12">
                     <View className="flex-row items-center justify-between mb-3">
-                        <Text className="font-playfair text-2xl text-warm-gray-700">{t.recipes.instructions}</Text>
-                        <TouchableOpacity onPress={addInstruction} className="p-2 bg-peach-100 rounded-full">
+                        <Text className="font-playfair text-2xl text-warm-gray-700 dark:text-dark-text">{t.recipes.instructions}</Text>
+                        <TouchableOpacity onPress={addInstruction} className="p-2 bg-peach-100 dark:bg-dark-peach-subtle rounded-full">
                             <Plus color="#eb6e3e" size={20} />
                         </TouchableOpacity>
                     </View>
                     <View className="space-y-4">
                         {instructions.length === 0 ? (
-                            <TouchableOpacity onPress={addInstruction} className="bg-white rounded-2xl p-4 shadow-sm border border-warm-gray-100 items-center">
-                                <Text className="text-warm-gray-400">{t.common.add} {t.recipes.instructions.toLowerCase()}</Text>
+                            <TouchableOpacity onPress={addInstruction} className="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-warm-gray-100 dark:border-dark-border items-center">
+                                <Text className="text-warm-gray-400 dark:text-dark-muted">{t.common.add} {t.recipes.instructions.toLowerCase()}</Text>
                             </TouchableOpacity>
                         ) : (
                             instructions.map((step, idx) => (
-                                <View key={idx} className="bg-white rounded-2xl p-4 shadow-sm border border-warm-gray-100 flex-row">
-                                    <View className="w-8 h-8 rounded-full bg-peach-100 items-center justify-center mr-3 mt-1">
+                                <View key={idx} className="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-warm-gray-100 dark:border-dark-border flex-row">
+                                    <View className="w-8 h-8 rounded-full bg-peach-100 dark:bg-dark-peach-subtle items-center justify-center mr-3 mt-1">
                                         <Text className="text-peach-700 font-bold">{idx + 1}</Text>
                                     </View>
                                     <View className="flex-1">
@@ -659,7 +661,7 @@ export default function RecipeFormScreen() {
                                             onChangeText={(v) => updateInstruction(idx, "instruction", v)}
                                             multiline
                                             placeholder={t.add.instruction}
-                                            className="text-warm-gray-600 text-base leading-relaxed min-h-[60px] mb-3"
+                                            className="text-warm-gray-600 dark:text-dark-text text-base leading-relaxed min-h-[60px] mb-3"
                                         />
                                         <ImageUpload
                                             value={step.image_url}
@@ -670,7 +672,7 @@ export default function RecipeFormScreen() {
                                         />
                                     </View>
                                     <TouchableOpacity onPress={() => removeInstruction(idx)} className="p-2">
-                                        <Trash2 color="#dfd8d3" size={18} />
+                                        <Trash2 color={colors.border} size={18} />
                                     </TouchableOpacity>
                                 </View>
                             ))

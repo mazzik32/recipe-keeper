@@ -9,6 +9,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Image } from "expo-image";
+import { useTheme } from "../../contexts/ThemeContext";
 
 export default function SearchScreen() {
     const [query, setQuery] = useState("");
@@ -17,6 +18,7 @@ export default function SearchScreen() {
     const { user } = useAuth();
     const router = useRouter();
     const { t } = useLanguage();
+    const { colors, isDark } = useTheme();
 
     // Debounced search effect
     useEffect(() => {
@@ -71,9 +73,9 @@ export default function SearchScreen() {
         return (
             <Pressable
                 onPress={() => router.push(`/recipes/${item.id}`)}
-                className="flex-row bg-white rounded-xl mb-3 overflow-hidden border border-warm-gray-100 shadow-sm active:opacity-80 p-2"
+                className="flex-row bg-white dark:bg-dark-card rounded-xl mb-3 overflow-hidden border border-warm-gray-100 dark:border-dark-border shadow-sm active:opacity-80 p-2"
             >
-                <View className="w-20 h-20 bg-peach-100 rounded-lg overflow-hidden">
+                <View className="w-20 h-20 bg-peach-100 dark:bg-dark-peach-subtle rounded-lg overflow-hidden">
                     {primaryImage ? (
                         <Image
                             source={primaryImage.image_url}
@@ -89,18 +91,18 @@ export default function SearchScreen() {
                     )}
                 </View>
                 <View className="flex-1 ml-3 justify-center">
-                    <Text className="font-playfair text-lg text-warm-gray-700 mb-1" numberOfLines={1}>{item.title}</Text>
+                    <Text className="font-playfair text-lg text-warm-gray-700 dark:text-dark-text mb-1" numberOfLines={1}>{item.title}</Text>
                     <View className="flex-row items-center gap-3">
                         {totalTime > 0 && (
                             <View className="flex-row items-center gap-1">
-                                <Clock color="#b8b5b2" size={12} />
-                                <Text className="text-warm-gray-400 text-xs">{totalTime} min</Text>
+                                <Clock color={colors.muted} size={12} />
+                                <Text className="text-warm-gray-400 dark:text-dark-muted text-xs">{totalTime} min</Text>
                             </View>
                         )}
                         {item.servings && (
                             <View className="flex-row items-center gap-1">
-                                <Users color="#b8b5b2" size={12} />
-                                <Text className="text-warm-gray-400 text-xs">{item.servings}</Text>
+                                <Users color={colors.muted} size={12} />
+                                <Text className="text-warm-gray-400 dark:text-dark-muted text-xs">{item.servings}</Text>
                             </View>
                         )}
                     </View>
@@ -110,13 +112,13 @@ export default function SearchScreen() {
     };
 
     return (
-        <SafeAreaView edges={['top']} className="flex-1 bg-cream px-4">
-            <View className="flex-row items-center bg-white border border-warm-gray-200 rounded-xl px-4 py-1 h-12 mb-6 mt-4">
-                <SearchIcon color="#b8b5b2" size={20} />
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream dark:bg-dark-bg px-4">
+            <View className="flex-row items-center bg-white dark:bg-dark-card border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-1 h-12 mb-6 mt-4">
+                <SearchIcon color={colors.muted} size={20} />
                 <TextInput
-                    className="flex-1 ml-2 text-warm-gray-700 h-full"
+                    className="flex-1 ml-2 text-warm-gray-700 dark:text-dark-text h-full"
                     placeholder={t.search.searchRecipes}
-                    placeholderTextColor="#b8b5b2"
+                    placeholderTextColor={colors.muted}
                     value={query}
                     onChangeText={setQuery}
                     autoCapitalize="none"
@@ -127,7 +129,7 @@ export default function SearchScreen() {
             </View>
 
             {query.length > 0 && (
-                <Text className="text-warm-gray-500 font-semibold mb-4 uppercase text-xs tracking-wider">
+                <Text className="text-warm-gray-500 dark:text-dark-muted font-semibold mb-4 uppercase text-xs tracking-wider">
                     {results.length} Results
                 </Text>
             )}
@@ -145,18 +147,18 @@ export default function SearchScreen() {
                     ListEmptyComponent={
                         query.length > 0 ? (
                             <View className="items-center py-10">
-                                <Text className="text-warm-gray-500 text-center">No recipes found for "{query}".</Text>
+                                <Text className="text-warm-gray-500 dark:text-dark-muted text-center">No recipes found for "{query}".</Text>
                             </View>
                         ) : (
                             <View className="items-center py-10 mt-10">
-                                <SearchIcon color="#e4dfdb" size={48} className="mb-4" />
-                                <Text className="text-warm-gray-400 text-center text-lg">Type above to find a recipe</Text>
+                                <SearchIcon color={colors.border} size={48} className="mb-4" />
+                                <Text className="text-warm-gray-400 dark:text-dark-muted text-center text-lg">Type above to find a recipe</Text>
                             </View>
                         )
                     }
                 />
             )}
-            <StatusBar style="auto" />
+            <StatusBar style={isDark ? "light" : "dark"} />
         </SafeAreaView>
     );
 }

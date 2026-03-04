@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { LanguageProvider } from "../contexts/LanguageContext";
 import { CreditsProvider } from "../contexts/CreditsContext";
+import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
+import { View } from "react-native";
 import { useFonts, DancingScript_400Regular, DancingScript_500Medium, DancingScript_600SemiBold, DancingScript_700Bold } from '@expo-google-fonts/dancing-script';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { PlayfairDisplay_400Regular, PlayfairDisplay_500Medium, PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -47,6 +49,15 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
     );
 }
 
+function ThemeWrapper({ children }: { children: React.ReactNode }) {
+    const { isDark } = useTheme();
+    return (
+        <View className="flex-1 bg-cream dark:bg-dark-bg">
+            {children}
+        </View>
+    );
+}
+
 export default function RootLayout() {
     const [fontsLoaded] = useFonts({
         DancingScript_400Regular,
@@ -68,9 +79,13 @@ export default function RootLayout() {
 
     return (
         <SafeAreaProvider>
-            <AuthProvider>
-                <RootLayoutNav fontsLoaded={fontsLoaded} />
-            </AuthProvider>
+            <ThemeProvider>
+                <ThemeWrapper>
+                    <AuthProvider>
+                        <RootLayoutNav fontsLoaded={fontsLoaded} />
+                    </AuthProvider>
+                </ThemeWrapper>
+            </ThemeProvider>
         </SafeAreaProvider>
     );
 }

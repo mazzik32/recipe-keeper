@@ -10,11 +10,13 @@ import { Image } from "expo-image";
 import { useLanguage } from "../../contexts/LanguageContext";
 import WhiskLoader from "../../components/WhiskLoader";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTheme } from "../../contexts/ThemeContext";
 
 export default function RecipeDetailScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const { t } = useLanguage();
+    const { colors, isDark } = useTheme();
     const [recipe, setRecipe] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -121,7 +123,7 @@ export default function RecipeDetailScreen() {
 
     if (loading) {
         return (
-            <View className="flex-1 bg-cream justify-center items-center">
+            <View className="flex-1 bg-cream dark:bg-dark-bg justify-center items-center">
                 <WhiskLoader />
             </View>
         );
@@ -129,8 +131,8 @@ export default function RecipeDetailScreen() {
 
     if (!recipe) {
         return (
-            <View className="flex-1 bg-cream justify-center items-center px-4">
-                <Text className="text-warm-gray-600 text-lg">{t.errors.notFound}</Text>
+            <View className="flex-1 bg-cream dark:bg-dark-bg justify-center items-center px-4">
+                <Text className="text-warm-gray-600 dark:text-dark-text text-lg">{t.errors.notFound}</Text>
                 <TouchableOpacity onPress={() => router.back()} className="mt-4 bg-peach-500 py-3 px-6 rounded-full">
                     <Text className="text-white font-semibold">{t.common.back}</Text>
                 </TouchableOpacity>
@@ -143,14 +145,14 @@ export default function RecipeDetailScreen() {
     const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
 
     return (
-        <View className="flex-1 bg-cream">
+        <View className="flex-1 bg-cream dark:bg-dark-bg">
             {/* Back Button, Edit, Delete & Favorite Overlay */}
-            <SafeAreaView edges={['top']} className="px-4 pt-2 pb-2 bg-peach-100 flex-row justify-between z-10">
+            <SafeAreaView edges={['top']} className="px-4 pt-2 pb-2 bg-peach-100 dark:bg-dark-peach-subtle flex-row justify-between z-10">
                 <TouchableOpacity
                     onPress={() => router.back()}
                     className="w-10 h-10 bg-white/80 rounded-full items-center justify-center shadow-sm"
                 >
-                    <ArrowLeft color="#3d3632" size={20} />
+                    <ArrowLeft color={colors.text} size={20} />
                 </TouchableOpacity>
 
                 <View className="flex-row gap-2">
@@ -158,7 +160,7 @@ export default function RecipeDetailScreen() {
                         onPress={handleEdit}
                         className="w-10 h-10 bg-white/80 rounded-full items-center justify-center shadow-sm"
                     >
-                        <Pencil color="#3d3632" size={18} />
+                        <Pencil color={colors.text} size={18} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -179,7 +181,7 @@ export default function RecipeDetailScreen() {
 
             <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
                 {/* Header Image */}
-                <View className="relative w-full aspect-square bg-peach-100">
+                <View className="relative w-full aspect-square bg-peach-100 dark:bg-dark-peach-subtle">
                     {primaryImage ? (
                         <Image
                             source={primaryImage.image_url}
@@ -197,16 +199,16 @@ export default function RecipeDetailScreen() {
 
                 {/* Content */}
                 <View className="px-6 py-8 pb-20">
-                    <Text className="font-playfair font-semibold text-3xl text-warm-gray-700 mb-4">{recipe.title}</Text>
+                    <Text className="font-playfair font-semibold text-3xl text-warm-gray-700 dark:text-dark-text mb-4">{recipe.title}</Text>
 
                     {recipe.description && (
-                        <Text className="text-warm-gray-500 text-base leading-relaxed mb-6">{recipe.description}</Text>
+                        <Text className="text-warm-gray-500 dark:text-dark-muted text-base leading-relaxed mb-6">{recipe.description}</Text>
                     )}
 
                     {/* Tags & Categories */}
                     <View className="flex-row flex-wrap gap-2 mb-6">
                         {recipe.category && (
-                            <View className="bg-peach-100 px-3 py-1.5 rounded-full flex-row items-center gap-1">
+                            <View className="bg-peach-100 dark:bg-dark-peach-subtle px-3 py-1.5 rounded-full flex-row items-center gap-1">
                                 <Text>{recipe.category.icon}</Text>
                                 <Text className="text-peach-700 font-medium text-sm">{recipe.category.name}</Text>
                             </View>
@@ -215,7 +217,7 @@ export default function RecipeDetailScreen() {
                             const tag = rt.tag;
                             if (!tag) return null;
                             return (
-                                <View key={i} className="bg-peach-100 px-3 py-1.5 rounded-full">
+                                <View key={i} className="bg-peach-100 dark:bg-dark-peach-subtle px-3 py-1.5 rounded-full">
                                     <Text className="text-peach-700 font-medium text-sm">{tag.name}</Text>
                                 </View>
                             );
@@ -224,7 +226,7 @@ export default function RecipeDetailScreen() {
 
                     {/* Secondary Image */}
                     {secondaryImage && (
-                        <View className="w-full aspect-video rounded-2xl overflow-hidden mb-6 bg-warm-gray-100">
+                        <View className="w-full aspect-video rounded-2xl overflow-hidden mb-6 bg-warm-gray-100 dark:bg-dark-elevated">
                             <Image
                                 source={secondaryImage.image_url}
                                 style={{ flex: 1, width: '100%', height: '100%' }}
@@ -238,7 +240,7 @@ export default function RecipeDetailScreen() {
                         {recipe.prep_time_minutes > 0 || recipe.cook_time_minutes > 0 ? (
                             <View className="flex-row items-center gap-2">
                                 <Clock color="#f8a888" size={20} />
-                                <Text className="text-[14px] font-medium text-warm-gray-600">
+                                <Text className="text-[14px] font-medium text-warm-gray-600 dark:text-dark-text">
                                     <Text className="font-semibold">{t.recipes.totalTime || "Time"}:</Text> {totalTime} min
                                 </Text>
                             </View>
@@ -247,7 +249,7 @@ export default function RecipeDetailScreen() {
                         {recipe.servings ? (
                             <View className="flex-row items-center gap-2">
                                 <Users color="#f8a888" size={20} />
-                                <Text className="text-[14px] font-medium text-warm-gray-600">
+                                <Text className="text-[14px] font-medium text-warm-gray-600 dark:text-dark-text">
                                     <Text className="font-semibold">{t.recipes.servings || "Serves"}:</Text> {recipe.servings}
                                 </Text>
                             </View>
@@ -256,7 +258,7 @@ export default function RecipeDetailScreen() {
                         {recipe.difficulty ? (
                             <View className="flex-row items-center gap-2">
                                 <ChefHat color="#f8a888" size={20} />
-                                <Text className="text-[14px] font-medium text-warm-gray-600">
+                                <Text className="text-[14px] font-medium text-warm-gray-600 dark:text-dark-text">
                                     <Text className="font-semibold">{t.recipes.difficulty || "Level"}:</Text> {recipe.difficulty}
                                 </Text>
                             </View>
@@ -266,20 +268,20 @@ export default function RecipeDetailScreen() {
                     {/* Ingredients */}
                     {recipe.ingredients && recipe.ingredients.length > 0 && (
                         <View className="mb-8">
-                            <Text className="font-playfair font-medium text-2xl text-warm-gray-700 mb-4">{t.recipes.ingredients}</Text>
-                            <View className="bg-white rounded-2xl p-4 shadow-sm border border-warm-gray-100">
+                            <Text className="font-playfair font-medium text-2xl text-warm-gray-700 dark:text-dark-text mb-4">{t.recipes.ingredients}</Text>
+                            <View className="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-warm-gray-100 dark:border-dark-border">
                                 {recipe.ingredients.map((ing: any, i: number) => (
                                     <View key={i} className="flex-row items-start py-1.5 px-1.5 gap-2">
                                         <View className="w-1.5 h-1.5 rounded-full bg-peach-300 mt-2.5 flex-shrink-0" />
-                                        <Text className="flex-1 text-warm-gray-700 text-base leading-relaxed">
+                                        <Text className="flex-1 text-warm-gray-700 dark:text-dark-text text-base leading-relaxed">
                                             {ing.quantity && (
-                                                <Text className="font-bold text-warm-gray-700">
+                                                <Text className="font-bold text-warm-gray-700 dark:text-dark-text">
                                                     {ing.quantity} {ing.unit}{" "}
                                                 </Text>
                                             )}
                                             {ing.name}
                                             {ing.notes && (
-                                                <Text className="text-warm-gray-400">
+                                                <Text className="text-warm-gray-400 dark:text-dark-muted">
                                                     {" "}
                                                     ({ing.notes})
                                                 </Text>
@@ -294,15 +296,15 @@ export default function RecipeDetailScreen() {
                     {/* Instructions */}
                     {recipe.instructions && recipe.instructions.length > 0 && (
                         <View>
-                            <Text className="font-playfair font-medium text-2xl text-warm-gray-700 mb-4">{t.recipes.instructions}</Text>
+                            <Text className="font-playfair font-medium text-2xl text-warm-gray-700 dark:text-dark-text mb-4">{t.recipes.instructions}</Text>
                             <View className="flex-col">
                                 {recipe.instructions.map((step: any, i: number) => (
                                     <View key={i} className="flex-row mb-6">
                                         <View className="w-8 h-8 rounded-full items-center justify-center mr-4" style={{ backgroundColor: '#FFCBA4' }}>
-                                            <Text className="text-warm-gray-700 font-bold">{step.step_number}</Text>
+                                            <Text className="text-warm-gray-700 dark:text-dark-text font-bold">{step.step_number}</Text>
                                         </View>
                                         <View className="flex-1">
-                                            <Text className="text-warm-gray-700 text-base leading-relaxed">
+                                            <Text className="text-warm-gray-700 dark:text-dark-text text-base leading-relaxed">
                                                 {step.instruction}
                                             </Text>
                                             {step.image_url && (
@@ -320,7 +322,7 @@ export default function RecipeDetailScreen() {
                     )}
                 </View>
             </ScrollView>
-            <StatusBar style="light" />
+            <StatusBar style={isDark ? "light" : "dark"} />
         </View>
     );
 }

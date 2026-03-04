@@ -105,7 +105,7 @@ export function RecipeTagsInput({ value, onChange }: RecipeTagsInputProps) {
             {/* Selected Tags Display */}
             <View className="flex-row flex-wrap gap-2 mb-3">
                 {value.map(tag => (
-                    <View key={tag.id} className="bg-peach-100 flex-row items-center px-3 py-1.5 rounded-full">
+                    <View key={tag.id} className="bg-peach-100 dark:bg-dark-peach-subtle flex-row items-center px-3 py-1.5 rounded-full">
                         <Text className="text-peach-700 font-medium mr-1">{tag.name}</Text>
                         <TouchableOpacity onPress={() => removeTag(tag.id)} className="p-1">
                             <X color="#eb6e3e" size={14} />
@@ -117,9 +117,9 @@ export function RecipeTagsInput({ value, onChange }: RecipeTagsInputProps) {
             {/* Trigger Button */}
             <TouchableOpacity
                 onPress={() => setModalVisible(true)}
-                className="border border-warm-gray-200 rounded-xl px-4 py-3 flex-row justify-between items-center bg-white"
+                className="border border-warm-gray-200 dark:border-dark-border rounded-xl px-4 py-3 flex-row justify-between items-center bg-white dark:bg-dark-card"
             >
-                <Text className="text-warm-gray-500">{t.tags?.addTag || "+ Add Tag"}</Text>
+                <Text className="text-warm-gray-500 dark:text-dark-muted">{t.tags?.addTag || "+ Add Tag"}</Text>
                 <TagIcon color="#a8a29e" size={20} />
             </TouchableOpacity>
 
@@ -132,23 +132,23 @@ export function RecipeTagsInput({ value, onChange }: RecipeTagsInputProps) {
             >
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                    className="flex-1 bg-cream"
+                    className="flex-1 bg-cream dark:bg-dark-bg"
                 >
                     {/* Modal Header */}
-                    <View className="flex-row items-center justify-between px-4 py-4 bg-white border-b border-warm-gray-100">
-                        <Text className="font-playfair text-xl text-warm-gray-700">{t.tags?.tags || "Tags"}</Text>
+                    <View className="flex-row items-center justify-between px-4 py-4 bg-white dark:bg-dark-card border-b border-warm-gray-100 dark:border-dark-border">
+                        <Text className="font-playfair text-xl text-warm-gray-700 dark:text-dark-text">{t.tags?.tags || "Tags"}</Text>
                         <TouchableOpacity onPress={() => setModalVisible(false)} className="p-2">
                             <Text className="text-peach-600 font-semibold">{t.common.done}</Text>
                         </TouchableOpacity>
                     </View>
 
                     {/* Search / Create Input */}
-                    <View className="p-4 bg-white border-b border-warm-gray-100">
+                    <View className="p-4 bg-white dark:bg-dark-card border-b border-warm-gray-100 dark:border-dark-border">
                         <TextInput
                             value={searchText}
                             onChangeText={setSearchText}
                             placeholder={t.tags?.newTagName || "New tag name..."}
-                            className="bg-warm-gray-50 px-4 py-3 rounded-xl text-warm-gray-700 text-base"
+                            className="bg-warm-gray-50 dark:bg-dark-elevated px-4 py-3 rounded-xl text-warm-gray-700 dark:text-dark-text text-base"
                             autoFocus
                             autoCapitalize="none"
                             autoCorrect={false}
@@ -166,12 +166,12 @@ export function RecipeTagsInput({ value, onChange }: RecipeTagsInputProps) {
                                 <TouchableOpacity
                                     onPress={handleCreateTag}
                                     disabled={creating}
-                                    className="flex-row items-center py-4 border-b border-warm-gray-100"
+                                    className="flex-row items-center py-4 border-b border-warm-gray-100 dark:border-dark-border"
                                 >
                                     {creating ? (
                                         <ActivityIndicator size="small" color="#eb6e3e" className="mr-3" />
                                     ) : (
-                                        <View className="w-6 h-6 rounded bg-peach-100 items-center justify-center mr-3">
+                                        <View className="w-6 h-6 rounded bg-peach-100 dark:bg-dark-peach-subtle items-center justify-center mr-3">
                                             <Plus color="#eb6e3e" size={16} />
                                         </View>
                                     )}
@@ -185,7 +185,7 @@ export function RecipeTagsInput({ value, onChange }: RecipeTagsInputProps) {
                             {!loading && allTags.length === 0 && !searchText && (
                                 <View className="py-8 items-center">
                                     <TagIcon color="#dfd8d3" size={48} className="mb-3" />
-                                    <Text className="text-warm-gray-500 text-center px-8">
+                                    <Text className="text-warm-gray-500 dark:text-dark-muted text-center px-8">
                                         {t.tags?.noTags || "No tags yet. Create your first tag above."}
                                     </Text>
                                 </View>
@@ -198,7 +198,7 @@ export function RecipeTagsInput({ value, onChange }: RecipeTagsInputProps) {
                                     <TouchableOpacity
                                         key={tag.id}
                                         onPress={() => handleSelectTag(tag)}
-                                        className="flex-row items-center justify-between py-4 border-b border-warm-gray-100"
+                                        className="flex-row items-center justify-between py-4 border-b border-warm-gray-100 dark:border-dark-border"
                                     >
                                         <Text className={`text-base ${isSelected ? 'text-peach-700 font-semibold' : 'text-warm-gray-700'}`}>
                                             {tag.name}
