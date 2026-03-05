@@ -1,25 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Camera, Search, Gift, Download, ChevronRight } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../contexts/AuthContext';
 
 export function OnboardingModal() {
     const [visible, setVisible] = useState(false);
     const [step, setStep] = useState(0);
     const { t } = useLanguage();
-    const insets = useSafeAreaInsets();
+    const { initialized } = useAuth();
+
 
     useEffect(() => {
-        checkOnboarding();
-    }, []);
+        if (initialized) {
+            checkOnboarding();
+        }
+    }, [initialized]);
 
     const checkOnboarding = async () => {
         try {
             const hasSeen = await AsyncStorage.getItem('has_seen_onboarding');
             if (hasSeen !== 'true') {
-                setVisible(true);
+                // Wait briefly for Splash Screen to fully unmount before opening native Modal ViewController
+                setTimeout(() => setVisible(true), 500);
             }
         } catch (e) {
             console.error('Failed to check onboarding status', e);
@@ -65,31 +70,35 @@ export function OnboardingModal() {
 
     return (
         <Modal visible={visible} animationType="slide" presentationStyle="fullScreen">
-            <View className="flex-1 bg-cream dark:bg-dark-bg dark:bg-dark-bg" style={{ paddingTop: insets.top + 20 }}>
+            <SafeAreaView className="flex-1 bg-cream dark:bg-dark-bg" edges={['top', 'bottom']}>
                 <View className="flex-1 px-6 pb-6 items-center justify-between">
-                    <View className="items-center w-full">
-                        <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text mb-2 text-center">
+                    <ScrollView
+                        className="w-full flex-1"
+                        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <Text className="font-playfair text-3xl text-warm-gray-700 dark:text-dark-text mb-2 text-center">
                             {t.onboarding?.welcome || "Welcome to Recipe Keeper"}
                         </Text>
-                        <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-center mb-12">
+                        <Text className="text-warm-gray-500 dark:text-dark-muted text-center mb-8">
                             {t.onboarding?.welcomeDesc || "Your personal digital cookbook. Let's get started!"}
                         </Text>
 
-                        <View className="w-40 h-40 bg-peach-100 dark:bg-dark-peach-subtle dark:bg-dark-peach-subtle rounded-full items-center justify-center shadow-sm mb-10">
+                        <View className="w-32 h-32 bg-peach-100 dark:bg-dark-peach-subtle rounded-full items-center justify-center shadow-sm mb-8">
                             {slides[step].icon}
                         </View>
 
-                        <Text className="font-playfair text-2xl text-warm-gray-700 dark:text-dark-text dark:text-dark-text mb-4 text-center">
+                        <Text className="font-playfair text-2xl text-warm-gray-700 dark:text-dark-text mb-4 text-center">
                             {slides[step].title}
                         </Text>
-                        <Text className="text-warm-gray-500 dark:text-dark-muted dark:text-dark-muted text-base text-center leading-relaxed px-4">
+                        <Text className="text-warm-gray-500 dark:text-dark-muted text-base text-center leading-relaxed px-4 mb-4">
                             {slides[step].description}
                         </Text>
-                    </View>
+                    </ScrollView>
 
-                    <View className="w-full">
+                    <View className="w-full pt-4">
                         {/* Pagination Dots */}
-                        <View className="flex-row justify-center gap-2 mb-8">
+                        <View className="flex-row justify-center gap-2 mb-6">
                             {slides.map((_, index) => (
                                 <View
                                     key={index}
@@ -109,7 +118,7 @@ export function OnboardingModal() {
                         </TouchableOpacity>
                     </View>
                 </View>
-            </View>
+            </SafeAreaView>
         </Modal>
     );
 }

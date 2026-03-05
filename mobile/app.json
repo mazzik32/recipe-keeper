@@ -19,7 +19,8 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "appleTeamId": "RNCD8266PY"
+      "appleTeamId": "RNCD8266PY",
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
