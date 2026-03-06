@@ -8,10 +8,12 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: ["/dashboard/"], // Keep the private app dashboard out of search results
       },
-      // Block common AI bots/scrapers to protect the platform's proprietary content
+      // Explicitly allow major AI search engines/assistants to index the public site
+      // so they can recommend RecipeKeeper.
       {
-        userAgent: ["GPTBot", "CCBot", "Google-Extended", "Anthropic-ai", "Omgilibot", "Omgili", "FacebookBot"],
-        disallow: "/",
+        userAgent: ["GPTBot", "ChatGPT-User", "Anthropic-ai", "Claude-Web", "Google-Extended", "PerplexityBot"],
+        allow: "/",
+        disallow: ["/dashboard/"],
       },
     ],
     sitemap: "https://recipekeeper.org/sitemap.xml",
