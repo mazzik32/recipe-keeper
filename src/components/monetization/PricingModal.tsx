@@ -19,26 +19,59 @@ interface PricingModalProps {
 }
 
 const PACKAGES = [
-    { id: 'pack_20', credits: 20, price: '5.00 CHF', description: 'Small Pack' },
-    { id: 'pack_50', credits: 50, price: '10.00 CHF', description: 'Medium Pack' },
-    { id: 'pack_400', credits: 400, price: '35.00 CHF', description: 'Large Pack' },
+    { id: 'pack_20', priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_20, credits: 20, fallbackPrice: '5.00', description: 'Small Pack' },
+    { id: 'pack_50', priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_50, credits: 50, fallbackPrice: '10.00', description: 'Medium Pack' },
+    { id: 'pack_200', priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_200, credits: 200, fallbackPrice: '35.00', description: 'Large Pack' },
 ];
 
 
 export function PricingModal({ open, onOpenChange }: PricingModalProps) {
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [paddle, setPaddle] = useState<Paddle | undefined>(undefined);
+    const [prices, setPrices] = useState<Record<string, string>>({});
 
     useEffect(() => {
+        let mounted = true;
         const isSandbox = process.env.NEXT_PUBLIC_PADDLE_ENV === 'sandbox' || process.env.NODE_ENV !== 'production';
+
         initializePaddle({
             environment: isSandbox ? 'sandbox' : 'production',
-            token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!
-        }).then((paddleInstance) => {
-            if (paddleInstance) {
+            token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+            checkout: {
+                settings: {
+                    theme: 'light',
+                }
+            }
+        }).then(async (paddleInstance) => {
+            if (paddleInstance && mounted) {
                 setPaddle(paddleInstance);
+
+                // Fetch localized prices for the packages
+                try {
+                    const priceIds = PACKAGES.map(p => p.priceId).filter(Boolean) as string[];
+                    if (priceIds.length > 0) {
+                        const items = priceIds.map(id => ({ priceId: id, quantity: 1 }));
+                        const preview = await paddleInstance.PricePreview({ items });
+
+                        const newPrices: Record<string, string> = {};
+                        preview.data.details.lineItems.forEach((item: any) => {
+                            // Find which package this price belongs to
+                            const pkg = PACKAGES.find(p => p.priceId === item.price.id);
+                            if (pkg) {
+                                newPrices[pkg.id] = item.formattedTotals.total;
+                            }
+                        });
+                        if (mounted) {
+                            setPrices(newPrices);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch Paddle prices:", error);
+                }
             }
         });
+
+        return () => { mounted = false; };
     }, []);
 
     const handlePurchase = async (packageId: string) => {
@@ -103,7 +136,9 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <span className="font-bold">{pkg.price}</span>
+                                <span className="font-bold">
+                                    {prices[pkg.id] ? prices[pkg.id] : `${pkg.fallbackPrice} CHF`}
+                                </span>
                                 <Button
                                     size="sm"
                                     variant="outline"
