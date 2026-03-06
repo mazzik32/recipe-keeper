@@ -12,6 +12,8 @@ import { Loader2, Package } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { initializePaddle, Paddle } from '@paddle/paddle-js';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 interface PricingModalProps {
     open: boolean;
@@ -29,6 +31,48 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [paddle, setPaddle] = useState<Paddle | undefined>(undefined);
     const [prices, setPrices] = useState<Record<string, string>>({});
+    const router = useRouter();
+    const supabase = createClient();
+
+    const pollForCredits = async () => {
+        onOpenChange(false);
+        toast({
+            title: "Payment Successful!",
+            description: "Adding your scan credits...",
+        });
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            router.refresh();
+            return;
+        }
+
+        const { data: initialProfile } = await supabase.from('profiles').select('credits').eq('id', user.id).single();
+        const initialCredits = initialProfile?.credits ?? 0;
+
+        let attempts = 0;
+        const pollInterval = setInterval(async () => {
+            attempts++;
+            const { data: profile } = await supabase.from('profiles').select('credits').eq('id', user.id).single();
+            const newCredits = profile?.credits ?? 0;
+
+            if (newCredits > initialCredits) {
+                clearInterval(pollInterval);
+                toast({
+                    title: "Credits Updated!",
+                    description: `Your balance is now ${newCredits} credits.`,
+                });
+                router.refresh();
+            } else if (attempts >= 8) {
+                clearInterval(pollInterval);
+                toast({
+                    title: "Processing Complete",
+                    description: `Your credits should appear shortly.`,
+                });
+                router.refresh();
+            }
+        }, 2000);
+    };
 
     useEffect(() => {
         let mounted = true;
@@ -37,6 +81,11 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
         initializePaddle({
             environment: isSandbox ? 'sandbox' : 'production',
             token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+            eventCallback: function (data) {
+                if (data.name === "checkout.completed") {
+                    pollForCredits();
+                }
+            },
             checkout: {
                 settings: {
                     theme: 'light',
@@ -96,7 +145,6 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
                 transactionId: data.transactionId,
                 settings: {
                     theme: 'light',
-                    successUrl: window.location.href,
                 }
             });
         } catch (error: any) {
