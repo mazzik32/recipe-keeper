@@ -482,12 +482,29 @@ export default function Home() {
             </h2>
             <p className="text-[clamp(18px,2vw,22px)] text-warm-gray-600 mb-10">Start saving today. It&apos;s free to try.</p>
 
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center font-semibold text-[19px] no-underline transition-all duration-300 rounded-full px-12 py-[22px] bg-warm-gray-700 text-white shadow-[0_4px_24px_rgba(248,168,136,0.35)] hover:bg-warm-gray-600 hover:shadow-[0_12px_40px_rgba(61,54,50,0.25)] hover:-translate-y-0.5"
-            >
-              Get Started at RecipeKeeper.org
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center font-semibold text-[19px] no-underline transition-all duration-300 rounded-full px-12 py-[22px] bg-warm-gray-700 text-white shadow-[0_4px_24px_rgba(248,168,136,0.35)] hover:bg-warm-gray-600 hover:shadow-[0_12px_40px_rgba(61,54,50,0.25)] hover:-translate-y-0.5 w-full sm:w-auto"
+              >
+                Get Started at RecipeKeeper.org
+              </Link>
+              <Link
+                href="https://apps.apple.com/ch/app/recipekeeper-org/id6759565945"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block transition-transform duration-300 hover:-translate-y-0.5"
+                title="Download on the App Store"
+              >
+                <Image
+                  src="/assets/app-store-badge.svg"
+                  alt="Download on the App Store"
+                  width={180}
+                  height={60}
+                  className="h-[73px] w-auto"
+                />
+              </Link>
+            </div>
 
             <div className="mt-6 text-sm text-warm-gray-500 flex items-center justify-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 fill-peach-600">
@@ -511,6 +528,11 @@ export default function Home() {
             </Link>
             <Link href="/privacy" className="text-warm-gray-500 hover:text-warm-gray-700 no-underline transition-colors">
               Privacy Policy
+            </Link>
+          </div>
+          <div className="mb-6">
+            <Link href="https://apps.apple.com/ch/app/recipekeeper-org/id6759565945" target="_blank" rel="noopener noreferrer" className="inline-block hover:opacity-80 transition-opacity" title="Download on the App Store">
+              <Image src="/assets/app-store-badge.svg" alt="Download on the App Store" width={120} height={40} className="h-[40px] w-auto" />
             </Link>
           </div>
           <p className="text-sm text-warm-gray-400">
