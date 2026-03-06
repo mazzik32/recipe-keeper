@@ -28,7 +28,6 @@ const PACKAGES = [
 export function PricingModal({ open, onOpenChange }: PricingModalProps) {
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [paddle, setPaddle] = useState<Paddle | undefined>(undefined);
-    const [provider, setProvider] = useState<'paddle' | 'stripe'>('paddle');
 
     useEffect(() => {
         const isSandbox = process.env.NEXT_PUBLIC_PADDLE_ENV === 'sandbox' || process.env.NODE_ENV !== 'production';
@@ -46,51 +45,27 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
         try {
             setLoadingId(packageId);
 
-            if (provider === 'paddle') {
-                if (!paddle) {
-                    throw new Error('Paddle not initialized');
-                }
-
-                const response = await fetch('/api/paddle/checkout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ packageId }),
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) throw new Error(data.error || 'Failed to start checkout');
-
-                paddle.Checkout.open({
-                    transactionId: data.transactionId,
-                    settings: {
-                        theme: 'light',
-                        successUrl: window.location.href,
-                    }
-                });
-            } else {
-                // Stripe Legacy Flow
-                const response = await fetch('/api/stripe/checkout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        packageId,
-                        returnUrl: window.location.href
-                    }),
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to start checkout');
-                }
-
-                if (data.url) {
-                    window.location.href = data.url;
-                }
+            if (!paddle) {
+                throw new Error('Paddle not initialized');
             }
+
+            const response = await fetch('/api/paddle/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ packageId }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.error || 'Failed to start checkout');
+
+            paddle.Checkout.open({
+                transactionId: data.transactionId,
+                settings: {
+                    theme: 'light',
+                    successUrl: window.location.href,
+                }
+            });
         } catch (error: any) {
             console.error('Purchase error:', error);
             toast({
