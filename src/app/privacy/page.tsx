@@ -129,6 +129,12 @@ export default function PrivacyPage() {
                         >
                             Terms of Service
                         </Link>
+                        <Link
+                            href="/open-source"
+                            className="text-peach-600 hover:text-peach-700 font-semibold"
+                        >
+                            Open Source
+                        </Link>
                     </div>
                 </div>
             </main>

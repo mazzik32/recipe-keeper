@@ -9,7 +9,8 @@
         "lint": "next lint",
         "mobile:sync": "npx cap sync",
         "mobile:ios": "npx cap open ios",
-        "mobile:android": "npx cap open android"
+        "mobile:android": "npx cap open android",
+        "generate-licenses": "node scripts/generate-web-licenses.js"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.999.0",
@@ -69,6 +70,7 @@
         "@types/react-dom": "^19.2.3",
         "eslint": "^9",
         "eslint-config-next": "15.1.6",
+        "license-checker-rseidelsohn": "^4.4.2",
         "postcss": "^8",
         "tailwindcss": "^3.4.1",
         "typescript": "5.9.3",

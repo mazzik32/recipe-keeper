@@ -526,8 +526,11 @@ export default function Home() {
             <Link href="/terms" className="text-warm-gray-500 hover:text-warm-gray-700 no-underline mr-4 transition-colors">
               Terms of Service
             </Link>
-            <Link href="/privacy" className="text-warm-gray-500 hover:text-warm-gray-700 no-underline transition-colors">
+            <Link href="/privacy" className="text-warm-gray-500 hover:text-warm-gray-700 no-underline mr-4 transition-colors">
               Privacy Policy
+            </Link>
+            <Link href="/open-source" className="text-warm-gray-500 hover:text-warm-gray-700 no-underline transition-colors">
+              Open Source
             </Link>
           </div>
           <div className="mb-6">

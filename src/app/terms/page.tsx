@@ -212,6 +212,12 @@ export default function TermsPage() {
                         >
                             Privacy Policy
                         </Link>
+                        <Link
+                            href="/open-source"
+                            className="text-peach-600 hover:text-peach-700 font-semibold"
+                        >
+                            Open Source
+                        </Link>
                     </div>
                 </div>
             </main>
