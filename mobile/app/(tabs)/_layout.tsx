@@ -57,6 +57,7 @@ export default function TabLayout() {
                 <Tabs.Screen name="settings/tags" options={{ href: null }} />
                 <Tabs.Screen name="settings/buy-credits" options={{ href: null }} />
                 <Tabs.Screen name="settings/collections" options={{ href: null }} />
+                <Tabs.Screen name="settings/attributions" options={{ href: null }} />
             </Tabs>
             {/* Custom animated FAB — floats above the tab bar */}
             <FABOverlay />

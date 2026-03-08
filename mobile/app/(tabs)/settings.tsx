@@ -361,9 +361,16 @@ export default function SettingsScreen() {
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => Linking.openURL('https://www.recipekeeper.org/terms')}
-                            className="flex-row items-center justify-between p-4 active:opacity-70"
+                            className="flex-row items-center justify-between p-4 border-b border-warm-gray-50 dark:border-dark-border dark:border-dark-border active:opacity-70"
                         >
                             <Text className="text-warm-gray-700 dark:text-dark-text dark:text-dark-text font-medium text-base ml-11">{t.nav.termsOfService}</Text>
+                            <ChevronRight color={colors.muted} size={20} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => router.push('/(tabs)/settings/attributions')}
+                            className="flex-row items-center justify-between p-4 active:opacity-70"
+                        >
+                            <Text className="text-warm-gray-700 dark:text-dark-text dark:text-dark-text font-medium text-base ml-11">Open Source Licenses</Text>
                             <ChevronRight color={colors.muted} size={20} />
                         </TouchableOpacity>
                     </View>

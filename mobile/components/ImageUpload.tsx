@@ -6,7 +6,7 @@ import { Upload, X, Camera } from "lucide-react-native";
 import { useLanguage } from "../contexts/LanguageContext";
 import { ImageCropperModal } from "./shared/ImageCropperModal";
 import { supabase } from "../lib/supabase";
-import * as FileSystem from "expo-file-system";
+import { File } from "expo-file-system";
 import { decode } from "base64-arraybuffer";
 
 interface ImageUploadProps {
@@ -130,7 +130,8 @@ export async function uploadImageToSupabase(localUri: string, bucket: string, fo
         const fileName = `${userId}/${folder}/${Date.now()}.${fileExt}`;
 
         // Read file as base64
-        const base64 = await FileSystem.readAsStringAsync(localUri, { encoding: 'base64' });
+        const file = new File(localUri);
+        const base64 = await file.base64();
 
         const contentType = fileExt.toLowerCase() === 'png' ? 'image/png' : 'image/jpeg';
 
