@@ -2,7 +2,7 @@
   "expo": {
     "name": "RecipeKeeper.org",
     "slug": "mobile",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "scheme": "recipekeeper",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +20,7 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "appleTeamId": "RNCD8266PY",
-      "buildNumber": "2"
+      "buildNumber": "3"
     },
     "android": {
       "adaptiveIcon": {
