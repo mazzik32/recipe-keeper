@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function isAdminHost(request: NextRequest) {
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
+  return host.includes('admin.recipekeeper.org');
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -34,27 +39,24 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
-  const isAdminHost = host.includes('admin.recipekeeper.org');
+  const adminHost = isAdminHost(request);
+  const pathname = request.nextUrl.pathname;
 
-  // Protect dashboard routes
-  if (
-    !user &&
-    (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/admin") || (isAdminHost && request.nextUrl.pathname === "/"))
-  ) {
+  if (!user && (pathname.startsWith('/dashboard') || (adminHost && (pathname === '/' || pathname.startsWith('/admin'))))) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
-  // Redirect logged in users away from auth pages
-  if (
-    user &&
-    (request.nextUrl.pathname === "/login" ||
-      request.nextUrl.pathname === "/signup")
-  ) {
+  if (user && (pathname === '/login' || pathname === '/signup')) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = adminHost ? '/' : '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  if (!adminHost && pathname.startsWith('/admin')) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 

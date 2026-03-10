@@ -2,15 +2,35 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { checkApiRateLimit } from "@/lib/rate-limit";
 
+function isAdminHost(request: NextRequest) {
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
+  return host.includes('admin.recipekeeper.org');
+}
+
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
-  const isAdminHost = host.includes('admin.recipekeeper.org');
+  const adminHost = isAdminHost(request);
 
-  if (isAdminHost && path === '/') {
+  if (adminHost && path === '/') {
     const url = request.nextUrl.clone();
     url.pathname = '/admin';
-    return NextResponse.rewrite(url);
+    const response = NextResponse.rewrite(url);
+    response.headers.set('x-robots-tag', 'noindex, nofollow, noarchive, nosnippet');
+    response.headers.set('x-admin-surface', 'true');
+    return response;
+  }
+
+  if (!adminHost && path === '/admin') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  if (adminHost && path.startsWith('/admin')) {
+    const response = NextResponse.next();
+    response.headers.set('x-robots-tag', 'noindex, nofollow, noarchive, nosnippet');
+    response.headers.set('x-admin-surface', 'true');
+    return response;
   }
 
   if (
@@ -62,6 +82,15 @@ export async function proxy(request: NextRequest) {
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Permissions-Policy", "camera=(self), microphone=(), geolocation=()");
+
+  if (adminHost) {
+    response.headers.set('x-robots-tag', 'noindex, nofollow, noarchive, nosnippet');
+    response.headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' https: data:; connect-src 'self' https: wss:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';");
+    response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+    response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+    response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+  }
 
   return response;
 }
