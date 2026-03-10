@@ -27,8 +27,8 @@ export default async function AdminRecipesScansPage({ searchParams }: { searchPa
         </ChartCard>
         <ChartCard title="Recent scan completions">
           <DataTable
-            columns={['Channel', 'Mode', 'User type', 'Occurred at']}
-            rows={data.recentScans.map((row) => [row.channel ?? 'unknown', row.mode ?? 'unknown', row.userType, new Date(row.occurredAt).toLocaleString()])}
+            columns={['Channel', 'Mode', 'User', 'User type', 'Occurred at']}
+            rows={data.recentScans.map((row) => [row.channel ?? 'unknown', row.mode ?? 'unknown', row.userEmail ?? 'No email', row.userType, new Date(row.occurredAt).toLocaleString()])}
           />
         </ChartCard>
       </div>
@@ -36,7 +36,7 @@ export default async function AdminRecipesScansPage({ searchParams }: { searchPa
         <ChartCard title="Recent recipe creations">
           <DataTable
             columns={['Title', 'User', 'Created at']}
-            rows={data.recentRecipes.map((row) => [row.title, row.userId.slice(0, 8), new Date(row.createdAt).toLocaleString()])}
+            rows={data.recentRecipes.map((row) => [row.title, row.userEmail ?? row.userId.slice(0, 8), new Date(row.createdAt).toLocaleString()])}
           />
         </ChartCard>
       </div>

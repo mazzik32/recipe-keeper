@@ -37,8 +37,8 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
         </ChartCard>
         <ChartCard title="Recent purchases">
           <DataTable
-            columns={['Source', 'Pack', 'Credits', 'User type', 'Created']}
-            rows={data.recentPurchases.map((row) => [row.source, row.packCode ?? 'unknown', String(row.amount), row.userType, new Date(row.createdAt).toLocaleString()])}
+            columns={['Source', 'Pack', 'Credits', 'User', 'User type', 'Created']}
+            rows={data.recentPurchases.map((row) => [row.source, row.packCode ?? 'unknown', String(row.amount), row.userEmail ?? 'No email', row.userType, new Date(row.createdAt).toLocaleString()])}
           />
         </ChartCard>
       </div>

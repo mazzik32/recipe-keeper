@@ -21,8 +21,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
         </ChartCard>
         <ChartCard title="Highest balances">
           <DataTable
-            columns={['Display name', 'Credits', 'Created']}
-            rows={data.highestBalances.map((row) => [row.displayName ?? row.id.slice(0, 8), String(row.credits), new Date(row.createdAt).toLocaleDateString()])}
+            columns={['Display name', 'Email', 'Credits', 'Created']}
+            rows={data.highestBalances.map((row) => [row.displayName ?? row.id.slice(0, 8), row.email ?? 'No email', String(row.credits), new Date(row.createdAt).toLocaleDateString()])}
           />
         </ChartCard>
       </div>

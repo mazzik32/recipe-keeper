@@ -49,16 +49,18 @@ type CreditTransactionRow = Database['public']['Tables']['credit_transactions'][
 type AnalyticsEventRow = Database['public']['Tables']['analytics_events']['Row'];
 type WebhookEventRow = Database['public']['Tables']['webhook_events']['Row'];
 
+type AdminIdentityMap = Record<string, { email: string | null }>;
+
 export interface AdminDashboardData {
   filters: AdminFilters;
   kpis: AdminKpiData;
   trends: TrendPoint[];
   channelBreakdown: BreakdownRow[];
   packBreakdown: BreakdownRow[];
-  recentPurchases: Array<{ id: string; createdAt: string; source: string; packCode: string | null; amount: number; userType: string }>;
-  highestBalances: Array<{ id: string; displayName: string | null; credits: number; createdAt: string }>;
-  recentRecipes: Array<{ id: string; title: string; createdAt: string; userId: string }>;
-  recentScans: Array<{ id: string; occurredAt: string; channel: string | null; userType: string; mode: string | null }>;
+  recentPurchases: Array<{ id: string; createdAt: string; source: string; packCode: string | null; amount: number; userType: string; userEmail: string | null }>;
+  highestBalances: Array<{ id: string; displayName: string | null; email: string | null; credits: number; createdAt: string }>;
+  recentRecipes: Array<{ id: string; title: string; createdAt: string; userId: string; userEmail: string | null }>;
+  recentScans: Array<{ id: string; occurredAt: string; channel: string | null; userType: string; mode: string | null; userEmail: string | null }>;
   recentOperations: Array<{ id: string; provider: string; eventId: string; receivedAt: string }>;
   purchaseEventsInRange: number;
   anonymousSessionsInRange: number;
@@ -137,6 +139,31 @@ function inRange(value: string, filters: AdminFilters) {
   return value >= filters.from && value <= filters.to;
 }
 
+async function getIdentityMap(userIds: string[]): Promise<AdminIdentityMap> {
+  if (userIds.length === 0) return {};
+
+  const response = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
+    headers: {
+      apikey: supabaseServiceKey!,
+      Authorization: `Bearer ${supabaseServiceKey!}`,
+    },
+  });
+
+  if (!response.ok) {
+    console.warn('Failed to fetch admin user identities');
+    return {};
+  }
+
+  const data = await response.json() as { users?: Array<{ id: string; email?: string | null }> };
+  const requested = new Set(userIds);
+  return (data.users ?? []).reduce<AdminIdentityMap>((acc, user) => {
+    if (requested.has(user.id)) {
+      acc[user.id] = { email: user.email ?? null };
+    }
+    return acc;
+  }, {});
+}
+
 export async function getAdminDashboardData(filters: AdminFilters): Promise<AdminDashboardData> {
   const supabase = getAdminClient();
 
@@ -178,6 +205,13 @@ export async function getAdminDashboardData(filters: AdminFilters): Promise<Admi
   const scansCompletedInRange = events.filter((item) => item.event_name === 'recipe_scan_completed' && inRange(item.occurred_at, filters));
   const recipesCreatedInRange = recipes.filter((item) => inRange(item.created_at, filters));
   const usersInRange = profiles.filter((item) => inRange(item.created_at, filters));
+
+  const identityMap = await getIdentityMap(Array.from(new Set([
+    ...profiles.map((item) => item.id),
+    ...purchaseTransactionsInRange.map((item) => item.user_id),
+    ...recipesCreatedInRange.map((item) => item.user_id),
+    ...scansCompletedInRange.map((item) => item.user_id).filter((value): value is string => Boolean(value)),
+  ])));
 
   const trendMap = new Map<string, TrendPoint>();
   const ensureTrend = (bucket: string) => {
@@ -234,10 +268,12 @@ export async function getAdminDashboardData(filters: AdminFilters): Promise<Admi
       packCode: item.pack_code,
       amount: item.amount,
       userType: item.user_type_snapshot,
+      userEmail: identityMap[item.user_id]?.email ?? null,
     })),
     highestBalances: [...profiles].sort((a, b) => b.credits - a.credits).slice(0, 10).map((item) => ({
       id: item.id,
       displayName: item.display_name,
+      email: identityMap[item.id]?.email ?? null,
       credits: item.credits,
       createdAt: item.created_at,
     })),
@@ -246,6 +282,7 @@ export async function getAdminDashboardData(filters: AdminFilters): Promise<Admi
       title: item.title,
       createdAt: item.created_at,
       userId: item.user_id,
+      userEmail: identityMap[item.user_id]?.email ?? null,
     })),
     recentScans: scansCompletedInRange.slice(0, 10).map((item) => ({
       id: item.id,
@@ -253,6 +290,7 @@ export async function getAdminDashboardData(filters: AdminFilters): Promise<Admi
       channel: item.channel,
       userType: item.user_type_snapshot,
       mode: typeof item.metadata === 'object' && item.metadata && 'mode' in item.metadata ? String(item.metadata.mode) : null,
+      userEmail: item.user_id ? identityMap[item.user_id]?.email ?? null : null,
     })),
     recentOperations: webhookEvents.map((item) => ({
       id: String(item.id),
