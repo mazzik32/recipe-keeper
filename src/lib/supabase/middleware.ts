@@ -34,13 +34,16 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
+  const isAdminHost = host.includes('admin.recipekeeper.org');
+
   // Protect dashboard routes
   if (
     !user &&
-    (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/admin"))
+    (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/admin") || (isAdminHost && request.nextUrl.pathname === "/"))
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
