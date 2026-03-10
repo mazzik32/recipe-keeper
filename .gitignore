@@ -48,6 +48,9 @@ next-env.d.ts
 supabase/.branches
 supabase/.temp
 
+# DB Backups (contain sensitive data — never commit)
+backups/
+
 # Logs
 logs
 *.log

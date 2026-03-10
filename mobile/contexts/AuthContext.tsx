@@ -70,10 +70,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (!mounted) return;
             setSession(session);
             setUser(session?.user ?? null);
+
+            if (event === 'USER_UPDATED' && session?.user && !session.user.is_anonymous) {
+                await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'}/api/analytics/events`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                        eventName: 'user_registered',
+                        channel: 'mobile',
+                        eventKey: session.user.id,
+                    }),
+                }).catch((error) => {
+                    console.warn('Failed to record user_registered analytics event:', error);
+                });
+            }
         });
 
         return () => {

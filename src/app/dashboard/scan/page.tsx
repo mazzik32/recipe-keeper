@@ -155,7 +155,15 @@ export default function ScanRecipePage() {
 
     try {
       // Check and consume credit first
-      const { data: newCredits, error: consumeError } = await supabase.rpc("consume_single_credit");
+      const scanReference = crypto.randomUUID();
+      const consumeResponse = await fetch('/api/credits/consume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceReference: scanReference, channel: 'web', mode: 'image' }),
+      });
+      const consumePayload = await consumeResponse.json().catch(() => ({}));
+      const newCredits = consumePayload.credits;
+      const consumeError = consumeResponse.ok ? null : { message: consumePayload.error || 'Failed to deduct credit', code: String(consumeResponse.status) };
       if (consumeError) {
         if (consumeError.message.includes("insufficient_credits") || consumeError.code === "P0001") {
           setIsPricingOpen(true);
@@ -220,6 +228,19 @@ export default function ScanRecipePage() {
       }
 
       const result: { success: boolean } & AnalysisResult = await response.json();
+      await fetch('/api/analytics/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          eventName: 'recipe_scan_completed',
+          channel: 'web',
+          eventKey: scanReference,
+          metadata: { mode: 'image', imageCount: uploadedUrls.length },
+        }),
+      }).catch(() => undefined);
       setExtractedRecipe(result.data);
       setAnalysisResult(result);
       setStatus("complete");
@@ -241,7 +262,14 @@ export default function ScanRecipePage() {
 
     try {
       // Check and consume credit first
-      const { error: consumeError } = await supabase.rpc("consume_single_credit");
+      const scanReference = crypto.randomUUID();
+      const consumeResponse = await fetch('/api/credits/consume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceReference: scanReference, channel: 'web', mode: 'text' }),
+      });
+      const consumePayload = await consumeResponse.json().catch(() => ({}));
+      const consumeError = consumeResponse.ok ? null : { message: consumePayload.error || 'Failed to deduct credit', code: String(consumeResponse.status) };
       if (consumeError) {
         if (consumeError.message?.includes("insufficient_credits") || consumeError.code === "P0001") {
           setIsPricingOpen(true);
@@ -285,6 +313,19 @@ export default function ScanRecipePage() {
       }
 
       const result: { success: boolean } & AnalysisResult = await response.json();
+      await fetch('/api/analytics/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          eventName: 'recipe_scan_completed',
+          channel: 'web',
+          eventKey: scanReference,
+          metadata: { mode: 'url', url: recipeUrl },
+        }),
+      }).catch(() => undefined);
       setExtractedRecipe(result.data);
       setAnalysisResult(result);
       setStatus("complete");
@@ -306,7 +347,14 @@ export default function ScanRecipePage() {
 
     try {
       // Check and consume credit first
-      const { error: consumeError } = await supabase.rpc("consume_single_credit");
+      const scanReference = crypto.randomUUID();
+      const consumeResponse = await fetch('/api/credits/consume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceReference: scanReference, channel: 'web', mode: 'url' }),
+      });
+      const consumePayload = await consumeResponse.json().catch(() => ({}));
+      const consumeError = consumeResponse.ok ? null : { message: consumePayload.error || 'Failed to deduct credit', code: String(consumeResponse.status) };
       if (consumeError) {
         if (consumeError.message?.includes("insufficient_credits") || consumeError.code === "P0001") {
           setIsPricingOpen(true);
@@ -350,6 +398,19 @@ export default function ScanRecipePage() {
       }
 
       const result: { success: boolean } & AnalysisResult = await response.json();
+      await fetch('/api/analytics/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          eventName: 'recipe_scan_completed',
+          channel: 'web',
+          eventKey: scanReference,
+          metadata: { mode: 'text' },
+        }),
+      }).catch(() => undefined);
       setExtractedRecipe(result.data);
       setAnalysisResult(result);
       setStatus("complete");

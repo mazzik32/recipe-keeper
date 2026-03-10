@@ -364,6 +364,21 @@ export default function RecipeFormScreen() {
                     if (colError) console.error("Error saving collection", colError);
                 }
 
+                await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'}/api/analytics/events`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+                    },
+                    body: JSON.stringify({
+                        eventName: 'recipe_created',
+                        channel: 'mobile',
+                        recipeId: newRecipe.id,
+                        eventKey: newRecipe.id,
+                        metadata: { source: source || null },
+                    }),
+                }).catch(() => undefined);
+
                 router.replace(`/(tabs)/`);
                 router.push(`/recipes/${newRecipe.id}`);
             }

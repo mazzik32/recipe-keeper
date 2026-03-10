@@ -3,12 +3,12 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { Database } from '@/types/database.types';
 import { deductCredits } from '@/lib/credits';
+import { getUserTypeSnapshot, trackAnalyticsEvent } from '@/lib/analytics';
 
 export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
-    
-    // Create a Supabase client configured to use cookies
+
     const supabase = createServerClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -17,8 +17,7 @@ export async function POST(req: NextRequest) {
           getAll() {
             return cookieStore.getAll();
           },
-          setAll(cookiesToSet) {
-             // 
+          setAll() {
           }
         }
       }
@@ -30,19 +29,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const body = await req.json().catch(() => ({})) as { sourceReference?: string; channel?: string; mode?: string };
+    const userTypeSnapshot = getUserTypeSnapshot(user);
+
     try {
-      const newCredits = await deductCredits(user.id, 1);
+      const newCredits = await deductCredits(user.id, 1, {
+        source: 'scan_consume',
+        sourceReference: body.sourceReference,
+        userTypeSnapshot,
+        metadata: {
+          channel: body.channel ?? 'web',
+          mode: body.mode ?? null,
+        },
+      });
+
+      await trackAnalyticsEvent({
+        eventName: 'recipe_scan_started',
+        userId: user.id,
+        userTypeSnapshot,
+        channel: body.channel ?? 'web',
+        eventKey: body.sourceReference ?? null,
+        metadata: {
+          mode: body.mode ?? null,
+        },
+      });
+
       return NextResponse.json({ success: true, credits: newCredits });
-    } catch (err: any) {
-      const message = err?.message || '';
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '';
       if (message.includes('insufficient_credits')) {
         return NextResponse.json({ error: 'Insufficient credits' }, { status: 403 });
       }
       console.error('Failed to deduct credit:', err);
       return NextResponse.json({ error: 'Failed to deduct credit' }, { status: 500 });
     }
-    
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

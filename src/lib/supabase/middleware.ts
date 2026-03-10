@@ -5,6 +5,7 @@ export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
+  supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,7 +37,7 @@ export async function updateSession(request: NextRequest) {
   // Protect dashboard routes
   if (
     !user &&
-    request.nextUrl.pathname.startsWith("/dashboard")
+    (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/admin"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

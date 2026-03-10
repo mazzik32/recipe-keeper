@@ -1,4 +1,0 @@
-CAPACITOR_DEBUG = true
-// If you intended to include another configuration file, uncomment and adjust the path below.
-//#include "../ios/debug.xcconfig"
-

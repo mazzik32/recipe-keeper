@@ -72,7 +72,18 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
         if (images.length === 0 || !user) return;
         setUploading(true);
         try {
-            const { error: consumeError } = await supabase.rpc("consume_single_credit");
+            const scanReference = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+            const { data: sessionData } = await supabase.auth.getSession();
+            const consumeResponse = await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'}/api/credits/consume`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionData.session?.access_token}`,
+                },
+                body: JSON.stringify({ sourceReference: scanReference, channel: 'mobile', mode: 'image' }),
+            });
+            const consumePayload = await consumeResponse.json().catch(() => ({}));
+            const consumeError = consumeResponse.ok ? null : { message: consumePayload.error || 'Failed to deduct credit', code: String(consumeResponse.status) };
             if (consumeError) {
                 if (consumeError.message?.includes("insufficient_credits") || consumeError.code === "P0001") {
                     throw new Error("Insufficient credits. Please purchase more to continue scanning.");
@@ -124,6 +135,19 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
             if (!response.ok) throw new Error("Failed to analyze recipe with AI.");
 
             const result = await response.json();
+            await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'}/api/analytics/events`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionData.session?.access_token}`,
+                },
+                body: JSON.stringify({
+                    eventName: 'recipe_scan_completed',
+                    channel: 'mobile',
+                    eventKey: scanReference,
+                    metadata: { mode: 'image', imageCount: uploadedUrls.length },
+                }),
+            }).catch(() => undefined);
             const recipeToReview = {
                 ...result.data,
                 originalImageUrl: uploadedUrls[0],
@@ -151,7 +175,18 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
         if (!urlValue || !user) return;
         setUploading(true);
         try {
-            const { error: consumeError } = await supabase.rpc("consume_single_credit");
+            const scanReference = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+            const { data: sessionData } = await supabase.auth.getSession();
+            const consumeResponse = await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'}/api/credits/consume`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionData.session?.access_token}`,
+                },
+                body: JSON.stringify({ sourceReference: scanReference, channel: 'mobile', mode: 'url' }),
+            });
+            const consumePayload = await consumeResponse.json().catch(() => ({}));
+            const consumeError = consumeResponse.ok ? null : { message: consumePayload.error || 'Failed to deduct credit', code: String(consumeResponse.status) };
             if (consumeError) {
                 if (consumeError.message?.includes("insufficient_credits") || consumeError.code === "P0001") {
                     throw new Error("Insufficient credits. Please purchase more to continue scanning.");
@@ -160,7 +195,6 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
             }
             await refreshCredits();
 
-            const { data: sessionData } = await supabase.auth.getSession();
             const response = await fetch(
                 `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/scrape-recipe`,
                 {
@@ -179,6 +213,19 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
             }
             const result = await response.json();
             if (!result.success) throw new Error(result.error?.message || "Failed to parse recipe.");
+            await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'}/api/analytics/events`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionData.session?.access_token}`,
+                },
+                body: JSON.stringify({
+                    eventName: 'recipe_scan_completed',
+                    channel: 'mobile',
+                    eventKey: scanReference,
+                    metadata: { mode: 'url', url: urlValue },
+                }),
+            }).catch(() => undefined);
 
             setUrlValue("");
             setShowUrlInput(false);

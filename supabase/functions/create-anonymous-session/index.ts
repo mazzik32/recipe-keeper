@@ -32,6 +32,7 @@ Deno.serve(async (req) => {
             Deno.env.get('SUPABASE_URL') || '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
         );
+        const nowIso = new Date().toISOString();
 
         // Get the client's IP address (typically in x-forwarded-for when behind Cloudflare/Supabase proxy)
         const ip = req.headers.get('x-forwarded-for') || "unknown";
@@ -76,6 +77,20 @@ Deno.serve(async (req) => {
         });
 
         const { data: authData, error: authError } = await supabaseClient.auth.signInAnonymously();
+
+        if (authData?.user?.id) {
+            await supabaseAdmin.from('analytics_events').insert({
+                event_name: 'anonymous_session_created',
+                user_id: authData.user.id,
+                user_type_snapshot: 'anonymous',
+                channel: 'mobile',
+                event_key: authData.user.id,
+                occurred_at: nowIso,
+                metadata: {
+                    ip,
+                },
+            });
+        }
 
         if (authError || !authData.session) {
             console.error("Auth Error:", authError);

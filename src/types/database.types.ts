@@ -9,6 +9,82 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      credit_transactions: {
+        Row: {
+          id: string;
+          user_id: string;
+          direction: 'grant' | 'consume' | 'adjustment';
+          amount: number;
+          source: 'signup_bonus' | 'iap_ios' | 'iap_android' | 'paddle' | 'scan_consume' | 'admin_adjustment';
+          source_reference: string | null;
+          pack_code: string | null;
+          user_type_snapshot: 'anonymous' | 'registered' | 'unknown';
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          direction: 'grant' | 'consume' | 'adjustment';
+          amount: number;
+          source: 'signup_bonus' | 'iap_ios' | 'iap_android' | 'paddle' | 'scan_consume' | 'admin_adjustment';
+          source_reference?: string | null;
+          pack_code?: string | null;
+          user_type_snapshot?: 'anonymous' | 'registered' | 'unknown';
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          direction?: 'grant' | 'consume' | 'adjustment';
+          amount?: number;
+          source?: 'signup_bonus' | 'iap_ios' | 'iap_android' | 'paddle' | 'scan_consume' | 'admin_adjustment';
+          source_reference?: string | null;
+          pack_code?: string | null;
+          user_type_snapshot?: 'anonymous' | 'registered' | 'unknown';
+          metadata?: Json;
+          created_at?: string;
+        };
+      };
+      analytics_events: {
+        Row: {
+          id: string;
+          event_name: string;
+          user_id: string | null;
+          user_type_snapshot: 'anonymous' | 'registered' | 'unknown';
+          channel: string | null;
+          recipe_id: string | null;
+          event_key: string | null;
+          metadata: Json;
+          occurred_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_name: string;
+          user_id?: string | null;
+          user_type_snapshot?: 'anonymous' | 'registered' | 'unknown';
+          channel?: string | null;
+          recipe_id?: string | null;
+          event_key?: string | null;
+          metadata?: Json;
+          occurred_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_name?: string;
+          user_id?: string | null;
+          user_type_snapshot?: 'anonymous' | 'registered' | 'unknown';
+          channel?: string | null;
+          recipe_id?: string | null;
+          event_key?: string | null;
+          metadata?: Json;
+          occurred_at?: string;
+          created_at?: string;
+        };
+      };
       webhook_events: {
         Row: {
           id: number;
@@ -288,7 +364,49 @@ export type Database = {
         };
       };
     };
-    Views: {};
+    Views: {
+      admin_credit_sales_rollups: {
+        Row: {
+          bucket_day: string | null;
+          source: 'signup_bonus' | 'iap_ios' | 'iap_android' | 'paddle' | 'scan_consume' | 'admin_adjustment' | null;
+          pack_code: string | null;
+          user_type_snapshot: 'anonymous' | 'registered' | 'unknown' | null;
+          grant_transaction_count: number | null;
+          granted_credits: number | null;
+          consume_transaction_count: number | null;
+          consumed_credits: number | null;
+        };
+      };
+      admin_usage_rollups: {
+        Row: {
+          bucket_day: string | null;
+          event_name: string | null;
+          channel: string | null;
+          user_type_snapshot: 'anonymous' | 'registered' | 'unknown' | null;
+          event_count: number | null;
+        };
+      };
+      admin_kpi_rollups: {
+        Row: {
+          snapshot_date: string | null;
+          total_profiles: number | null;
+          anonymous_profiles: number | null;
+          registered_profiles: number | null;
+          total_recipes: number | null;
+          outstanding_credits: number | null;
+        };
+      };
+      admin_funnel_rollups: {
+        Row: {
+          bucket_day: string | null;
+          user_type_snapshot: 'anonymous' | 'registered' | 'unknown' | null;
+          anonymous_session_created_count: number | null;
+          user_registered_count: number | null;
+          recipe_created_count: number | null;
+          purchase_completed_count: number | null;
+        };
+      };
+    };
     Functions: {
       increment_credits: {
         Args: { p_user_id: string; p_amount: number };
@@ -299,7 +417,11 @@ export type Database = {
         Returns: number;
       };
     };
-    Enums: {};
+    Enums: {
+      credit_transaction_direction: 'grant' | 'consume' | 'adjustment';
+      credit_transaction_source: 'signup_bonus' | 'iap_ios' | 'iap_android' | 'paddle' | 'scan_consume' | 'admin_adjustment';
+      analytics_user_type: 'anonymous' | 'registered' | 'unknown';
+    };
     CompositeTypes: {};
   };
 };

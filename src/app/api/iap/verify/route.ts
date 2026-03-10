@@ -5,24 +5,10 @@ import { recordWebhookEvent } from '@/lib/webhook-events';
 import { creditsForProduct } from '@/lib/iap/products';
 import { verifyAppleTransaction } from '@/lib/iap/apple';
 import { verifyGooglePurchase } from '@/lib/iap/google';
+import { getUserTypeSnapshot, trackAnalyticsEvent } from '@/lib/analytics';
 
-/**
- * POST /api/iap/verify
- *
- * Verifies an in-app purchase receipt from iOS (Apple) or Android (Google),
- * then atomically adds credits to the user's account.
- *
- * Body: {
- *   platform: 'ios' | 'android',
- *   receipt: string,         // JWS transaction (iOS) or purchase token (Android)
- *   productId: string,       // e.g. 'org.recipekeeper.credits.20'
- * }
- *
- * Auth: Authorization header with Supabase access token
- */
 export async function POST(req: NextRequest) {
   try {
-    // --- Authenticate user via Supabase JWT ---
     const authHeader = req.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Missing authorization' }, { status: 401 });
@@ -42,7 +28,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // --- Parse request body ---
     const body = await req.json();
     const { platform, receipt, productId } = body;
 
@@ -57,13 +42,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid platform' }, { status: 400 });
     }
 
-    // --- Validate product ID ---
     const creditsToAdd = creditsForProduct(productId);
     if (!creditsToAdd) {
       return NextResponse.json({ error: 'Invalid productId' }, { status: 400 });
     }
 
-    // --- Verify receipt with store ---
     let transactionId: string | undefined;
 
     if (platform === 'ios') {
@@ -77,7 +60,6 @@ export async function POST(req: NextRequest) {
       }
       transactionId = result.transactionId;
 
-      // Validate productId matches what was purchased
       if (result.productId !== productId) {
         return NextResponse.json(
           { error: `Product mismatch: expected ${productId}, got ${result.productId}` },
@@ -96,12 +78,10 @@ export async function POST(req: NextRequest) {
       transactionId = result.transactionId;
     }
 
-    // --- Idempotency check ---
     if (transactionId) {
       try {
         const isNew = await recordWebhookEvent(`iap_${platform}`, transactionId);
         if (!isNew) {
-          // Already processed — return current balance without adding credits again
           const { data: profile } = await supabase
             .from('profiles')
             .select('credits')
@@ -120,17 +100,36 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // --- Add credits ---
-    console.log(`IAP: Adding ${creditsToAdd} credits to user ${user.id} (${platform}, tx: ${transactionId})`);
-    const newBalance = await addCredits(user.id, creditsToAdd);
+    const userTypeSnapshot = getUserTypeSnapshot(user);
+    const newBalance = await addCredits(user.id, creditsToAdd, {
+      source: platform === 'ios' ? 'iap_ios' : 'iap_android',
+      sourceReference: transactionId,
+      packCode: productId,
+      userTypeSnapshot,
+      metadata: { platform, productId },
+    });
+
+    await trackAnalyticsEvent({
+      eventName: 'purchase_completed',
+      userId: user.id,
+      userTypeSnapshot,
+      channel: platform,
+      eventKey: transactionId ?? `${platform}:${user.id}:${productId}`,
+      metadata: {
+        productId,
+        creditsAdded: creditsToAdd,
+        transactionId,
+      },
+    });
 
     return NextResponse.json({
       success: true,
       credits: newBalance,
       added: creditsToAdd,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal server error';
     console.error('IAP verify error:', err);
-    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

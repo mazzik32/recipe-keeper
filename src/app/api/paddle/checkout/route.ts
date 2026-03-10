@@ -3,6 +3,7 @@ import { paddle } from '@/lib/paddle';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { Database } from '@/types/database.types';
+import { getUserTypeSnapshot } from '@/lib/analytics';
 
 // TODO: REPLACE THESE WITH YOUR ACTUAL PADDLE PRICE IDS
 const PADDLE_PRICES = {
@@ -56,7 +57,9 @@ export async function POST(req: NextRequest) {
       customData: {
         userId: user.id,
         packageId: packageId,
-        credits: packageId === 'pack_20' ? '20' : packageId === 'pack_50' ? '50' : '200'
+        credits: packageId === 'pack_20' ? '20' : packageId === 'pack_50' ? '50' : '200',
+        packCode: packageId,
+        userTypeSnapshot: getUserTypeSnapshot(user),
       },
     });
 
