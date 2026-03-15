@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { HeicImage as Image } from "@/components/recipes/HeicImage";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -106,7 +106,7 @@ export function RecipeDetailContent({ recipe }: RecipeDetailContentProps) {
             src={primaryImage.image_url}
             alt={recipe.title}
             fill
-            unoptimized
+            unoptimized={primaryImage.image_url.includes("data.recipekeeper.org")}
             className="object-contain"
           />
         </div>
@@ -219,7 +219,7 @@ export function RecipeDetailContent({ recipe }: RecipeDetailContentProps) {
                         src={step.image_url}
                         alt={`${t.recipes.step} ${step.step_number}`}
                         fill
-                        unoptimized
+                        unoptimized={step.image_url.includes("data.recipekeeper.org")}
                         className="object-contain"
                       />
                     </div>

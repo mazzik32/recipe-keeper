@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { HeicImage as Image } from "@/components/recipes/HeicImage";
+import Image from "next/image";
 import { Clock, Users, Heart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,12 +29,15 @@ export function RecipeCard({ recipe, onToggleFavorite, actions }: RecipeCardProp
         <div className="aspect-[4/3] bg-peach-100 relative overflow-hidden">
           {primaryImage ? (
             <Image
-              src={primaryImage.image_url}
-              alt={recipe.title}
-              fill
-              unoptimized
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-            />
+            src={recipe.original_image_url || "/placeholder-recipe.jpg"}
+            alt={recipe.title}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            unoptimized={
+              recipe.original_image_url ? recipe.original_image_url.includes("data.recipekeeper.org") : false
+            }
+          />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <span className="text-4xl">🍽️</span>

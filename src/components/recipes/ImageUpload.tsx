@@ -229,7 +229,7 @@ export function ImageUpload({
       >
         {value ? (
           <>
-            <Image src={value} alt="Uploaded image" fill className="object-cover" />
+            <Image src={value} alt="Uploaded image" fill unoptimized={value.includes("data.recipekeeper.org")} className="object-cover" />
             <Button
               type="button"
               variant="destructive"
