@@ -3,6 +3,7 @@ import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { X, Plus, Camera, UploadCloud, Link as LinkIcon, PenLine, Trash2 } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -91,11 +92,21 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
                 throw new Error("Failed to verify credits: " + (consumeError.message || "Unknown error"));
             }
             await refreshCredits();
-
-            const { data: sessionData } = await supabase.auth.getSession();
             const uploadedUrls: string[] = [];
+            
+            // Helper to compress and convert images to typical JPEG 
+            const processImageBeforeUpload = async (uri: string) => {
+                const manipulated = await manipulateAsync(
+                    uri,
+                    [{ resize: { width: 2000 } }], // Resize wide edge to 2000px max
+                    { compress: 0.8, format: SaveFormat.JPEG }
+                );
+                return manipulated.uri;
+            };
 
             for (const imageUri of images) {
+                const processedUri = await processImageBeforeUpload(imageUri);
+
                 const presignRes = await fetch(`${process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000'}/api/storage/presign`, {
                     method: "POST",
                     headers: {
@@ -110,7 +121,7 @@ export default function AddRecipeScreen({ onDismiss }: AddRecipeScreenProps) {
                 if (!presignRes.ok) throw new Error("Failed to get secure upload URL");
 
                 const { presignedUrl, publicUrl } = await presignRes.json();
-                const imgRes = await fetch(imageUri);
+                const imgRes = await fetch(processedUri);
                 const imageBlob = await imgRes.blob();
                 const uploadRes = await fetch(presignedUrl, {
                     method: "PUT",

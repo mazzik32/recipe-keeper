@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-na
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Upload, X, Camera } from "lucide-react-native";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { useLanguage } from "../contexts/LanguageContext";
 import { ImageCropperModal } from "./shared/ImageCropperModal";
 import { supabase } from "../lib/supabase";
@@ -52,16 +53,34 @@ export function ImageUpload({ value, onChange, aspectRatio = "video", className 
         }
     };
 
-    const handleCropConfirm = (croppedUri: string) => {
+    const handleCropConfirm = async (croppedUri: string) => {
         setCropModalVisible(false);
-        onChange(croppedUri);
+        try {
+            const manipulated = await manipulateAsync(
+                croppedUri,
+                [{ resize: { width: 2000 } }],
+                { compress: 0.8, format: SaveFormat.JPEG }
+            );
+            onChange(manipulated.uri);
+        } catch (e) {
+            onChange(croppedUri);
+        }
         setRawImageUri(null);
     };
 
-    const handleCropSkip = () => {
+    const handleCropSkip = async () => {
         setCropModalVisible(false);
         if (rawImageUri) {
-            onChange(rawImageUri);
+            try {
+                const manipulated = await manipulateAsync(
+                    rawImageUri,
+                    [{ resize: { width: 2000 } }],
+                    { compress: 0.8, format: SaveFormat.JPEG }
+                );
+                onChange(manipulated.uri);
+            } catch (e) {
+                onChange(rawImageUri);
+            }
         }
         setRawImageUri(null);
     };

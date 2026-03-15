@@ -34,11 +34,12 @@ export function ImageUpload({
       if (!file) return;
 
       // Validate file type
+      const fileType = file.type || (file.name.match(/\.(heic|heif)$/i) ? "image/heic" : "");
       const validTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
-      if (!validTypes.includes(file.type)) {
+      if (!validTypes.includes(fileType)) {
         toast({
           title: "Invalid file type",
-          description: "Please upload a JPG, PNG, or WebP image",
+          description: "Please upload a JPG, PNG, WebP, or HEIC image",
           variant: "destructive",
         });
         return;
@@ -110,31 +111,56 @@ export function ImageUpload({
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
   // When a file is selected (via input or drop), set it for cropping instead of immediate upload
-  const onFileSelect = useCallback((file: File) => {
+  const onFileSelect = useCallback(async (file: File) => {
     // Validate file type
+    const fileType = file.type || (file.name.match(/\.(heic|heif)$/i) ? "image/heic" : "");
     const validTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
-    if (!validTypes.includes(file.type)) {
+    if (!validTypes.includes(fileType)) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a JPG, PNG, or WebP image",
+        description: "Please upload a JPG, PNG, WebP, or HEIC image",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (max 10MB to accommodate large iPhone photos)
+    if (file.size > 10 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Image must be less than 5MB",
+        description: "Image must be less than 10MB",
         variant: "destructive",
       });
       return;
     }
 
-    setCropFile(file);
+    let processedFile = file;
+
+    if (fileType === "image/heic") {
+      setIsUploading(true);
+      try {
+        const heic2any = (await import("heic2any")).default;
+        const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg" });
+        const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+        processedFile = new File([blob], file.name.replace(/\.(heic|heif)$/i, ".jpg"), {
+          type: "image/jpeg",
+          lastModified: Date.now(),
+        });
+      } catch (e) {
+        toast({
+          title: "Conversion failed",
+          description: "Could not process HEIC image",
+          variant: "destructive"
+        });
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
+    setCropFile(processedFile);
     // Create object URL for preview
-    const objectUrl = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(processedFile);
     setCropImageSrc(objectUrl);
   }, [toast]);
 
@@ -203,7 +229,7 @@ export function ImageUpload({
       >
         {value ? (
           <>
-            <Image src={value} alt="Uploaded image" fill unoptimized className="object-cover" />
+            <Image src={value} alt="Uploaded image" fill className="object-cover" />
             <Button
               type="button"
               variant="destructive"
