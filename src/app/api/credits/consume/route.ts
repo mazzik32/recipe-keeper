@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { Database } from '@/types/database.types';
 import { deductCredits } from '@/lib/credits';
@@ -7,23 +8,36 @@ import { getUserTypeSnapshot, trackAnalyticsEvent } from '@/lib/analytics';
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
+    let user = null;
+    const authHeader = req.headers.get("Authorization");
 
-    const supabase = createServerClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll() {
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "");
+      const supabaseAdmin = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data, error } = await supabaseAdmin.auth.getUser(token);
+      if (!error && data.user) {
+        user = data.user;
+      }
+    }
+
+    if (!user) {
+      const cookieStore = await cookies();
+      const supabase = createServerClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() { return cookieStore.getAll(); },
+            setAll() {}
           }
         }
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
+      );
+      const { data } = await supabase.auth.getUser();
+      user = data.user;
+    }
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
