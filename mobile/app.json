@@ -2,7 +2,7 @@
   "expo": {
     "name": "RecipeKeeper.org",
     "slug": "mobile",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "scheme": "recipekeeper",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
