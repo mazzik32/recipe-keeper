@@ -27,6 +27,7 @@ const nextConfig = {
               "font-src 'self'",
               "frame-src 'self' https://challenges.cloudflare.com https://*.paddle.com",
               "connect-src 'self' https://*.supabase.co https://data.recipekeeper.org https://challenges.cloudflare.com https://*.paddle.com https://public.profitwell.com",
+              "worker-src 'self' blob:",
             ].join('; '),
           },
         ],
