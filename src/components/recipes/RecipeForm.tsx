@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-import { trackAnalyticsEvent } from '@/lib/analytics';
 import { recipeSchema, type RecipeFormData } from "@/lib/validations/recipe";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Category, RecipeWithRelations } from "@/types/database.types";
@@ -513,15 +512,23 @@ export function RecipeForm({ categories, recipe, scannedData }: RecipeFormProps)
           if (tagsError) throw tagsError;
         }
 
-        await trackAnalyticsEvent({
-          eventName: 'recipe_created',
-          userId: user.id,
-          userTypeSnapshot: user.is_anonymous ? 'anonymous' : 'registered',
-          channel: 'web',
-          recipeId: newRecipe.id,
-          eventKey: newRecipe.id,
-          metadata: { source: data.source_type ?? null },
-        });
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await fetch('/api/analytics/events', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({
+              eventName: 'recipe_created',
+              channel: 'web',
+              recipeId: newRecipe.id,
+              eventKey: newRecipe.id,
+              metadata: { source: data.source_type ?? null },
+            })
+          }).catch(console.error);
+        }
 
         router.push(`/dashboard/recipes/${newRecipe.id}`);
       }
