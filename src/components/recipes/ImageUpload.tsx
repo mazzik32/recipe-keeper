@@ -203,7 +203,7 @@ export function ImageUpload({
       >
         {value ? (
           <>
-            <Image src={value} alt="Uploaded image" fill className="object-cover" />
+            <Image src={value} alt="Uploaded image" fill unoptimized className="object-cover" />
             <Button
               type="button"
               variant="destructive"

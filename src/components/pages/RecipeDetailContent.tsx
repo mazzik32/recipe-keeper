@@ -106,6 +106,7 @@ export function RecipeDetailContent({ recipe }: RecipeDetailContentProps) {
             src={primaryImage.image_url}
             alt={recipe.title}
             fill
+            unoptimized
             className="object-contain"
           />
         </div>
@@ -218,6 +219,7 @@ export function RecipeDetailContent({ recipe }: RecipeDetailContentProps) {
                         src={step.image_url}
                         alt={`${t.recipes.step} ${step.step_number}`}
                         fill
+                        unoptimized
                         className="object-contain"
                       />
                     </div>

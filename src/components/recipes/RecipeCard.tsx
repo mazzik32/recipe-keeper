@@ -32,6 +32,7 @@ export function RecipeCard({ recipe, onToggleFavorite, actions }: RecipeCardProp
               src={primaryImage.image_url}
               alt={recipe.title}
               fill
+              unoptimized
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
